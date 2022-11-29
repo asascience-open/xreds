@@ -47,7 +47,7 @@ function App() {
     <div className="h-screen w-screen flex flex-col">
       <nav className="w-full h-8 p-2 flex flex-row items-center content-center">
         <MaterialIcon className="pr-4 self-center align-middle transition-all" name={showSidebar ? 'close' : 'menu'} onClick={() => setSidebarShowing(!showSidebar)} />
-        <span className="text-lg font-extrabold">xreds</span>
+        <span className="text-xl font-extrabold">xreds</span>
       </nav>
       <main className="flex flex-row flex-1">
         <aside className={`flex flex-col h-full transition-all overflow-y-auto ${showSidebar ? 'w-full px-4 py-2' : 'w-0 px-0 py-0'} ${showSidebar ? 'md:w-1/3' : 'md:w-0'}`}>

@@ -26,7 +26,7 @@ rioxarray==0.12.2
 s3fs==2022.10.0
 uvicorn==0.17.6
 xarray==2022.10.0
-git+https://github.com/xarray-contrib/xpublish.git@632a720aadba39cebaf062da7043835262d9fa3d
+git+https://github.com/xarray-contrib/xpublish.git@f47bd225ff531a6d4f3d088f596111ad4a219d32
 zarr==2.13.2
 scipy==1.9.3
 git+https://github.com/fsspec/kerchunk@32c349b38aa371f5e397327c355ed5c6a8dde8c8
