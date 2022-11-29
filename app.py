@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from xreds.server import DatasetServer
 from xpublish_opendap import dap_router
-from xpublish_wms.cf_wms_router import cf_wms_router
+from xpublish_wms import cf_wms_router
 
 
 dataset_service = DatasetServer(
