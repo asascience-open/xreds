@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  nginx: 
+    container_name: nginx
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports: 
+      - "8090:80"
+    expose: 
+      - 8090
+    depends_on: 
+      - zms
+  zms: 
+    container_name: zms
+    build: .
+    volumes:
+      - "./datasets:/opt/zms/datasets"
+    ports: 
+      - "8091:8091"
+    environment:
+      - PORT=8091
+      - ROOT_PATH=:8090
+      - datasets_mapping_file=/opt/zms/datasets/datasets.json

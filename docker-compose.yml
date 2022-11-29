@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  zms: 
+    container_name: zms
+    build: .
+    volumes:
+      - "./datasets:/opt/zms/datasets"
+    ports: 
+      - "8090:8090"
+    environment:
+      - PORT=8090
+      - datasets_mapping_file=/opt/zms/datasets/datasets.json
