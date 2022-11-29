@@ -25,7 +25,7 @@ const Map = ({map, style, viewport: {center, zoom}}: MapProps) => {
             center, 
             zoom,
         });
-    }, []);
+    }, [map.current]);
 
     return (
         <div className="w-full h-full" ref={mapContainer} />

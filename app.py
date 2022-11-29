@@ -2,6 +2,7 @@ import os
 import xpublish
 
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from xreds.server import DatasetServer
 from xpublish_opendap import dap_router
@@ -16,8 +17,15 @@ dataset_service = DatasetServer(
     ]
 )
 
-
 app = dataset_service.app
+
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=['*'], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.title = 'XREDS'
 app.description = 'XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks'
