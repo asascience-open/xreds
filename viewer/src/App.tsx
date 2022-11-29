@@ -9,9 +9,9 @@ async function fetchDatasetIds(): Promise<string[]> {
 }
 
 async function fetchDatasetVariables(dataset: string): Promise<any> {
-  const response = await fetch(`http://localhost:8090/datasets/${dataset}/info`);
+  const response = await fetch(`http://localhost:8090/datasets/${dataset}/dict`);
   const info = await response.json();
-  return info.variables;
+  return info.data_vars;
 }
 
 async function fetchDatasets(): Promise<{ [k: string]: any }> {
@@ -23,7 +23,7 @@ async function fetchDatasets(): Promise<{ [k: string]: any }> {
   datasets.forEach((d, i) => {
     const cleanedDataset: { [k: string]: any } = {};
     Object.keys(d)
-      .filter(k => d[k].dimensions.includes('latitude') && d[k].dimensions.includes('longitude'))
+      .filter(k => d[k].dims.includes('latitude') && d[k].dims.includes('longitude'))
       .forEach(k => {
         cleanedDataset[k] = d[k];
       });
@@ -56,8 +56,8 @@ function App() {
             <section key={d}>
               <h2 className="text-lg font-bold">{d}</h2>
               {Object.keys(datasets[d]).map(v => (
-                <div className="py-1 flex flex-row">
-                  <button className="hover:text-blue-600">{v} <span className="opacity-30">({datasets[d][v].attributes.name})</span></button>
+                <div key={d + v} className="py-1 flex flex-row">
+                  <button className="hover:text-blue-600">{v} <span className="opacity-30">({datasets[d][v].attrs.name})</span></button>
                 </div>
               ))}
             </section>
