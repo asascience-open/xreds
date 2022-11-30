@@ -9,12 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "fast-xml-parser": "^3.21.1",
+    "he": "^1.2.0",
     "maplibre-gl": "^2.4.0",
     "material-icons": "^1.12.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/he": "^1.1.2",
     "@types/react": "^18.0.24",
     "@types/react-dom": "^18.0.8",
     "@vitejs/plugin-react": "^2.2.0",
