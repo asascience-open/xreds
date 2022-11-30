@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Mixin, useEffect, useRef, useState } from "react";
 import Map from "./components/map";
 import MaterialIcon from "./components/material_icon";
 import { xmlToJSON } from "./tools";
@@ -7,12 +7,6 @@ async function fetchDatasetIds(): Promise<string[]> {
   const response = await fetch('http://localhost:8090/datasets');
   const datasets = await response.json();
   return datasets;
-}
-
-async function fetchDatasetVariables(dataset: string): Promise<any> {
-  const response = await fetch(`http://localhost:8090/datasets/${dataset}/dict`);
-  const info = await response.json();
-  return info.data_vars;
 }
 
 async function fetchDatasetCapabilities(dataset: string): Promise<any> {
@@ -46,6 +40,7 @@ function App() {
   const [showSidebar, setSidebarShowing] = useState(false);
   const [datasets, setDatasets] = useState<{ [k: string]: any }>({});
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
+  const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number }>({});
 
   useEffect(() => {
     fetchDatasets().then(datasets => setDatasets(datasets));
@@ -62,7 +57,7 @@ function App() {
     map.current.addSource(sourceId, {
       type: 'raster',
       tiles: [
-        `http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/rainbow&colorscalerange=0,5`
+        `http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/rainbow&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
       ],
       tileSize: 512,
     });
@@ -79,7 +74,7 @@ function App() {
       map.current?.removeLayer(sourceId);
       map.current?.removeSource(sourceId);
     }
-  }, [selectedLayer]);
+  }, [selectedLayer, layerOptions]);
 
 
   const selectedLayerData = selectedLayer ? datasets[selectedLayer.dataset][selectedLayer.variable] : undefined;
@@ -130,13 +125,35 @@ function App() {
             }} />
         </div>
         {(selectedLayerData && selectedLayer) &&
-          <div className="absolute bottom-9 md:bottom-8 right-2 md:right-4 h-32 w-72 md:w-96 bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
+          <div className="absolute bottom-9 md:bottom-8 right-2 md:right-4 h-40 w-72 md:w-96 bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
             <span className="text-center">{selectedLayer.dataset} - {selectedLayer.variable}</span>
             <span className="font-bold text-center">{selectedLayerData.Title} ({selectedLayerData.Units})</span>
+            <label>
+              Date:
+              <select
+                className="rounded-md p-1 mx-1"
+                value={layerOptions?.date ?? selectedLayerData.Dimension['@_default']}
+                onChange={e => setLayerOptions({ ...layerOptions, date: e.target.value })}
+              >
+                {selectedLayerData.Dimension['#text'].split(',').map((date: string) =>
+                  <option value={date}>{date}</option>
+                )}
+              </select>
+            </label>
             <div className=" w-full flex-1 flex flex-row items-center content-center justify-around font-bold">
-              <span>0</span>
-              <img className="rounded-md overflow-hidden w-64 md:w-80" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/default&colorscalerange=0,5`} />
-              <span>5</span>
+              <input className="w-16 mx-1 text-center" defaultValue={layerOptions.colorscaleMin ?? 0} type={'number'} onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  setLayerOptions({ ...layerOptions, colorscaleMin: e.currentTarget.valueAsNumber })
+                }
+              }
+              } />
+              <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/default&colorscalerange=0,5`} />
+              <input className="w-16 mx-1 text-center" defaultValue={layerOptions.colorscaleMax ?? 10} type={'number'} onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  setLayerOptions({ ...layerOptions, colorscaleMax: e.currentTarget.valueAsNumber })
+                }
+              }
+              } />
             </div>
           </div>
         }
