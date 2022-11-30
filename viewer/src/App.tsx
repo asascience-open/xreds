@@ -1,3 +1,4 @@
+import { Feature, MapMouseEvent, Popup } from "maplibre-gl";
 import { Mixin, useEffect, useRef, useState } from "react";
 import Map from "./components/map";
 import MaterialIcon from "./components/material_icon";
@@ -41,6 +42,7 @@ function App() {
   const [datasets, setDatasets] = useState<{ [k: string]: any }>({});
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
   const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number }>({});
+  const [currentPopupData, setCurrentPopupData] = useState<any>(undefined);
 
   useEffect(() => {
     fetchDatasets().then(datasets => setDatasets(datasets));
@@ -69,13 +71,46 @@ function App() {
       paint: {}
     });
 
+    const onClick = async (e: MapMouseEvent) => {
+      const response = await fetch(`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`);
+
+      const featureData = await response.json();
+      setCurrentPopupData({ data: featureData, lngLat: e.lngLat });
+    }
+
+    map.current.on('click', onClick);
+
     return () => {
       console.log(`Removing layer: ${sourceId}`);
+      setCurrentPopupData(undefined);
+      map.current?.off('click', onClick);
       map.current?.removeLayer(sourceId);
       map.current?.removeSource(sourceId);
     }
   }, [selectedLayer, layerOptions]);
 
+  useEffect(() => {
+    if (!map.current || !currentPopupData || !selectedLayer) {
+      return;
+    }
+
+    console.log(currentPopupData);
+
+    const popup = new Popup({ closeOnClick: false })
+      .setLngLat(currentPopupData.lngLat)
+      .setHTML(`
+        <div class="flex flex-col p-1 rounded-md overflow-hidden">
+          <span class="font-bold">${selectedLayer.dataset} - ${selectedLayer.variable}</span>
+          <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
+          <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
+          <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
+          <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasets[selectedLayer.dataset][selectedLayer.variable].Units}</span>
+        </div>
+      `)
+      .addTo(map.current);
+
+    return () => { popup.remove() };
+  }, [currentPopupData]);
 
   const selectedLayerData = selectedLayer ? datasets[selectedLayer.dataset][selectedLayer.variable] : undefined;
 
@@ -136,7 +171,7 @@ function App() {
                 onChange={e => setLayerOptions({ ...layerOptions, date: e.target.value })}
               >
                 {selectedLayerData.Dimension['#text'].split(',').map((date: string) =>
-                  <option value={date}>{date}</option>
+                  <option key={date} value={date}>{date}</option>
                 )}
               </select>
             </label>
