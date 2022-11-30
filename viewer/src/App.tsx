@@ -4,6 +4,21 @@ import Map from "./components/map";
 import MaterialIcon from "./components/material_icon";
 import { xmlToJSON } from "./tools";
 
+const colormaps: Array<{ id: string, name: string }> = [
+  { id: 'rainbow', name: 'Rainbow' },
+  { id: 'jet', name: 'Jet' },
+  { id: 'turbo', name: 'Turbo' },
+  { id: 'viridis', name: 'Viridis' },
+  { id: 'plasma', name: 'Plasma' },
+  { id: 'inferno', name: 'Inferno' },
+  { id: 'magma', name: 'Magma' },
+  { id: 'Greys', name: 'Greys' },
+  { id: 'Blues', name: 'Blues' },
+  { id: 'Reds', name: 'Reds' },
+  { id: 'cool', name: 'Cool' },
+  { id: 'hot', name: 'Hot' },
+]
+
 async function fetchDatasetIds(): Promise<string[]> {
   const response = await fetch('http://localhost:8090/datasets');
   const datasets = await response.json();
@@ -41,8 +56,10 @@ function App() {
   const [showSidebar, setSidebarShowing] = useState(false);
   const [datasets, setDatasets] = useState<{ [k: string]: any }>({});
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
-  const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number }>({});
+  const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number, colormap?: string }>({});
   const [currentPopupData, setCurrentPopupData] = useState<any>(undefined);
+
+  const [showColormapPicker, setColorMapPickerShowing] = useState(false);
 
   useEffect(() => {
     fetchDatasets().then(datasets => setDatasets(datasets));
@@ -59,7 +76,7 @@ function App() {
     map.current.addSource(sourceId, {
       type: 'raster',
       tiles: [
-        `http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/rainbow&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
+        `http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
       ],
       tileSize: 512,
     });
@@ -180,15 +197,27 @@ function App() {
                 if (e.key === 'Enter') {
                   setLayerOptions({ ...layerOptions, colorscaleMin: e.currentTarget.valueAsNumber })
                 }
+              }} />
+              <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() => setColorMapPickerShowing(!showColormapPicker)} />
+              {showColormapPicker &&
+                <div className="absolute bottom-14 md:bottom-12 right-0 h-64 w-72 md:w-96 pt-2 px-2 bg-white overflow-y-scroll">
+                  <menu>
+                    {colormaps.map(cm => (
+                      <li className="w-full h-2 mb-8">
+                        <img className="rounded-md overflow-hidden w-full cursor-pointer" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() =>{
+                          setLayerOptions({...layerOptions, colormap: cm.id})
+                          setColorMapPickerShowing(!showColormapPicker)
+                        }} />
+                      </li>
+                    ))}
+                  </menu>
+                </div>
               }
-              } />
-              <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/default&colorscalerange=0,5`} />
               <input className="w-16 mx-1 text-center" defaultValue={layerOptions.colorscaleMax ?? 10} type={'number'} onKeyDown={e => {
                 if (e.key === 'Enter') {
                   setLayerOptions({ ...layerOptions, colorscaleMax: e.currentTarget.valueAsNumber })
                 }
-              }
-              } />
+              }} />
             </div>
           </div>
         }
