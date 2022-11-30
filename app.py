@@ -4,6 +4,7 @@ import xpublish
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
+from xreds.spastaticfiles import SPAStaticFiles
 from xreds.server import DatasetServer
 from xpublish_opendap import dap_router
 from xpublish_wms import cf_wms_router
@@ -30,7 +31,7 @@ app.add_middleware(
 app.title = 'XREDS'
 app.description = 'XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks'
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/", SPAStaticFiles(directory="./viewer/dist", html=True), name="viewer")
 app.root_path = os.environ.get('ROOT_PATH')
 
 if __name__ == '__main__': 

@@ -20,13 +20,13 @@ const colormaps: Array<{ id: string, name: string }> = [
 ]
 
 async function fetchDatasetIds(): Promise<string[]> {
-  const response = await fetch('http://localhost:8090/datasets');
+  const response = await fetch('/datasets');
   const datasets = await response.json();
   return datasets;
 }
 
 async function fetchDatasetCapabilities(dataset: string): Promise<any> {
-  const response = await fetch(`http://localhost:8090/datasets/${dataset}/wms/?service=WMS&request=GetCapabilities&version=1.3.0`);
+  const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&request=GetCapabilities&version=1.3.0`);
   const rawCapabilities = await response.text();
   const capabilities = xmlToJSON(rawCapabilities).WMS_Capabilities.Capability.Layer.Layer;
   return capabilities;
@@ -76,7 +76,7 @@ function App() {
     map.current.addSource(sourceId, {
       type: 'raster',
       tiles: [
-        `http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
+        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
       ],
       tileSize: 512,
     });
@@ -89,7 +89,7 @@ function App() {
     });
 
     const onClick = async (e: MapMouseEvent) => {
-      const response = await fetch(`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`);
+      const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`);
 
       const featureData = await response.json();
       setCurrentPopupData({ data: featureData, lngLat: e.lngLat });
@@ -170,7 +170,8 @@ function App() {
         <div className="flex-1">
           <Map
             map={map}
-            style='https://api.maptiler.com/maps/ocean/style.json?key=x5EfXrIDiRScOPCSUPJ6'
+            style='https://api.maptiler.com/maps/basic-v2-light/style.json?key=x5EfXrIDiRScOPCSUPJ6'
+            // style='https://api.maptiler.com/maps/ocean/style.json?key=x5EfXrIDiRScOPCSUPJ6'
             viewport={{
               center: [-71, 41],
               zoom: 3,
@@ -198,13 +199,13 @@ function App() {
                   setLayerOptions({ ...layerOptions, colorscaleMin: e.currentTarget.valueAsNumber })
                 }
               }} />
-              <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() => setColorMapPickerShowing(!showColormapPicker)} />
+              <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer" src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() => setColorMapPickerShowing(!showColormapPicker)} />
               {showColormapPicker &&
                 <div className="absolute bottom-14 md:bottom-12 right-0 h-64 w-72 md:w-96 pt-2 px-2 bg-white overflow-y-scroll">
                   <menu>
                     {colormaps.map(cm => (
                       <li className="w-full h-2 mb-8">
-                        <img className="rounded-md overflow-hidden w-full cursor-pointer" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() =>{
+                        <img className="rounded-md overflow-hidden w-full cursor-pointer" src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() =>{
                           setLayerOptions({...layerOptions, colormap: cm.id})
                           setColorMapPickerShowing(!showColormapPicker)
                         }} />

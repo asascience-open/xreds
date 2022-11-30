@@ -22,6 +22,14 @@ pip install -r requirements.txt
 
 ### Running the server
 
+Build the react app
+
+```bash
+cd viewer/
+yarn install 
+npm run build
+```
+
 Run the following in the activated `virtualenv`:
 
 ```bash 
