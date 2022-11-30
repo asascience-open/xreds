@@ -88,7 +88,7 @@ function App() {
     <div className="h-screen w-screen flex flex-col overflow-hidden">
       <nav className="w-full h-8 p-2 flex flex-row items-center content-center">
         <MaterialIcon className="pr-4 self-center align-middle transition-all" name={showSidebar ? 'close' : 'menu'} onClick={() => setSidebarShowing(!showSidebar)} />
-        <span className="text-xl font-extrabold">xreds</span>
+        <span className="text-xl font-extrabold">xreds viewer</span>
       </nav>
       <main className="flex flex-row flex-1">
         <aside className={`absolute top-8 left-0 bottom-0 z-10 shadow-xl flex bg-white flex-col transition-all overflow-y-auto ${showSidebar ? 'w-full px-4 py-2' : 'w-0 px-0 py-0'} ${showSidebar ? 'md:w-1/3' : 'md:w-0'}`}>
@@ -131,8 +131,8 @@ function App() {
         </div>
         {(selectedLayerData && selectedLayer) &&
           <div className="absolute bottom-9 md:bottom-8 right-2 md:right-4 h-32 w-72 md:w-96 bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
+            <span className="text-center">{selectedLayer.dataset} - {selectedLayer.variable}</span>
             <span className="font-bold text-center">{selectedLayerData.Title} ({selectedLayerData.Units})</span>
-            <span>{selectedLayer.dataset}</span>
             <div className=" w-full flex-1 flex flex-row items-center content-center justify-around font-bold">
               <span>0</span>
               <img className="rounded-md overflow-hidden w-64 md:w-80" src={`http://localhost:8090/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/default&colorscalerange=0,5`} />
