@@ -31,5 +31,5 @@ zarr==2.13.2
 scipy==1.9.3
 git+https://github.com/fsspec/kerchunk@32c349b38aa371f5e397327c355ed5c6a8dde8c8
 git+https://github.com/gulfofmaine/xpublish-opendap@0d8185ea3b12a565229eb375a658b27226197fcd
-git+https://github.com/asascience-open/xpublish-wms@440a511
+git+https://github.com/asascience-open/xpublish-wms@dd4db7f292dff8963750fe0b2ee6fbdfbc9f4ebc
 opendap-protocol<1.2.0
