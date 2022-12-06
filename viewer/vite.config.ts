@@ -10,6 +10,11 @@ export default defineConfig({
         target: 'http://localhost:8090',
         changeOrigin: true,
         secure: false,
+      }, 
+      '/docs': {
+        target: 'http://localhost:8090',
+        changeOrigin: true,
+        secure: false,
       }
     }
   }

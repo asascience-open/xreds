@@ -3,6 +3,7 @@ import { CSSProperties } from 'react';
 
 export interface MaterialIconProps {
     name: string,
+    title?: string,
     type?: string
     size?: string,
     style?: CSSProperties,
@@ -12,8 +13,9 @@ export interface MaterialIconProps {
     onClick?: () => void,
 }
 
-const MaterialIcon = ({ color, name, size, style, rotation, className, onClick, type }: MaterialIconProps) => (
+const MaterialIcon = ({ color, name, title, size, style, rotation, className, onClick, type }: MaterialIconProps) => (
     <span
+        title={title}
         className={`material-icons${(type !== undefined) ? "-" + type : ""} ${className}`}
         onClick={onClick}
         style={{

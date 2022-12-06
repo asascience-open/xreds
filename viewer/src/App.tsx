@@ -53,7 +53,7 @@ async function fetchDatasets(): Promise<{ [k: string]: any }> {
 
 function App() {
   const map = useRef<maplibregl.Map | null>(null);
-  const [showSidebar, setSidebarShowing] = useState(false);
+  const [showSidebar, setSidebarShowing] = useState(true);
   const [datasets, setDatasets] = useState<{ [k: string]: any }>({});
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
   const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number, colormap?: string }>({});
@@ -133,16 +133,28 @@ function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
-      <nav className="w-full h-8 p-2 flex flex-row items-center content-center">
-        <MaterialIcon className="pr-4 self-center align-middle transition-all" name={showSidebar ? 'close' : 'menu'} onClick={() => setSidebarShowing(!showSidebar)} />
-        <span className="text-xl font-extrabold">xreds viewer</span>
+      <nav className="w-full h-8 p-2 flex flex-row items-center content-center justify-between">
+        <div className="flex flex-row items-start content-center">
+          <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name={showSidebar ? 'close' : 'menu'} onClick={() => setSidebarShowing(!showSidebar)} />
+          <span className="text-xl font-extrabold">xreds viewer</span>
+        </div>
+        <div className="flex flex-row items-start content-center">
+        <a className="text-xl font-extrabold hover:text-blue-600" href='/docs'>api</a>
+        <MaterialIcon className="px-4 self-center align-middle transition-all hover:text-blue-600" name='settings' title='Configure' onClick={() => { }} />
+        </div>
       </nav>
       <main className="flex flex-row flex-1">
         <aside className={`absolute top-8 left-0 bottom-0 z-10 shadow-xl flex bg-white flex-col transition-all overflow-y-auto ${showSidebar ? 'w-full px-4 py-2' : 'w-0 px-0 py-0'} ${showSidebar ? 'md:w-1/3' : 'md:w-0'}`}>
           <h1 className="text-xl font-bold mb-4 px-1">Datasets</h1>
           {Object.keys(datasets).map(d => (
             <section key={d}>
-              <h2 className="text-lg font-bold px-1">{d}</h2>
+              <div className="flex flex-row justify-between items-center content-center">
+                <h2 className="text-lg font-bold px-1">{d}</h2>
+                <div className="flex flex-row justify-between items-center content-center">
+                  <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name='integration_instructions' title='Launch in JupyterHub' onClick={() => { }} />
+                  <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name='dynamic_form' title='Access via OpenDAP' onClick={() => { }} />
+                </div>
+              </div>
               {Object.keys(datasets[d]).map(v => (
                 <div key={d + v} className={`p-1 flex flex-row ${(selectedLayer?.dataset === d && selectedLayer.variable === v) ? 'bg-blue-100' : ''}`}>
                   <button
@@ -205,8 +217,8 @@ function App() {
                   <menu>
                     {colormaps.map(cm => (
                       <li className="w-full h-2 mb-8">
-                        <img className="rounded-md overflow-hidden w-full cursor-pointer" src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() =>{
-                          setLayerOptions({...layerOptions, colormap: cm.id})
+                        <img className="rounded-md overflow-hidden w-full cursor-pointer" src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() => {
+                          setLayerOptions({ ...layerOptions, colormap: cm.id })
                           setColorMapPickerShowing(!showColormapPicker)
                         }} />
                       </li>
