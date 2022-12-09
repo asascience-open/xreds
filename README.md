@@ -71,4 +71,4 @@ Datasets are specified in a key value manner, where the keys are the dataset ids
 }
 ```
 
-Currently `zarr` and `netcdf4` datasets are supported. This information should be saved a file and specified when running
+Currently `zarr`, `netcdf`, and [`kerchunked`](https://github.com/fsspec/kerchunk) datasets are supported. This information should be saved a file and specified when running (TODO: IMRPOVE THIS VASTLY)
