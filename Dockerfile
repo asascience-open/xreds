@@ -1,3 +1,21 @@
+# Build the react frontend
+FROM node:18-buster
+
+# Create a folder for the app to live in
+RUN mkdir -p /opt/viewer
+WORKDIR /opt/viewer
+
+COPY viewer/*.json viewer/*.config.cjs viewer/*.config.ts viewer/yarn.lock  ./ 
+
+RUN yarn install
+
+COPY viewer/index.html ./index.html
+COPY viewer/public ./public
+COPY viewer/src ./src
+
+RUN npm run build
+
+# Build the python service layer
 FROM python:3.10-buster
 
 # Native dependencies
@@ -5,8 +23,8 @@ RUN apt-get update
 RUN apt-get install -y libudunits2-dev libgdal20 libnetcdf-dev libeccodes-dev
 
 # Create a folder for the app to live in
-RUN mkdir -p /opt/zms
-WORKDIR /opt/zms
+RUN mkdir -p /opt/xreds
+WORKDIR /opt/xreds
 
 # Holder directory where react app lives in production
 RUN mkdir build
@@ -17,10 +35,13 @@ RUN python3 -m pip config set global.http.sslVerify false
 RUN git config --global http.sslverify false
 RUN pip3 install -r requirements.txt
 
-# Copy over python app source code 
+# Copy over python app source code
 COPY static ./static
-COPY zms ./zms
+COPY xreds ./xreds
 COPY app.py ./app.py
+
+# Copy the frontend build 
+COPY --from=0 /opt/viewer/dist ./viewer/dist 
 
 # Set the port to run the server on
 ENV PORT 8090

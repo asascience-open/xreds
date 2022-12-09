@@ -1,13 +1,13 @@
 version: '3'
 
 services:
-  zms: 
-    container_name: zms
+  xreds: 
+    container_name: xreds
     build: .
     volumes:
-      - "./datasets:/opt/zms/datasets"
+      - "./datasets:/opt/xreds/datasets"
     ports: 
       - "8090:8090"
     environment:
       - PORT=8090
-      - datasets_mapping_file=/opt/zms/datasets/datasets.json
+      - datasets_mapping_file=/opt/xreds/datasets/datasets.json
