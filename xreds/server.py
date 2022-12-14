@@ -15,7 +15,7 @@ from xpublish.dependencies import get_cache
 from .config import settings
 
 
-logger = logging.getLogger("api")
+logger = logging.getLogger("uvicorn")
 
 gunicorn_logger = logging.getLogger('gunicorn.error')
 logger.handlers = gunicorn_logger.handlers
@@ -29,8 +29,11 @@ dataset_mapping = {}
 
 def get_dataset(dataset_id: str, cache: cachey.Cache = Depends(get_cache)) -> xr.Dataset:
     cache_key = f"dataset-{dataset_id}"
+    logger.info(cache.data.keys())
     ds = cache.get(cache_key)
     if not ds:
+        logger.info(f'No dataset found in cache for {dataset_id}, loading...')
+
         dataset_spec = dataset_mapping[dataset_id]
         dataset_path = dataset_spec['path']
 
@@ -53,6 +56,16 @@ def get_dataset(dataset_id: str, cache: cachey.Cache = Depends(get_cache)) -> xr
                 ds = ds.assign_coords(longitude=(((ds.longitude + 180) % 360) - 180)).sortby('longitude')
                 # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
                 ds = ds.rio.write_crs(4326)
+        
+        cache.put(cache_key, ds, 50)
+        if dataset_id in cache.data.keys(): 
+            logger.info(f'Loaded and cached dataset for {dataset_id}')
+        else: 
+            logger.info(f'Loaded dataset for {dataset_id}. Not cached due to size or current cache score')
+        
+    else: 
+        logger.info(f'Using cached dataset for {dataset_id}')
+
     return ds
 
 
@@ -74,6 +87,6 @@ class DatasetServer(xpublish.Rest):
             self._app_kws.update(app_kws)
 
         self._cache = None
-        self._cache_kws = {'available_bytes': 1e6}
+        self._cache_kws = {'available_bytes': 4e9}
         if cache_kws is not None:
             self._cache_kws.update(cache_kws)
