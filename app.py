@@ -34,7 +34,7 @@ app.description = 'XArray Environmental Data Services exposes environmental mode
 app.mount("/", SPAStaticFiles(directory="./viewer/dist", html=True), name="viewer")
 app.root_path = os.environ.get('ROOT_PATH')
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     import uvicorn
 
     # When run directly, run in debug mode 

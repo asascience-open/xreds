@@ -31,20 +31,28 @@ def get_dataset(dataset_id: str, cache: cachey.Cache = Depends(get_cache)) -> xr
     cache_key = f"dataset-{dataset_id}"
     ds = cache.get(cache_key)
     if not ds:
-        dataset_location: str = dataset_mapping[dataset_id]
+        dataset_spec = dataset_mapping[dataset_id]
+        dataset_path = dataset_spec['path']
 
-        if dataset_location.endswith('.nc'):
-            ds = xr.open_dataset(dataset_location)
-        elif '.zarr' in dataset_location:
+        if dataset_path.endswith('.nc'):
+            ds = xr.open_dataset(dataset_path)
+        elif '.zarr' in dataset_path:
             # TODO: Enable S3  support
             # mapper = fsspec.get_mapper(dataset_location)
-            ds = xr.open_zarr(dataset_location, consolidated=True)
-        elif dataset_location.endswith('.json'): 
-            fs = fsspec.filesystem("reference", fo=dataset_location, remote_protocol='s3', remote_options={'anon':True, 'use_ssl': False})
+            ds = xr.open_zarr(dataset_path, consolidated=True)
+        elif dataset_path.endswith('.json'):
+            if 'key' in dataset_spec:
+                options = {'anon': False, 'use_ssl': False, 'key': dataset_spec['key'], 'secret': dataset_spec['secret']}
+            else: 
+                options = {'anon': True, 'use_ssl': False}
+            fs = fsspec.filesystem("reference", fo=dataset_path, remote_protocol='s3', remote_options=options, target_options=options)
             m = fs.get_mapper("")
-            ds = xr.open_dataset(m, engine="zarr", backend_kwargs=dict(consolidated=False), chunks={'valid_time':1}, drop_variables='orderedSequenceData')
-            ds = ds.assign_coords(longitude=(((ds.longitude + 180) % 360) - 180)).sortby('longitude')
-        ds = ds.rio.write_crs(4326)
+            ds = xr.open_dataset(m, engine="zarr", backend_kwargs=dict(consolidated=False), chunks={}, drop_variables='orderedSequenceData')
+            
+            if ds.cf.coords['longitude'].dims[0] == 'longitude':
+                ds = ds.assign_coords(longitude=(((ds.longitude + 180) % 360) - 180)).sortby('longitude')
+                # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
+                ds = ds.rio.write_crs(4326)
     return ds
 
 
