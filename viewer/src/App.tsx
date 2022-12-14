@@ -79,6 +79,12 @@ function App() {
         `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
       ],
       tileSize: 512,
+      bounds: [
+        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_minx"],
+        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_miny"],
+        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_maxx"],
+        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_maxy"],
+      ]
     });
 
     map.current.addLayer({
