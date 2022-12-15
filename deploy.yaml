@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xreds
+  labels:
+    app: xreds
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xreds
+
+  template:
+    metadata:
+      labels:
+        app: xreds
+    spec:
+      containers:
+      - name: xreds
+        image: public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest
