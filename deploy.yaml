@@ -18,3 +18,8 @@ spec:
       containers:
       - name: xreds
         image: public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest
+        ports:
+        - containerPort: 8090
+        env:
+        - name: datasets_mapping_file
+          value: "s3://nextgen-dmac/kerchunk/datasets.json"

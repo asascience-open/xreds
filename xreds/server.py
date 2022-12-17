@@ -74,7 +74,11 @@ class DatasetServer(xpublish.Rest):
         self._get_dataset_func = get_dataset
 
         global dataset_mapping
-        with open(settings.datasets_mapping_file, 'r') as f:
+        if settings.datasets_mapping_file.startswith('s3'):
+            fs = fsspec.filesystem('s3', anon=True)
+        else:
+            fs = fsspec.filesystem('file')
+        with fs.open(settings.datasets_mapping_file, 'r') as f:
             dataset_mapping = json.load(f)
         self._datasets = list(dataset_mapping.keys())
 
