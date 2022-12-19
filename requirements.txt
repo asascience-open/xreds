@@ -34,4 +34,4 @@ git+https://github.com/fsspec/kerchunk@32c349b38aa371f5e397327c355ed5c6a8dde8c8
 git+https://github.com/gulfofmaine/xpublish-opendap@0d8185ea3b12a565229eb375a658b27226197fcd
 git+https://github.com/asascience-open/xpublish-wms@2c5b5142e9131e51be2f471a44a469cb7c45b823
 opendap-protocol<1.2.0
-pykdtree=1.3.6
+pykdtree==1.3.6
