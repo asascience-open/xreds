@@ -3,7 +3,7 @@ cf-xarray==0.7.4
 cfgrib==0.9.10.2
 cftime==1.6.2
 dask==2022.11.0
-dask_gateway=2022.11.0
+dask_gateway==2022.11.0
 distributed==2022.11.0
 fastapi==0.76.0
 fsspec==2022.11.0
