@@ -73,6 +73,7 @@ function App() {
     const sourceId = `xreds-${selectedLayer.dataset}-${selectedLayer.variable}`;
 
     console.log(`Adding layer: ${sourceId}`)
+    console.log(datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox)
     map.current.addSource(sourceId, {
       type: 'raster',
       tiles: [
