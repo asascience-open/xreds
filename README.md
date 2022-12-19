@@ -62,12 +62,18 @@ docker run -p 8090:8090 -e "datasets_mapping_file=/path/to/datasets.json" -v "/p
 
 ## Specifying Datasets
 
-Datasets are specified in a key value manner, where the keys are the dataset ids and the values are the paths to the datasets: 
+Datasets are specified in a key value manner, where the keys are the dataset ids and the values are objects with the path and access control info for the datasets: 
 
 ```json
 {
-    "ww3": "/path/to/noaa_wave_watch3.zarr/", 
-    "gfs": "/path/to/gfs.nc"
+    "ww3": {
+        "path": "/path/to/noaa_wave_watch3.zarr/"
+    }, 
+    "gfs": {
+        "path": "/path/to/gfs.nc", 
+        "key": "my-s3-key", 
+        "secret": "my-s3-secret",
+    }
 }
 ```
 

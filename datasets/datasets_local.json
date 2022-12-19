@@ -1,3 +1,5 @@
 {
-    "gfswave_global": "./datasets/gfswave_global_kerchunk.json"
+    "gfswave_global": {
+        "path": "./datasets/gfswave_global_kerchunk.json"
+    }
 }
