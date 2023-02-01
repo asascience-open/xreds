@@ -1,5 +1,8 @@
 {
     "gfswave_global": {
-        "path": "./datasets/gfswave_global_kerchunk.json"
+        "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json"
+    },
+    "forty_ra": {
+        "path": "s3://ncdis-ra/jsons/fort.63_post_1980-1981.json"    
     }
 }
