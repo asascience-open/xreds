@@ -2,12 +2,13 @@ from dask_connect import DaskConnect
 import dask_connect
 import xarray as xr
 import time
-from xpublish_wms import dask_wms
+#from xpublish_wms import dask_wms
 
 
 def loaddata():
     options = {'anon': True, 'use_ssl': False }
-    ds = dask_connect.load_data_s3('s3://ncdis-ra/jsons/fort.63_post_1980-1981.json', options)
+    #ds = dask_connect.load_data_s3('s3://ncdis-ra/jsons/fort.63_post_1980-1981.json', options)
+    ds = dask_connect.load_data_s3('s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json', options)
     #persist = ds.persist()
     return ds
 
