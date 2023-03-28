@@ -27,11 +27,11 @@ rioxarray==0.12.2
 s3fs==2022.11.0
 uvicorn==0.17.6
 xarray==2022.11.0
-git+https://github.com/xarray-contrib/xpublish.git@f47bd225ff531a6d4f3d088f596111ad4a219d32
+git+https://github.com/xarray-contrib/xpublish.git@f2171bb2376e928dff823656fb3dfac78f9f6ec8
 zarr==2.13.2
 scipy==1.9.3
-git+https://github.com/fsspec/kerchunk@32c349b38aa371f5e397327c355ed5c6a8dde8c8
-git+https://github.com/gulfofmaine/xpublish-opendap@0d8185ea3b12a565229eb375a658b27226197fcd
-git+https://github.com/asascience-open/xpublish-wms@51020d1bdfb34eb5b1080220b9acae141fdbefd4
+git+https://github.com/fsspec/kerchunk@eab28c498000b8962b21787b247bd0f25c5efb8d
+git+https://github.com/gulfofmaine/xpublish-opendap@7ce3d415ce760f8555b655a51ac1aa738ba87538
+git+https://github.com/asascience-open/xpublish-wms@cc5b9be9722d4b1b149039c6ba3a61a926efaa58
 opendap-protocol<1.2.0
 pykdtree==1.3.6
