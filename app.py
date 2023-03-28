@@ -1,24 +1,36 @@
+import logging
 import os
 import xpublish
 
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from xreds.spastaticfiles import SPAStaticFiles
-from xreds.server import DatasetServer
-from xpublish_opendap import dap_router
-from xpublish_wms import cf_wms_router
+from xreds.dataset_provider import DatasetProvider
 
 
-dataset_service = DatasetServer(
-    routers = [
-        (xpublish.routers.base_router, {'tags': ['info']}),
-        (cf_wms_router, {'tags': ['wms'], 'prefix': '/wms'}),
-        (dap_router, {'tags': ['opendap'], 'prefix': '/dap'})
-    ]
+logger = logging.getLogger("uvicorn")
+
+gunicorn_logger = logging.getLogger('gunicorn.error')
+logger.handlers = gunicorn_logger.handlers
+if __name__ != "main":
+    logger.setLevel(gunicorn_logger.level)
+else:
+    logger.setLevel(logging.DEBUG)
+
+
+rest = xpublish.Rest(
+    app_kws=dict(
+        title='XREDS', 
+        description='XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks',
+        openapi_url='/xreds.json'
+    ),
+    cache_kws=dict(available_bytes=1e9),
+    datasets=None
 )
 
-app = dataset_service.app
+rest.register_plugin(DatasetProvider())
+
+app = rest.app
 
 app.add_middleware(
     CORSMiddleware, 
@@ -28,11 +40,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.title = 'XREDS'
-app.description = 'XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks'
-
 app.mount("/", SPAStaticFiles(directory="./viewer/dist", html=True), name="viewer")
 app.root_path = os.environ.get('ROOT_PATH')
+
 
 if __name__ == '__main__':
     import uvicorn
