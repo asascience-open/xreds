@@ -1,5 +1,5 @@
 {
     "gfswave_global": {
-        "path": "./datasets/gfswave_global_kerchunk.json"
+        "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json"
     }
 }
