@@ -1,5 +1,5 @@
 cachey==0.2.1
-cf-xarray==0.7.4
+cf-xarray==0.8.0
 cfgrib==0.9.10.2
 cftime==1.6.2
 dask==2023.3.2
