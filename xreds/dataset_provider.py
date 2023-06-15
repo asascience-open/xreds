@@ -1,5 +1,6 @@
 import logging
 import json
+from enum import Enum
 
 import cachey
 import fsspec
@@ -55,10 +56,11 @@ class DatasetProvider(Plugin):
 
             dataset_spec = self.dataset_mapping[dataset_id]
             dataset_path = dataset_spec['path']
+            dataset_type = dataset_spec["type"]
 
-            if dataset_path.endswith('.nc'):
+            if dataset_type == 'netcdf':
                 ds = xr.open_dataset(dataset_path)
-            elif dataset_path.endswith('.json') or dataset_path.endswith('.nc.zarr'):
+            elif dataset_type == 'kerchunk':
                 if 'key' in dataset_spec:
                     options = {'anon': False, 'use_ssl': False, 'key': dataset_spec['key'], 'secret': dataset_spec['secret']}
                 else: 
@@ -74,7 +76,7 @@ class DatasetProvider(Plugin):
                         ds = ds.rio.write_crs(4326)
                 except:
                     pass
-            elif dataset_path.endswith('.zarr'):
+            elif dataset_type == 'zarr':
                 # TODO: Enable S3  support
                 # mapper = fsspec.get_mapper(dataset_location)
                 ds = xr.open_zarr(dataset_path, consolidated=True)
