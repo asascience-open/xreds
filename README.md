@@ -6,7 +6,7 @@ XArray Environmental Data Services
 
 ### Installing dependencies
 
-On `macOS`: 
+**macOS**
 
 ```
 brew install netcdf4 h5 geos proj eccodes
