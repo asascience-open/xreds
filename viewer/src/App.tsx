@@ -3,6 +3,7 @@ import { Mixin, useEffect, useRef, useState } from "react";
 import Map from "./components/map";
 import MaterialIcon from "./components/material_icon";
 import { xmlToJSON } from "./tools";
+import Spinner from "./components/spinner";
 
 const colormaps: Array<{ id: string, name: string }> = [
   { id: 'rainbow', name: 'Rainbow' },
@@ -58,11 +59,16 @@ function App() {
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
   const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number, colormap?: string }>({});
   const [currentPopupData, setCurrentPopupData] = useState<any>(undefined);
+  const [loadingDatasets, setLoadingDatasets] = useState(false);
 
   const [showColormapPicker, setColorMapPickerShowing] = useState(false);
 
   useEffect(() => {
-    fetchDatasets().then(datasets => setDatasets(datasets));
+    setLoadingDatasets(true);
+    fetchDatasets().then(datasets => {
+      setDatasets(datasets);
+      setLoadingDatasets(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -120,8 +126,6 @@ function App() {
       return;
     }
 
-    console.log(currentPopupData);
-
     const popup = new Popup({ closeOnClick: false })
       .setLngLat(currentPopupData.lngLat)
       .setHTML(`
@@ -148,45 +152,54 @@ function App() {
           <span className="text-xl font-extrabold">xreds viewer</span>
         </div>
         <div className="flex flex-row items-start content-center">
-        <a className="text-xl font-extrabold hover:text-blue-600" href='/docs'>api</a>
-        <MaterialIcon className="px-4 self-center align-middle transition-all hover:text-blue-600" name='settings' title='Configure' onClick={() => { }} />
+          <a className="text-xl font-extrabold hover:text-blue-600" href='/docs'>api</a>
+          <MaterialIcon className="px-4 self-center align-middle transition-all hover:text-blue-600" name='settings' title='Configure' onClick={() => { }} />
         </div>
       </nav>
       <main className="flex flex-row flex-1">
         <aside className={`absolute top-8 left-0 bottom-0 z-10 shadow-xl flex bg-white flex-col transition-all overflow-y-auto ${showSidebar ? 'w-full px-4 py-2' : 'w-0 px-0 py-0'} ${showSidebar ? 'md:w-1/3' : 'md:w-0'}`}>
-          <h1 className="text-xl font-bold mb-4 px-1">Datasets</h1>
-          {Object.keys(datasets).map(d => (
-            <section key={d}>
-              <div className="flex flex-row justify-between items-center content-center">
-                <h2 className="text-lg font-bold px-1">{d}</h2>
-                <div className="flex flex-row justify-between items-center content-center">
-                  <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name='integration_instructions' title='Launch in JupyterHub' onClick={() => { }} />
-                  <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name='dynamic_form' title='Access via OpenDAP' onClick={() => { }} />
-                </div>
-              </div>
-              {Object.keys(datasets[d]).map(v => (
-                <div key={d + v} className={`p-1 flex flex-row ${(selectedLayer?.dataset === d && selectedLayer.variable === v) ? 'bg-blue-100' : ''}`}>
-                  <button
-                    className={`hover:text-blue-600 text-start`}
-                    onClick={() => {
-                      if (selectedLayer) {
-                        if (selectedLayer.dataset === d && selectedLayer.variable === v) {
-                          setSelectedLayer(undefined);
-                          return;
-                        }
-                      }
+          {loadingDatasets ? (
+            <div className="flex-1 flex justify-center items-center">
+              <Spinner />
+            </div>
 
-                      setSelectedLayer({
-                        dataset: d,
-                        variable: v,
-                      });
-                    }}>
-                    {v} <span className="opacity-30">({datasets[d][v].Title})</span>
-                  </button>
-                </div>
+          ) : (
+            <>
+              <h1 className="text-xl font-bold mb-4 px-1">Datasets</h1>
+              {Object.keys(datasets).map(d => (
+                <section key={d}>
+                  <div className="flex flex-row justify-between items-center content-center">
+                    <h2 className="text-lg font-bold px-1">{d}</h2>
+                    <div className="flex flex-row justify-between items-center content-center">
+                      <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name='integration_instructions' title='Launch in JupyterHub' onClick={() => { }} />
+                      <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name='dynamic_form' title='Access via OpenDAP' onClick={() => { }} />
+                    </div>
+                  </div>
+                  {Object.keys(datasets[d]).map(v => (
+                    <div key={d + v} className={`p-1 flex flex-row ${(selectedLayer?.dataset === d && selectedLayer.variable === v) ? 'bg-blue-100' : ''}`}>
+                      <button
+                        className={`hover:text-blue-600 text-start`}
+                        onClick={() => {
+                          if (selectedLayer) {
+                            if (selectedLayer.dataset === d && selectedLayer.variable === v) {
+                              setSelectedLayer(undefined);
+                              return;
+                            }
+                          }
+
+                          setSelectedLayer({
+                            dataset: d,
+                            variable: v,
+                          });
+                        }}>
+                        {v} <span className="opacity-30">({datasets[d][v].Title})</span>
+                      </button>
+                    </div>
+                  ))}
+                </section>
               ))}
-            </section>
-          ))}
+            </>
+          )}
         </aside>
         <div className="flex-1">
           <Map

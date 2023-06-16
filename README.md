@@ -27,7 +27,7 @@ Build the react app
 ```bash
 cd viewer/
 yarn install 
-npm run build
+yarn build
 ```
 
 Run the following in the activated `virtualenv`:

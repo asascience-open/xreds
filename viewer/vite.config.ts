@@ -7,12 +7,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/datasets': {
-        target: 'http://localhost:8090',
+        target: 'http://0.0.0.0:8090',
         changeOrigin: true,
         secure: false,
       }, 
       '/docs': {
-        target: 'http://localhost:8090',
+        target: 'http://0.0.0.0:8090',
         changeOrigin: true,
         secure: false,
       }
