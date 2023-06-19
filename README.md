@@ -6,7 +6,7 @@ XArray Environmental Data Services
 
 ### Installing dependencies
 
-On `macOS`: 
+**macOS**
 
 ```
 brew install netcdf4 h5 geos proj eccodes
@@ -27,7 +27,7 @@ Build the react app
 ```bash
 cd viewer/
 yarn install 
-npm run build
+yarn build
 ```
 
 Run the following in the activated `virtualenv`:

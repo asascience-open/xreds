@@ -1,5 +1,6 @@
 import logging
 import json
+from enum import Enum
 
 import cachey
 import fsspec
@@ -55,30 +56,34 @@ class DatasetProvider(Plugin):
 
             dataset_spec = self.dataset_mapping[dataset_id]
             dataset_path = dataset_spec['path']
+            dataset_type = dataset_spec["type"]
 
-            if dataset_path.endswith('.nc'):
+            if dataset_type == 'netcdf':
                 ds = xr.open_dataset(dataset_path)
-            elif '.zarr' in dataset_path:
-                # TODO: Enable S3  support
-                # mapper = fsspec.get_mapper(dataset_location)
-                ds = xr.open_zarr(dataset_path, consolidated=True)
-            elif dataset_path.endswith('.json'):
+            elif dataset_type == 'kerchunk':
                 if 'key' in dataset_spec:
                     options = {'anon': False, 'use_ssl': False, 'key': dataset_spec['key'], 'secret': dataset_spec['secret']}
                 else: 
                     options = {'anon': True, 'use_ssl': False}
                 fs = fsspec.filesystem("reference", fo=dataset_path, remote_protocol='s3', remote_options=options, target_options=options)
                 m = fs.get_mapper("")
-                ds = xr.open_dataset(m, engine="zarr", backend_kwargs=dict(consolidated=False), chunks={}, drop_variables='orderedSequenceData')
+                ds = xr.open_dataset(m, engine="zarr", backend_kwargs=dict(consolidated=False), chunks=dataset_spec['chunks'], drop_variables=dataset_spec['drop_variables'])
 
-                if ds.cf.coords['longitude'].dims[0] == 'longitude':
-                    ds = ds.assign_coords(longitude=(((ds.longitude + 180) % 360) - 180)).sortby('longitude')
-                    # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
-                    ds = ds.rio.write_crs(4326)
+                try:
+                    if ds.cf.coords['longitude'].dims[0] == 'longitude':
+                        ds = ds.assign_coords(longitude=(((ds.longitude + 180) % 360) - 180)).sortby('longitude')
+                        # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
+                        ds = ds.rio.write_crs(4326)
+                except:
+                    pass
+            elif dataset_type == 'zarr':
+                # TODO: Enable S3  support
+                # mapper = fsspec.get_mapper(dataset_location)
+                ds = xr.open_zarr(dataset_path, consolidated=True)
 
             self.datasets[cache_key] = ds
             #cache.put(cache_key, ds, 50)
-            if dataset_id in self.datasets: 
+            if cache_key in self.datasets: 
                 logger.info(f'Loaded and cached dataset for {dataset_id}')
             else: 
                 logger.info(f'Loaded dataset for {dataset_id}. Not cached due to size or current cache score')
