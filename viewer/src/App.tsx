@@ -230,7 +230,7 @@ function App() {
                         }}>
                         {v} <span className="opacity-30">({datasets[d][v].Title})</span>
                       </button>
-                      {(selectedLayer?.dataset === d && selectedLayer.variable === v && layerLoading) && (
+                      {(selectedLayer?.dataset === d && selectedLayer.variable === v && (layerLoading || loadingMetadata)) && (
                         <div className="flex items-center justify-center">
                           <Spinner />
                         </div>
