@@ -66,6 +66,7 @@ function App() {
   const [selectedLayerMetadata, setSelectedLayerMetadata] = useState<any>(undefined);
   const [loadingDatasets, setLoadingDatasets] = useState(false);
   const [loadingMetadata, setLoadingMetadata] = useState(false);
+  const [layerLoading, setLayerLoading] = useState(false);
 
   const [showColormapPicker, setColorMapPickerShowing] = useState(false);
 
@@ -91,7 +92,13 @@ function App() {
       .catch(err => {
         console.error(err);
         setLoadingMetadata(false);
+        setSelectedLayerMetadata(undefined);
       });
+    
+      return () => {
+        setLoadingMetadata(false);
+        setSelectedLayerMetadata(undefined);
+      };
   }, [selectedLayer, layerOptions.date]);
 
   useEffect(() => {
@@ -126,6 +133,8 @@ function App() {
       }
     });
 
+    setLayerLoading(true);
+
     const onClick = async (e: MapMouseEvent) => {
       const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`);
 
@@ -133,12 +142,17 @@ function App() {
       setCurrentPopupData({ data: featureData, lngLat: e.lngLat });
     }
 
+    const onIdle = () => setLayerLoading(false);
+
     map.current.on('click', onClick);
+    map.current.on('idle', onIdle)
 
     return () => {
       console.log(`Removing layer: ${sourceId}`);
       setCurrentPopupData(undefined);
+      setLayerLoading(false);
       map.current?.off('click', onClick);
+      map.current?.off('idle', onIdle);
       map.current?.removeLayer(sourceId);
       map.current?.removeSource(sourceId);
     }
@@ -176,7 +190,7 @@ function App() {
         </div>
         <div className="flex flex-row items-start content-center">
           <a className="text-xl font-extrabold hover:text-blue-600" href='/docs'>api</a>
-          <MaterialIcon className="px-4 self-center align-middle transition-all hover:text-blue-600" name='settings' title='Configure' onClick={() => { }} />
+          {/* <MaterialIcon className="px-4 self-center align-middle transition-all hover:text-blue-600" name='settings' title='Configure' onClick={() => { }} /> */}
         </div>
       </nav>
       <main className="flex flex-row flex-1">
@@ -198,7 +212,7 @@ function App() {
                     </div>
                   </div>
                   {Object.keys(datasets[d]).map(v => (
-                    <div key={d + v} className={`p-1 flex flex-row ${(selectedLayer?.dataset === d && selectedLayer.variable === v) ? 'bg-blue-100' : ''}`}>
+                    <div key={d + v} className={`p-1 flex flex-row justify-between items-center ${(selectedLayer?.dataset === d && selectedLayer.variable === v) ? 'bg-blue-100' : ''}`}>
                       <button
                         className={`hover:text-blue-600 text-start`}
                         onClick={() => {
@@ -216,6 +230,11 @@ function App() {
                         }}>
                         {v} <span className="opacity-30">({datasets[d][v].Title})</span>
                       </button>
+                      {(selectedLayer?.dataset === d && selectedLayer.variable === v && layerLoading) && (
+                        <div className="flex items-center justify-center">
+                          <Spinner />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </section>
