@@ -66,15 +66,42 @@ Datasets are specified in a key value manner, where the keys are the dataset ids
 
 ```json
 {
-    "ww3": {
-        "path": "/path/to/noaa_wave_watch3.zarr/"
+    "gfswave_global": {
+        "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
+        "type": "kerchunk", 
+        "chunks": {}, 
+        "drop_variables": ["orderedSequenceData"]
     }, 
-    "gfs": {
-        "path": "/path/to/gfs.nc", 
-        "key": "my-s3-key", 
-        "secret": "my-s3-secret",
+    "dbofs": {
+        "path": "s3://nextgen-dmac/nos/nos.dbofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {
+            "ocean_time": 1
+        }, 
+        "drop_variables": ["dstart"]
     }
 }
 ```
 
-Currently `zarr`, `netcdf`, and [`kerchunked`](https://github.com/fsspec/kerchunk) datasets are supported. This information should be saved a file and specified when running.
+Currently `zarr`, `netcdf`, and [`kerchunk`](https://github.com/fsspec/kerchunk) dataset types are supported. This information should be saved a file and specified when running.
+
+## Deploying with Kubernetes
+
+First follow instructions above to build the docker image tagged `xreds:latest`. Then the`xreds:latest` image needs to be tagged and deployed to the relevant docker registry. 
+
+```bash
+# Auth with ECR
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
+
+# Tag the image
+docker tag nextgen-dmac/xreds:latest public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest
+
+# Push the image
+docker push public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest
+```
+
+Once pushed, we can deploy it to the cluster with the following command:
+
+```bash
+kubectl apply -f deploy.yaml
+```

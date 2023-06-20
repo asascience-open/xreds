@@ -1,5 +1,5 @@
 # Build the react frontend
-FROM node:18-buster
+FROM node:18-bullseye
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/viewer
@@ -16,11 +16,11 @@ COPY viewer/src ./src
 RUN npm run build
 
 # Build the python service layer
-FROM python:3.10-buster
+FROM python:3.10-bullseye
 
 # Native dependencies
 RUN apt-get update
-RUN apt-get install -y libudunits2-dev libgdal20 libnetcdf-dev libeccodes-dev
+RUN apt-get install -y libudunits2-dev libgdal-dev libnetcdf-dev libeccodes-dev libgeos-dev
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/xreds
