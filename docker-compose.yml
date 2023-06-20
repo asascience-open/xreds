@@ -2,8 +2,7 @@ version: '3'
 
 services:
   xreds: 
-    container_name: xreds
-    build: .
+    image: xreds:latest
     volumes:
       - "./datasets:/opt/xreds/datasets"
     ports: 
