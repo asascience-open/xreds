@@ -18,6 +18,7 @@ spec:
       containers:
       - name: xreds
         image: public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest
+        imagePullPolicy: "Always"
         ports:
         - containerPort: 8090
         env:
