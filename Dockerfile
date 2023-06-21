@@ -30,10 +30,17 @@ WORKDIR /opt/xreds
 RUN mkdir build
 
 # Copy over and install python dependencies
+RUN pip3 install --upgrade pip
+# Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
+RUN pip install --no-binary :all: shapely 
 COPY requirements.txt ./requirements.txt
 RUN python3 -m pip config set global.http.sslVerify false
 RUN git config --global http.sslverify false
 RUN pip3 install -r requirements.txt
+
+# Configure matplotlib to use Agg backend
+RUN mkdir -p /root/.config/matplotlib
+RUN echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc
 
 # Copy over python app source code
 COPY static ./static
