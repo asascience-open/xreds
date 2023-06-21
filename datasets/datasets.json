@@ -1,5 +1,16 @@
 {
     "gfswave_global": {
-        "path": "./datasets/gfswave_global_kerchunk.json"
+        "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
+        "type": "kerchunk", 
+        "chunks": {}, 
+        "drop_variables": ["orderedSequenceData"]
+    }, 
+    "dbofs": {
+        "path": "s3://nextgen-dmac/nos/nos.dbofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {
+            "ocean_time": 1
+        }, 
+        "drop_variables": ["dstart"]
     }
 }

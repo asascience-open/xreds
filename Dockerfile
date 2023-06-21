@@ -1,5 +1,5 @@
 # Build the react frontend
-FROM node:18-buster
+FROM node:18-bullseye
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/viewer
@@ -16,11 +16,11 @@ COPY viewer/src ./src
 RUN npm run build
 
 # Build the python service layer
-FROM python:3.10-buster
+FROM python:3.10-bullseye
 
 # Native dependencies
 RUN apt-get update
-RUN apt-get install -y libudunits2-dev libgdal20 libnetcdf-dev libeccodes-dev
+RUN apt-get install -y libudunits2-dev libgdal-dev libnetcdf-dev libeccodes-dev libgeos-dev
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/xreds
@@ -30,10 +30,17 @@ WORKDIR /opt/xreds
 RUN mkdir build
 
 # Copy over and install python dependencies
+RUN pip3 install --upgrade pip
+# Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
+RUN pip install --no-binary :all: shapely 
 COPY requirements.txt ./requirements.txt
 RUN python3 -m pip config set global.http.sslVerify false
 RUN git config --global http.sslverify false
 RUN pip3 install -r requirements.txt
+
+# Configure matplotlib to use Agg backend
+RUN mkdir -p /root/.config/matplotlib
+RUN echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc
 
 # Copy over python app source code
 COPY static ./static
@@ -47,5 +54,5 @@ COPY --from=0 /opt/viewer/dist ./viewer/dist
 ENV PORT 8090
 ENV ROOT_PATH ""
 
-# Run the webserver 
+# Run the webserver
 CMD ["sh", "-c", "gunicorn --workers=1 --worker-class=uvicorn.workers.UvicornWorker --log-level=debug --bind=0.0.0.0:${PORT} app:app"]
