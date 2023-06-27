@@ -189,7 +189,7 @@ function App() {
           <span className="text-xl font-extrabold">xreds viewer</span>
         </div>
         <div className="flex flex-row items-start content-center">
-          <a className="text-xl font-extrabold hover:text-blue-600" href='/docs'>api</a>
+          <a className="text-xl font-extrabold hover:text-blue-600" href={`/docs`}>api</a>
           {/* <MaterialIcon className="px-4 self-center align-middle transition-all hover:text-blue-600" name='settings' title='Configure' onClick={() => { }} /> */}
         </div>
       </nav>
@@ -275,12 +275,12 @@ function App() {
                   </select>
                 </label>
                 <div className=" w-full flex-1 flex flex-row items-center content-center justify-around font-bold">
-                  <input className="w-16 mx-1 text-center" value={layerOptions.colorscaleMin ?? selectedLayerMetadata?.min ?? 0} type={'number'} onKeyDown={e => {
+                  <input className="w-16 mx-1 text-center" defaultValue={layerOptions.colorscaleMin ?? selectedLayerMetadata?.min ?? 0} type={'number'} onKeyDown={e => {
                     if (e.key === 'Enter') {
                       setLayerOptions({ ...layerOptions, colorscaleMin: e.currentTarget.valueAsNumber })
                     }
                   }} />
-                  <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer" src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`} onClick={() => setColorMapPickerShowing(!showColormapPicker)} />
+                  <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer" src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`} onClick={() => setColorMapPickerShowing(!showColormapPicker)} />
                   {showColormapPicker &&
                     <div className="absolute bottom-14 md:bottom-12 right-0 h-64 w-72 md:w-96 pt-2 px-2 bg-white overflow-y-scroll">
                       <menu>
@@ -295,7 +295,7 @@ function App() {
                       </menu>
                     </div>
                   }
-                  <input className="w-16 mx-1 text-center" value={layerOptions.colorscaleMax ?? selectedLayerMetadata?.max ?? 10} type={'number'} onKeyDown={e => {
+                  <input className="w-16 mx-1 text-center" defaultValue={layerOptions.colorscaleMax ?? selectedLayerMetadata?.max ?? 10} type={'number'} onKeyDown={e => {
                     if (e.key === 'Enter') {
                       setLayerOptions({ ...layerOptions, colorscaleMax: e.currentTarget.valueAsNumber })
                     }

@@ -52,7 +52,7 @@ COPY --from=0 /opt/viewer/dist ./viewer/dist
 
 # Set the port to run the server on
 ENV PORT 8090
-ENV ROOT_PATH ""
+ENV ROOT_PATH "/xreds/"
 
 # Run the webserver
 CMD ["sh", "-c", "gunicorn --workers=1 --worker-class=uvicorn.workers.UvicornWorker --log-level=debug --bind=0.0.0.0:${PORT} app:app"]
