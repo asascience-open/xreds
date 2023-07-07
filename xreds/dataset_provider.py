@@ -54,7 +54,7 @@ class DatasetProvider(Plugin):
 
         cached_ds = self.datasets.get(cache_key, None)
         if cached_ds:
-            if (datetime.datetime.now() - cached_ds['date']).minutes < 10:
+            if (datetime.datetime.now() - cached_ds['date']).seconds < (10 * 60):
                 logger.info(f'Using cached dataset for {dataset_id}')
                 return cached_ds['dataset']
             else: 
