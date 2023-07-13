@@ -1,5 +1,5 @@
-import { Feature, MapMouseEvent, Popup } from "maplibre-gl";
-import { Mixin, useEffect, useRef, useState } from "react";
+import { MapMouseEvent, Popup } from "maplibre-gl";
+import { useEffect, useRef, useState } from "react";
 import Map from "./components/map";
 import MaterialIcon from "./components/material_icon";
 import { xmlToJSON } from "./tools";
@@ -19,6 +19,8 @@ const colormaps: Array<{ id: string, name: string }> = [
   { id: 'cool', name: 'Cool' },
   { id: 'hot', name: 'Hot' },
 ]
+
+const TILE_SIZE = 512;
 
 async function fetchDatasetIds(): Promise<string[]> {
   const response = await fetch('/datasets');
@@ -113,9 +115,9 @@ function App() {
     map.current.addSource(sourceId, {
       type: 'raster',
       tiles: [
-        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=512&height=512&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMetadata.min},${layerOptions.colorscaleMax ?? selectedLayerMetadata.max}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
+        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=${TILE_SIZE}&height=${TILE_SIZE}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMetadata.min},${layerOptions.colorscaleMax ?? selectedLayerMetadata.max}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
       ],
-      tileSize: 512,
+      tileSize: TILE_SIZE,
       bounds: [
         datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_minx"],
         datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_miny"],
