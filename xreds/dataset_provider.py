@@ -74,7 +74,17 @@ class DatasetProvider(Plugin):
                 options = {'anon': False, 'use_ssl': False, 'key': dataset_spec['key'], 'secret': dataset_spec['secret']}
             else: 
                 options = {'anon': True, 'use_ssl': False}
-            fs = fsspec.filesystem("reference", fo=dataset_path, remote_protocol='s3', remote_options=options, target_options=options)
+            fs = fsspec.filesystem(
+                "filecache", 
+                expiry_time=10 * 60, # TODO: Make this driven by config per dataset, for now default to 10 minutes
+                target_protocol='reference', 
+                target_options={
+                    'fo': dataset_path, 
+                    'target_protocol': 's3',
+                    'target_options': options,
+                    'remote_protocol': 's3',
+                    'remote_options': options,
+                })
             m = fs.get_mapper("")
             ds = xr.open_dataset(m, engine="zarr", backend_kwargs=dict(consolidated=False), chunks=dataset_spec['chunks'], drop_variables=dataset_spec['drop_variables'])
 

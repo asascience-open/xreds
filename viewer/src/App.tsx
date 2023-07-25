@@ -86,7 +86,7 @@ function App() {
     }
 
     setLoadingMetadata(true);
-    fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default'])
+    fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension.find((d: any) => d['@_name'] == 'time')['@_default'])
       .then(metadata => {
         setSelectedLayerMetadata(metadata);
         setLoadingMetadata(false);
@@ -96,11 +96,11 @@ function App() {
         setLoadingMetadata(false);
         setSelectedLayerMetadata(undefined);
       });
-    
-      return () => {
-        setLoadingMetadata(false);
-        setSelectedLayerMetadata(undefined);
-      };
+
+    return () => {
+      setLoadingMetadata(false);
+      setSelectedLayerMetadata(undefined);
+    };
   }, [selectedLayer, layerOptions.date]);
 
   useEffect(() => {
@@ -115,7 +115,7 @@ function App() {
     map.current.addSource(sourceId, {
       type: 'raster',
       tiles: [
-        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=${TILE_SIZE}&height=${TILE_SIZE}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMetadata.min},${layerOptions.colorscaleMax ?? selectedLayerMetadata.max}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`
+        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=${TILE_SIZE}&height=${TILE_SIZE}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMetadata.min},${layerOptions.colorscaleMax ?? selectedLayerMetadata.max}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension.find((d: any) => d['@_name'] == 'time')['@_default']}`
       ],
       tileSize: TILE_SIZE,
       bounds: [
@@ -138,7 +138,7 @@ function App() {
     setLayerLoading(true);
 
     const onClick = async (e: MapMouseEvent) => {
-      const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension['@_default']}`);
+      const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].find((d: any) => d['@_name'] == 'time')['@_default']}`);
 
       const featureData = await response.json();
       setCurrentPopupData({ data: featureData, lngLat: e.lngLat });
@@ -268,10 +268,10 @@ function App() {
                   Date:
                   <select
                     className="rounded-md p-1 mx-1"
-                    value={layerOptions?.date ?? selectedLayerData.Dimension['@_default']}
+                    value={layerOptions?.date ?? selectedLayerData.Dimension.find((d: any) => d['@_name'] == 'time')['@_default']}
                     onChange={e => setLayerOptions({ ...layerOptions, date: e.target.value })}
                   >
-                    {selectedLayerData.Dimension['#text'].split(',').map((date: string) =>
+                    {selectedLayerData.Dimension.find((d: any) => d['@_name'] == 'time')['#text'].split(',').map((date: string) =>
                       <option key={date} value={date}>{date}</option>
                     )}
                   </select>
