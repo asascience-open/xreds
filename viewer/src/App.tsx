@@ -22,6 +22,17 @@ const colormaps: Array<{ id: string, name: string }> = [
 
 const TILE_SIZE = 512;
 
+export interface DatasetLayer {
+  name: string,
+  title: string,
+  units?: string,
+  bbox: [number, number, number, number],
+  times?: string[],
+  defaultTime?: string,
+  elevations?: string[],
+  defaultElevation?: string,
+}
+
 async function fetchDatasetIds(): Promise<string[]> {
   const response = await fetch('/datasets');
   const datasets = await response.json();
@@ -40,11 +51,45 @@ async function fetchDatasets(): Promise<{ [k: string]: any }> {
   const promises = datasetIds.map(did => fetchDatasetCapabilities(did));
   const datasets = await Promise.all(promises);
 
-  const datasetsRecord: { [k: string]: any } = {};
+  const datasetsRecord: { [k: string]: { [j: string]: DatasetLayer } } = {};
   datasets.forEach((d, i) => {
-    const datasetLayers: { [k: string]: any } = {}
+    const datasetLayers: { [k: string]: DatasetLayer } = {}
     d.forEach((l: any) => {
-      datasetLayers[l.Name] = l;
+      let times: string[] | undefined = undefined;
+      let defaultTime: string | undefined = undefined;
+      let elevations: string[] | undefined = undefined;
+      let defaultElevation: string | undefined = undefined;
+
+      if (Array.isArray(l.Dimension)) {
+        const timeDimension = l.Dimension.find((d: any) => d['@_name'] == 'time');
+        times = timeDimension?.['#text'].split(',');
+        defaultTime = timeDimension?.['@_default'];
+
+        const elevationDimension = l.Dimension.find((d: any) => d['@_name'] == 'elevation');
+        elevations = elevationDimension?.['#text'].split(',');
+        defaultElevation = elevationDimension?.['@_default'];
+      } else {
+        if (l.Dimension['@_name'] == 'time') {
+          times = l.Dimension['#text'].split(',');
+          defaultTime = l.Dimension['@_default'];
+        } else if (l.Dimension['@_name'] == 'elevation') {
+          elevations = l.Dimension['#text'].split(',');
+          defaultElevation = l.Dimension['@_default'];
+        }
+      }
+
+      const bbox: [number, number, number, number] = [l.BoundingBox["@_minx"], l.BoundingBox["@_miny"], l.BoundingBox["@_maxx"], l.BoundingBox["@_maxy"]];
+
+      datasetLayers[l.Name] = {
+        name: l.Name,
+        title: l.Title,
+        units: l.Units,
+        bbox,
+        times,
+        defaultTime,
+        elevations,
+        defaultElevation,
+      };
     });
     datasetsRecord[datasetIds[i]] = datasetLayers;
   });
@@ -52,8 +97,12 @@ async function fetchDatasets(): Promise<{ [k: string]: any }> {
   return datasetsRecord;
 }
 
-async function fetchMinMax(dataset: string, variable: string, date: string): Promise<{ min: number, max: number }> {
-  const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&version=1.3.0&item=minmax&layers=${variable}&time=${date}`);
+async function fetchMinMax(dataset: string, variable: string, date?: string): Promise<{ min: number, max: number }> {
+  let url = `/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&version=1.3.0&item=minmax&layers=${variable}`;
+  if (date) {
+    url += `&time=${date}`;
+  }
+  const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&version=1.3.0&item=minmax&layers=${variable}`);
   const metadata = await response.json();
   return metadata;
 }
@@ -61,7 +110,7 @@ async function fetchMinMax(dataset: string, variable: string, date: string): Pro
 function App() {
   const map = useRef<maplibregl.Map | null>(null);
   const [showSidebar, setSidebarShowing] = useState(true);
-  const [datasets, setDatasets] = useState<{ [k: string]: any }>({});
+  const [datasets, setDatasets] = useState<{ [k: string]: { [j: string]: DatasetLayer } }>({});
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
   const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number, colormap?: string }>({});
   const [currentPopupData, setCurrentPopupData] = useState<any>(undefined);
@@ -86,7 +135,7 @@ function App() {
     }
 
     setLoadingMetadata(true);
-    fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension.find((d: any) => d['@_name'] == 'time')['@_default'])
+    fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].defaultTime)
       .then(metadata => {
         setSelectedLayerMetadata(metadata);
         setLoadingMetadata(false);
@@ -115,15 +164,10 @@ function App() {
     map.current.addSource(sourceId, {
       type: 'raster',
       tiles: [
-        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=${TILE_SIZE}&height=${TILE_SIZE}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMetadata.min},${layerOptions.colorscaleMax ?? selectedLayerMetadata.max}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].Dimension.find((d: any) => d['@_name'] == 'time')['@_default']}`
+        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=${TILE_SIZE}&height=${TILE_SIZE}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMetadata.min},${layerOptions.colorscaleMax ?? selectedLayerMetadata.max}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].defaultTime}`
       ],
       tileSize: TILE_SIZE,
-      bounds: [
-        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_minx"],
-        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_miny"],
-        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_maxx"],
-        datasets[selectedLayer.dataset][selectedLayer.variable].BoundingBox["@_maxy"],
-      ]
+      bounds: datasets[selectedLayer.dataset][selectedLayer.variable].bbox,
     });
 
     map.current.addLayer({
@@ -138,7 +182,7 @@ function App() {
     setLayerLoading(true);
 
     const onClick = async (e: MapMouseEvent) => {
-      const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].find((d: any) => d['@_name'] == 'time')['@_default']}`);
+      const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasets[selectedLayer.dataset][selectedLayer.variable].defaultTime}`);
 
       const featureData = await response.json();
       setCurrentPopupData({ data: featureData, lngLat: e.lngLat });
@@ -173,7 +217,7 @@ function App() {
           <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
           <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
           <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
-          <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasets[selectedLayer.dataset][selectedLayer.variable].Units}</span>
+          <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasets[selectedLayer.dataset][selectedLayer.variable].units}</span>
         </div>
       `)
       .addTo(map.current);
@@ -230,7 +274,7 @@ function App() {
                             variable: v,
                           });
                         }}>
-                        {v} <span className="opacity-30">({datasets[d][v].Title})</span>
+                        {v} <span className="opacity-30">({datasets[d][v].title})</span>
                       </button>
                       {(selectedLayer?.dataset === d && selectedLayer.variable === v && (layerLoading || loadingMetadata)) && (
                         <div className="flex items-center justify-center">
@@ -257,7 +301,7 @@ function App() {
         {(selectedLayerData && selectedLayer) &&
           <div className="absolute bottom-9 md:bottom-8 right-2 md:right-4 h-40 w-72 md:w-96 bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
             <span className="text-center">{selectedLayer.dataset} - {selectedLayer.variable}</span>
-            <span className="font-bold text-center">{selectedLayerData.Title} ({selectedLayerData.Units})</span>
+            <span className="font-bold text-center">{selectedLayerData.title} ({selectedLayerData.units})</span>
             {loadingMetadata ? (
               <div className="flex-1 flex justify-center items-center">
                 <Spinner />
@@ -268,10 +312,10 @@ function App() {
                   Date:
                   <select
                     className="rounded-md p-1 mx-1"
-                    value={layerOptions?.date ?? selectedLayerData.Dimension.find((d: any) => d['@_name'] == 'time')['@_default']}
+                    value={layerOptions?.date ?? selectedLayerData.defaultTime}
                     onChange={e => setLayerOptions({ ...layerOptions, date: e.target.value })}
                   >
-                    {selectedLayerData.Dimension.find((d: any) => d['@_name'] == 'time')['#text'].split(',').map((date: string) =>
+                    {selectedLayerData.times?.map((date: string) =>
                       <option key={date} value={date}>{date}</option>
                     )}
                   </select>
