@@ -32,7 +32,7 @@ zarr==2.14.2
 scipy==1.9.3
 git+https://github.com/fsspec/kerchunk@8d8e84c619a63d4372b33b05c9bfe35fdcb6e61d
 git+https://github.com/xpublish-community/xpublish-opendap@2eebc940cdd42cc6b992027a0b4138cd569167bb
-git+https://github.com/xpublish-community/xpublish-wms@263d2ef3783fb02d990f6d3c89d8bbf6730b9396
+git+https://github.com/xpublish-community/xpublish-wms@64c82dacc2e0d755a5975e8c5145699e9378f769
 git+https://github.com/xpublish-community/xpublish-edr@f631ea0d258a946ea3db15c7e52bc759f0977890
 opendap-protocol<1.2.0
 pykdtree==1.3.6
