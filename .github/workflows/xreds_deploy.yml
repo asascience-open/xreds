@@ -1,4 +1,4 @@
-#deploy xreds
+#Deploy xreds
 name: Xreds K8s Deploy
 
 on:
