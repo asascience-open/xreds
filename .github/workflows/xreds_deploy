@@ -1,0 +1,46 @@
+name: Xerds K8s Deploy
+
+on:
+  push:
+    branches:
+      - CIPipeline_PA_xreds
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker
+      uses: docker/setup-docker@v2
+
+    - name: Build Docker image
+      run: docker build -t xerds:latest .
+
+    - name: Install AWS CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-pip
+        pip3 install --user awscli
+
+    - name: Login to AWS ECR
+      run: aws ecr get-login-password --region us-east-1 --no-verify-ssl | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
+
+    - name: Tag Docker image for ECR
+      run: docker tag xreds:latest public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest
+
+    - name: Push Docker image to AWS ECR
+      run: docker push public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest
+
+    - name: Install kubectl
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y kubectl
+
+    - name: Deploy to Kubernetes
+      env:
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      run: |
+        kubectl get deployments
