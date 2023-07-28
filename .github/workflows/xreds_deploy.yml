@@ -1,4 +1,4 @@
-name: Xerds K8s Deploy
+name: Xreds K8s Deploy
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       uses: docker/setup-docker@v2
 
     - name: Build Docker image
-      run: docker build -t xerds:latest .
+      run: docker build -t xreds:latest .
 
     - name: Install AWS CLI
       run: |
