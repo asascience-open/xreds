@@ -3,7 +3,7 @@ name: Xreds K8s Deploy
 on:
   push:
     branches:
-      - CIPipeline_PA_xreds
+      - xreds-deploy-github-action
 
 jobs:
   build_and_deploy:
