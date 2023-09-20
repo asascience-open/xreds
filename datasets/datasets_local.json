@@ -1,16 +1,32 @@
 {
+    "cbofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    },
+    "ciofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/ciofs/nos.ciofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    }, 
+    "dbofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/dbofs/nos.dbofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    },
+    "tbofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    }, 
     "gfswave_global": {
         "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
         "type": "kerchunk", 
         "chunks": {}, 
         "drop_variables": ["orderedSequenceData"]
-    }, 
-    "dbofs": {
-        "path": "s3://nextgen-dmac/nos/nos.dbofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {
-            "ocean_time": 1
-        }, 
-        "drop_variables": ["dstart"]
     }
 }

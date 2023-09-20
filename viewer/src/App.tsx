@@ -2,8 +2,8 @@ import { MapMouseEvent, Popup } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import Map from "./components/map";
 import MaterialIcon from "./components/material_icon";
-import { xmlToJSON } from "./tools";
 import Spinner from "./components/spinner";
+import { DatasetLayer, fetchDataset, fetchDatasetIds, fetchDatasets, fetchMinMax } from "./dataset";
 
 const colormaps: Array<{ id: string, name: string }> = [
   { id: 'rainbow', name: 'Rainbow' },
@@ -22,94 +22,11 @@ const colormaps: Array<{ id: string, name: string }> = [
 
 const TILE_SIZE = 512;
 
-export interface DatasetLayer {
-  name: string,
-  title: string,
-  units?: string,
-  bbox: [number, number, number, number],
-  times?: string[],
-  defaultTime?: string,
-  elevations?: string[],
-  defaultElevation?: string,
-}
-
-async function fetchDatasetIds(): Promise<string[]> {
-  const response = await fetch('/datasets');
-  const datasets = await response.json();
-  return datasets;
-}
-
-async function fetchDatasetCapabilities(dataset: string): Promise<any> {
-  const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&request=GetCapabilities&version=1.3.0`);
-  const rawCapabilities = await response.text();
-  const capabilities = xmlToJSON(rawCapabilities).WMS_Capabilities.Capability.Layer.Layer;
-  return capabilities;
-}
-
-async function fetchDatasets(): Promise<{ [k: string]: any }> {
-  const datasetIds = await fetchDatasetIds();
-  const promises = datasetIds.map(did => fetchDatasetCapabilities(did));
-  const datasets = await Promise.all(promises);
-
-  const datasetsRecord: { [k: string]: { [j: string]: DatasetLayer } } = {};
-  datasets.forEach((d, i) => {
-    const datasetLayers: { [k: string]: DatasetLayer } = {}
-    d.forEach((l: any) => {
-      let times: string[] | undefined = undefined;
-      let defaultTime: string | undefined = undefined;
-      let elevations: string[] | undefined = undefined;
-      let defaultElevation: string | undefined = undefined;
-
-      if (Array.isArray(l.Dimension)) {
-        const timeDimension = l.Dimension.find((d: any) => d['@_name'] == 'time');
-        times = timeDimension?.['#text'].split(',');
-        defaultTime = timeDimension?.['@_default'];
-
-        const elevationDimension = l.Dimension.find((d: any) => d['@_name'] == 'elevation');
-        elevations = elevationDimension?.['#text'].split(',');
-        defaultElevation = elevationDimension?.['@_default'];
-      } else {
-        if (l.Dimension['@_name'] == 'time') {
-          times = l.Dimension['#text'].split(',');
-          defaultTime = l.Dimension['@_default'];
-        } else if (l.Dimension['@_name'] == 'elevation') {
-          elevations = l.Dimension['#text'].split(',');
-          defaultElevation = l.Dimension['@_default'];
-        }
-      }
-
-      const bbox: [number, number, number, number] = [l.BoundingBox["@_minx"], l.BoundingBox["@_miny"], l.BoundingBox["@_maxx"], l.BoundingBox["@_maxy"]];
-
-      datasetLayers[l.Name] = {
-        name: l.Name,
-        title: l.Title,
-        units: l.Units,
-        bbox,
-        times,
-        defaultTime,
-        elevations,
-        defaultElevation,
-      };
-    });
-    datasetsRecord[datasetIds[i]] = datasetLayers;
-  });
-
-  return datasetsRecord;
-}
-
-async function fetchMinMax(dataset: string, variable: string, date?: string): Promise<{ min: number, max: number }> {
-  let url = `/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&version=1.3.0&item=minmax&layers=${variable}`;
-  if (date) {
-    url += `&time=${date}`;
-  }
-  const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&version=1.3.0&item=minmax&layers=${variable}`);
-  const metadata = await response.json();
-  return metadata;
-}
 
 function App() {
   const map = useRef<maplibregl.Map | null>(null);
   const [showSidebar, setSidebarShowing] = useState(true);
+  const [datasetIds, setDatasetIds] = useState<string[]>([]);
   const [datasets, setDatasets] = useState<{ [k: string]: { [j: string]: DatasetLayer } }>({});
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
   const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number, colormap?: string }>({});
@@ -123,11 +40,18 @@ function App() {
 
   useEffect(() => {
     setLoadingDatasets(true);
-    fetchDatasets().then(datasets => {
-      setDatasets(datasets);
-      setLoadingDatasets(false);
-    });
+    fetchDatasetIds()
+      .then(datasetIds => setDatasetIds(datasetIds))
+      .catch(e => console.error(e))
+      .finally(() => setLoadingDatasets(false));
   }, []);
+
+  useEffect(() => {
+    datasetIds.forEach(async datasetId => {
+      const dataset = await fetchDataset(datasetId);
+      setDatasets(d => ({ ...d, [datasetId]: dataset }));
+    });
+  }, [datasetIds]);
 
   useEffect(() => {
     if (!selectedLayer) {
@@ -248,7 +172,7 @@ function App() {
           ) : (
             <>
               <h1 className="text-xl font-bold mb-4 px-1">Datasets</h1>
-              {Object.keys(datasets).map(d => (
+              {datasetIds.map(d => (
                 <section key={d}>
                   <div className="flex flex-row justify-between items-center content-center">
                     <h2 className="text-lg font-bold px-1">{d}</h2>
@@ -257,7 +181,11 @@ function App() {
                       <MaterialIcon className="pr-4 self-center align-middle transition-all hover:text-blue-600" name='dynamic_form' title='Access via OpenDAP' onClick={() => { }} />
                     </div>
                   </div>
-                  {Object.keys(datasets[d]).map(v => (
+                  {datasets[d] === undefined ? (
+                    <div className="flex-1 flex justify-center items-center">
+                      <Spinner />
+                    </div>
+                  ) : Object.keys(datasets[d]).map(v => (
                     <div key={d + v} className={`p-1 flex flex-row justify-between items-center ${(selectedLayer?.dataset === d && selectedLayer.variable === v) ? 'bg-blue-100' : ''}`}>
                       <button
                         className={`hover:text-blue-600 text-start`}
