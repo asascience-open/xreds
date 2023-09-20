@@ -20,7 +20,7 @@ FROM python:3.10-bullseye
 
 # Native dependencies
 RUN apt-get update
-RUN apt-get install -y libudunits2-dev libgdal-dev libnetcdf-dev libeccodes-dev libgeos-dev
+RUN apt-get install -y libc-dev build-essential libudunits2-dev libgdal-dev libnetcdf-dev libeccodes-dev libgeos-dev cmake libopenblas-dev
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/xreds
