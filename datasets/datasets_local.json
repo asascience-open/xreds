@@ -23,6 +23,12 @@
         "chunks": {}, 
         "drop_variables": ["dstart"]
     },
+    "ngofs2": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["Itime2"]
+    },
     "rtofs_east_coast": {
         "path": "s3://nextgen-dmac-cloud-ingest/rtofs/rtofs.rtofs_glo_3dz_6hrly_hvr_US_east.best.nc.zarr",
         "type": "kerchunk",
