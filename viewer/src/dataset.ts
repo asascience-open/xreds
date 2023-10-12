@@ -154,19 +154,23 @@ export async function fetchMetadata(dataset: string, variable: string): Promise<
     };
 }
 
-export async function fetchMinMax(dataset: string, variable: string, date?: string): Promise<{ min: number, max: number }> {
+export async function fetchMinMax(dataset: string, variable: string, date?: string, elevation?: string): Promise<{ min: number, max: number }> {
     let result;
     try {
         let url = `/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&version=1.3.0&item=minmax&layers=${variable}`;
         if (date) {
             url += `&time=${date}`;
         }
+        if (elevation) {
+            url += `&elevation=${elevation}`;
+        }
+        
         const response = await fetch(url);
         result = await response.json();
     }
     catch (e) {
         console.error(e);
-        console.log(`Failed to fetch MinMax with timestep of ${date}`);
+        console.log(`Failed to fetch MinMax with timestep of ${date} & elevation of ${elevation}`);
 
         const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&version=1.3.0&item=minmax&layers=${variable}`);
         result = await response.json();
