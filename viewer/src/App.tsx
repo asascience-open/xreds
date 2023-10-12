@@ -1,9 +1,10 @@
-import { MapMouseEvent, Popup } from "maplibre-gl";
+import { ImageSource, MapMouseEvent, Popup } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
+import { DatasetLayer, fetchDataset, fetchDatasetIds, fetchMetadata, fetchMinMax } from "./dataset";
+import { bboxContainsPoint, createImageLayerParams } from "./tools";
 import Map from "./components/map";
 import MaterialIcon from "./components/material_icon";
 import Spinner from "./components/spinner";
-import { DatasetLayer, fetchDataset, fetchDatasetIds, fetchMetadata, fetchMinMax } from "./dataset";
 
 const colormaps: Array<{ id: string, name: string }> = [
   { id: 'rainbow', name: 'Rainbow' },
@@ -25,20 +26,24 @@ const TILE_SIZE = 512;
 
 function App() {
   const map = useRef<maplibregl.Map | null>(null);
-  const [showSidebar, setSidebarShowing] = useState(true);
-  const [datasetIds, setDatasetIds] = useState<string[]>([]);
-  const [datasetsCollapsed, setDatasetsCollapsed] = useState<{ [k: string]: boolean }>({});
+  const lastClickPos = useRef<[number, number] | null>(null);
+  
   const [datasets, setDatasets] = useState<{ [k: string]: { [j: string]: string } }>({});
+  const [datasetIds, setDatasetIds] = useState<string[]>([]);
   const [datasetMetadata, setDatasetMetadata] = useState<{ [k: string]: { [j: string]: DatasetLayer } }>({});
+  
   const [selectedLayer, setSelectedLayer] = useState<{ dataset: string, variable: string } | undefined>(undefined);
   const [selectedLayerMinMax, setSelectedLayerMinMax] = useState<{ min: number, max: number } | undefined>(undefined);
-  const [layerOptions, setLayerOptions] = useState<{ date?: string, colorscaleMin?: number, colorscaleMax?: number, colormap?: string }>({});
+  const [layerOptions, setLayerOptions] = useState<{ date?: string, elevation?: string, colorscaleMin?: number, colorscaleMax?: number, colormap?: string }>({});
+  const [layerTiling, setLayerTiling] = useState<boolean>(true);
   const [currentPopupData, setCurrentPopupData] = useState<any>(undefined);
+
+  const [showSidebar, setSidebarShowing] = useState(true);
+  const [showColormapPicker, setColorMapPickerShowing] = useState(false);
+  const [datasetsCollapsed, setDatasetsCollapsed] = useState<{ [k: string]: boolean }>({});
   const [loadingDatasets, setLoadingDatasets] = useState(false);
   const [loadingMetadata, setLoadingMetadata] = useState(false);
   const [layerLoading, setLayerLoading] = useState(false);
-
-  const [showColormapPicker, setColorMapPickerShowing] = useState(false);
 
   useEffect(() => {
     setLoadingDatasets(true);
@@ -72,7 +77,8 @@ function App() {
 
     setLoadingMetadata(true);
     if (datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable]) {
-      fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime)
+      const metadata = datasetMetadata[selectedLayer.dataset][selectedLayer.variable];
+      fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? metadata.defaultTime, layerOptions.elevation ?? metadata.defaultElevation?.toString())
         .then(minmax => {
           setLoadingMetadata(false);
           setSelectedLayerMinMax(minmax);
@@ -87,7 +93,7 @@ function App() {
     else {
       fetchMetadata(selectedLayer.dataset, selectedLayer.variable)
         .then(metadata => {          
-          fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? metadata.defaultTime)
+          fetchMinMax(selectedLayer.dataset, selectedLayer.variable, layerOptions.date ?? metadata.defaultTime, layerOptions.elevation ?? metadata.defaultElevation?.toString())
             .then(minmax => {
               setLoadingMetadata(false);
               setSelectedLayerMinMax(minmax);
@@ -113,7 +119,7 @@ function App() {
       setLoadingMetadata(false);
       setSelectedLayerMinMax(undefined);
     };
-  }, [selectedLayer, layerOptions.date]);
+  }, [selectedLayer, layerOptions.date, layerOptions.elevation]);
 
   useEffect(() => {
     if (!map.current || !selectedLayer || !datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable] || !selectedLayerMinMax) {
@@ -123,38 +129,109 @@ function App() {
     const sourceId = `xreds-${selectedLayer.dataset}-${selectedLayer.variable}`;
 
     console.log(`Adding layer: ${sourceId}`)
+    
+    let urlOptions: string[] = [];
+    if ((layerOptions.colorscaleMin ?? selectedLayerMinMax.min) !== undefined && (layerOptions.colorscaleMax ?? selectedLayerMinMax.max) !== undefined) {
+      urlOptions.push(`&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMinMax.min},${layerOptions.colorscaleMax ?? selectedLayerMinMax.max}`);
+    }
+    if ((layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime) !== undefined) {
+      urlOptions.push(`&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`);
+    }
+    if ((layerOptions.elevation ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultElevation) !== undefined) {
+      urlOptions.push(`&elevation=${layerOptions.elevation ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultElevation}`);
+    }
+    
+    let url = `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&styles=raster/${layerOptions.colormap ?? 'default'}`;
+    if (layerTiling) {
+      url += `&width=${TILE_SIZE}&height=${TILE_SIZE}&bbox={bbox-epsg-3857}`;
+      urlOptions.forEach(o => url += o);
 
-    map.current.addSource(sourceId, {
-      type: 'raster',
-      tiles: [
-        `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&bbox={bbox-epsg-3857}&width=${TILE_SIZE}&height=${TILE_SIZE}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMinMax.min},${layerOptions.colorscaleMax ?? selectedLayerMinMax.max}&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`
-      ],
-      tileSize: TILE_SIZE,
-      bounds: datasetMetadata[selectedLayer.dataset][selectedLayer.variable].bbox,
-    });
-
+      map.current.addSource(sourceId, {
+        type: 'raster',
+        tiles: [url],
+        tileSize: TILE_SIZE,
+        bounds: datasetMetadata[selectedLayer.dataset][selectedLayer.variable].bbox,
+      });
+    }
+    else {
+      const imgParams = createImageLayerParams(map.current);
+      if (!imgParams) {
+        return;
+      }
+      
+      url += `&width=${imgParams.width}&height=${imgParams.height}&bbox=${[...imgParams.mercator].join(',')}`;
+      urlOptions.forEach(o => url += o);
+      map.current.addSource(sourceId, {
+        type: 'image',
+        url: url,
+        coordinates: imgParams.coordinates as any,
+      });      
+    }
+    
     map.current.addLayer({
       id: sourceId,
       type: 'raster',
       source: sourceId,
       paint: {
-        "raster-opacity": 0.75
+        "raster-opacity": 0.75,
+        ...(!layerTiling && { "raster-fade-duration": 0 })
       }
     });
 
     setLayerLoading(true);
 
-    const onClick = async (e: MapMouseEvent) => {
-      const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`);
-
-      const featureData = await response.json();
-      setCurrentPopupData({ data: featureData, lngLat: e.lngLat });
-    }
-
     const onIdle = () => setLayerLoading(false);
 
+    const onClick = async (e: MapMouseEvent) => {
+      if (!bboxContainsPoint(datasetMetadata[selectedLayer.dataset][selectedLayer.variable].bbox, e.lngLat)) {
+        setCurrentPopupData(undefined);
+        return;
+      }
+      
+      setCurrentPopupData({ data: undefined, loading: true, lngLat: e.lngLat });
+      lastClickPos.current = [e.lngLat.lng, e.lngLat.lat];
+      
+      try {
+        const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`);
+        const data = await response.json();
+        
+        if (lastClickPos.current && lastClickPos.current[0] === e.lngLat.lng && lastClickPos.current[1] === e.lngLat.lat) {
+          setCurrentPopupData({ data: data, loading: false, lngLat: e.lngLat });
+        }
+      }
+      catch (e) {
+        console.error(e);
+        
+        setCurrentPopupData(undefined);
+        lastClickPos.current = null;
+      }
+    }
+
+    const onMove = () => {
+      const currentSource = map.current?.getSource(sourceId) as (ImageSource | undefined);
+      if (!map.current || !currentSource) {
+        return;
+      }
+
+      const imgParams = createImageLayerParams(map.current);
+      if (!imgParams) {
+        return;
+      }
+
+      url += `&width=${imgParams.width}&height=${imgParams.height}&bbox=${[...imgParams.mercator].join(',')}`;
+      urlOptions.forEach(o => url += o);
+
+      currentSource.updateImage({
+        url: url,
+        coordinates: imgParams.coordinates as any
+      })
+    }
+
+    map.current.on('idle', onIdle);
     map.current.on('click', onClick);
-    map.current.on('idle', onIdle)
+    if (!layerTiling) {
+      map.current.on('moveend', onMove)
+    }
 
     return () => {
       console.log(`Removing layer: ${sourceId}`);
@@ -162,13 +239,14 @@ function App() {
       setLayerLoading(false);
       map.current?.off('click', onClick);
       map.current?.off('idle', onIdle);
+      map.current?.off('moveend', onMove);
       map.current?.removeLayer(sourceId);
       map.current?.removeSource(sourceId);
     }
-  }, [datasetMetadata, selectedLayerMinMax, layerOptions.colorscaleMin, layerOptions.colorscaleMax, layerOptions.colormap]);
+  }, [datasetMetadata, selectedLayerMinMax, layerTiling, layerOptions.colorscaleMin, layerOptions.colorscaleMax, layerOptions.colormap]);
 
   useEffect(() => {
-    if (!map.current || !currentPopupData || !selectedLayer || !datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable]) {
+    if (!map.current || !currentPopupData ||!selectedLayer || !datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable]) {
       return;
     }
 
@@ -177,10 +255,23 @@ function App() {
       .setHTML(`
         <div class="flex flex-col p-1 rounded-md overflow-hidden">
           <span class="font-bold">${selectedLayer.dataset} - ${selectedLayer.variable}</span>
-          <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
-          <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
-          <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
-          <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasetMetadata[selectedLayer.dataset][selectedLayer.variable].units}</span>
+          ${currentPopupData.loading
+            ? `
+              <div class="flex flex-row flex-grow justify-center items-center">
+                <div class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                  <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
+                    Loading...
+                  </span>
+                </div>              
+              </div>
+            `
+            : `
+              <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
+              <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
+              <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
+              <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasetMetadata[selectedLayer.dataset][selectedLayer.variable].units}</span>
+            `
+        }
         </div>
       `)
       .addTo(map.current);
@@ -210,7 +301,17 @@ function App() {
             </div>
           ) : (
             <>
-              <h1 className="text-xl font-bold mb-4 px-1">Datasets</h1>
+              <div className={"flex flex-row w-full justify-between items-center mb-4 px-1"}>
+                <h1 className="text-xl font-bold">Datasets</h1>
+                <div className={"flex flex-row items-center"}>
+                  <h5 className={"pr-2"}>Layer Tiling</h5>
+                  <input 
+                      type={"checkbox"} 
+                      checked={layerTiling}
+                      onChange={(e) => setLayerTiling(e.target.checked)} 
+                  />
+                </div>
+              </div>
               {datasetIds.map(d => (
                 <section key={d}>
                   <div className="flex flex-row justify-between items-center content-center">
@@ -243,11 +344,13 @@ function App() {
                         onClick={() => {
                           if (selectedLayer) {
                             if (selectedLayer.dataset === d && selectedLayer.variable === v) {
+                              setLayerOptions({});
                               setSelectedLayer(undefined);
                               return;
                             }
                           }
 
+                          setLayerOptions({});
                           setSelectedLayer({
                             dataset: d,
                             variable: v,
@@ -287,24 +390,46 @@ function App() {
             ) : (
               <>
                 <span className="font-bold text-center">{selectedLayerMetadata.title} ({selectedLayerMetadata.units})</span>
-                <label>
-                  Date:
-                  <select
-                    className="rounded-md p-1 mx-1"
-                    value={layerOptions?.date ?? selectedLayerMetadata.defaultTime}
-                    onChange={e => setLayerOptions({ ...layerOptions, date: e.target.value })}
-                  >
-                    {selectedLayerMetadata.times?.map((date: string) =>
-                      <option key={date} value={date}>{date}</option>
-                    )}
-                  </select>
-                </label>
-                <div className=" w-full flex-1 flex flex-row items-center content-center justify-around font-bold">
-                  <input className="w-16 mx-1 text-center" defaultValue={layerOptions.colorscaleMin ?? selectedLayerMinMax?.min ?? 0} type={'number'} onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      setLayerOptions({ ...layerOptions, colorscaleMin: e.currentTarget.valueAsNumber })
-                    }
-                  }} />
+                <div className={"flex flex-col w-full justify-around items-center"}>
+                  <div className={"flex flex-row items-center"}>
+                    <span className={"pl-1"}>Date:</span>
+                    <select
+                        className="rounded-md p-1 mx-1"
+                        value={layerOptions?.date ?? selectedLayerMetadata.defaultTime}
+                        onChange={e => setLayerOptions({ ...layerOptions, date: e.target.value })}
+                    >
+                      {selectedLayerMetadata.times?.map((date: string) =>
+                          <option key={date} value={date}>{date}</option>
+                      )}
+                    </select>
+                  </div>
+                  {selectedLayerMetadata.defaultElevation !== undefined &&
+                      <div className={"flex flex-row items-center pt-1"}>
+                        <span className={"pl-1"}>Elevation:</span>
+                        <select
+                            className="rounded-md p-1 mx-1"
+                            value={layerOptions?.elevation ?? selectedLayerMetadata.defaultElevation.toString()}
+                            onChange={e => setLayerOptions({ ...layerOptions, elevation: e.target.value })}
+                        >
+                          {selectedLayerMetadata.elevations?.map((e: number) =>
+                              <option key={e.toString()} value={e.toString()}>{+e.toFixed(4)}</option>
+                          )}
+                        </select>
+                      </div>
+                  }
+                </div>
+                <div className="w-full flex-1 flex flex-row items-center content-center justify-around font-bold">
+                  <input 
+                    className="w-16 mx-1 text-center rounded-md p-1" 
+                    defaultValue={layerOptions.colorscaleMin ?? selectedLayerMinMax?.min ?? 0} 
+                    type={'number'}
+                    onBlur={e => setLayerOptions({ ...layerOptions, colorscaleMin: e.currentTarget.valueAsNumber })}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        setLayerOptions({ ...layerOptions, colorscaleMin: e.currentTarget.valueAsNumber })
+                      }
+                    }} 
+                  />
                   <img className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer" src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`} onClick={() => setColorMapPickerShowing(!showColormapPicker)} />
                   {showColormapPicker &&
                     <div className="absolute bottom-14 md:bottom-12 right-0 h-64 w-72 md:w-96 pt-2 px-2 bg-white overflow-y-scroll">
@@ -320,11 +445,17 @@ function App() {
                       </menu>
                     </div>
                   }
-                  <input className="w-16 mx-1 text-center" defaultValue={layerOptions.colorscaleMax ?? selectedLayerMinMax?.max ?? 10} type={'number'} onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      setLayerOptions({ ...layerOptions, colorscaleMax: e.currentTarget.valueAsNumber })
-                    }
-                  }} />
+                  <input 
+                    className="w-16 mx-1 text-center rounded-md p-1" 
+                    defaultValue={layerOptions.colorscaleMax ?? selectedLayerMinMax?.max ?? 10} 
+                    type={'number'}
+                    onBlur={e => setLayerOptions({ ...layerOptions, colorscaleMax: e.currentTarget.valueAsNumber })}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        setLayerOptions({ ...layerOptions, colorscaleMax: e.currentTarget.valueAsNumber })
+                      }
+                    }} 
+                  />
                 </div>
               </>
             )}
