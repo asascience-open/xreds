@@ -149,7 +149,7 @@ export async function fetchMetadata(dataset: string, variable: string): Promise<
         bbox: rawMetadata["bbox"],
         times: rawMetadata["timesteps"],
         defaultTime: closestTime,
-        elevations: rawMetadata["elevation"]?.sort(),
+        elevations: rawMetadata["elevation"]?.sort((a: number, b: number) => Math.abs(a) - Math.abs(b)),
         defaultElevation: closestElevation
     };
 }

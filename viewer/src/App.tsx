@@ -192,9 +192,18 @@ function App() {
       lastClickPos.current = [e.lngLat.lng, e.lngLat.lat];
       
       try {
-        const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50&BBOX=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`);
-        const data = await response.json();
+        const bbox = `&bbox=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}`;
+        const time = ((layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime) !== undefined)
+            ? `&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`
+            : "";
         
+        const elevation = ((layerOptions.elevation ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultElevation) !== undefined)
+            ? `&elevation=${layerOptions.elevation ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultElevation}`
+            : "";        
+        
+        const response = await fetch(`/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50${bbox}${time}${elevation}`);
+        const data = await response.json();
+
         if (lastClickPos.current && lastClickPos.current[0] === e.lngLat.lng && lastClickPos.current[1] === e.lngLat.lat) {
           setCurrentPopupData({ data: data, loading: false, lngLat: e.lngLat });
         }
@@ -250,31 +259,47 @@ function App() {
       return;
     }
 
-    const popup = new Popup({ closeOnClick: false })
-      .setLngLat(currentPopupData.lngLat)
-      .setHTML(`
-        <div class="flex flex-col p-1 rounded-md overflow-hidden">
-          <span class="font-bold">${selectedLayer.dataset} - ${selectedLayer.variable}</span>
-          ${currentPopupData.loading
-            ? `
-              <div class="flex flex-row flex-grow justify-center items-center">
-                <div class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-                  <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-                    Loading...
-                  </span>
-                </div>              
-              </div>
-            `
-            : `
-              <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
-              <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
-              <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
-              <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasetMetadata[selectedLayer.dataset][selectedLayer.variable].units}</span>
-            `
-        }
-        </div>
-      `)
-      .addTo(map.current);
+    let popup: Popup;
+    try {
+      popup = new Popup({ closeOnClick: false })
+        .setLngLat(currentPopupData.lngLat)
+        .setHTML(`
+          <div class="flex flex-col p-1 rounded-md overflow-hidden">
+            <span class="font-bold">${selectedLayer.dataset} - ${selectedLayer.variable}</span>
+            ${currentPopupData.loading
+              ? `
+                <div class="flex flex-row flex-grow justify-center items-center">
+                  <div class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                    <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
+                      Loading...
+                    </span>
+                  </div>              
+                </div>
+              `
+              : `
+                <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
+                <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
+                <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
+                <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasetMetadata[selectedLayer.dataset][selectedLayer.variable].units}</span>
+              `
+            }
+          </div>
+        `)
+        .addTo(map.current);
+    }
+    catch (e) {
+      console.error(e);
+
+      popup = new Popup({ closeOnClick: false })
+        .setLngLat(currentPopupData.lngLat)
+        .setHTML(`
+          <div class="flex flex-col p-1 rounded-md overflow-hidden">
+            <span class="font-bold">${selectedLayer.dataset} - ${selectedLayer.variable}</span>
+              <span class="text-center">ERROR</span>
+          </div>
+        `)
+        .addTo(map.current);
+    }
 
     return () => { popup.remove() };
   }, [currentPopupData]);
