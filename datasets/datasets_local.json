@@ -17,6 +17,12 @@
         "chunks": {}, 
         "drop_variables": ["dstart"]
     },
+    "gomofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/gomofs/nos.gomofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    },
     "tbofs": {
         "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr", 
         "type": "kerchunk",
@@ -29,6 +35,12 @@
         "chunks": {}, 
         "drop_variables": ["Itime2"]
     },
+    "wcofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    },
     "rtofs_east_coast": {
         "path": "s3://nextgen-dmac-cloud-ingest/rtofs/rtofs.rtofs_glo_3dz_6hrly_hvr_US_east.best.nc.zarr",
         "type": "kerchunk",
@@ -40,7 +52,6 @@
         "type": "kerchunk",
         "chunks": {},
         "drop_variables": []
-
     },
     "gfswave_global": {
         "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",

@@ -91,7 +91,7 @@ First follow instructions above to build the docker image tagged `xreds:latest`.
 
 ```bash
 # Auth with ECR
-aws ecr-public get-login-password --region us-east-1 --no-verify-ssl | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
 
 # Tag the image
 docker tag xreds:latest public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds:latest

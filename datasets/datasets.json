@@ -17,8 +17,20 @@
         "chunks": {}, 
         "drop_variables": ["dstart"]
     },
+    "gomofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/gomofs/nos.gomofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    },
     "tbofs": {
         "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    },
+    "wcofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr", 
         "type": "kerchunk",
         "chunks": {}, 
         "drop_variables": ["dstart"]
