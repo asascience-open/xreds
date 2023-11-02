@@ -226,8 +226,8 @@ function App() {
       if (!imgParams) {
         return;
       }
-
-      url += `&width=${imgParams.width}&height=${imgParams.height}&bbox=${[...imgParams.mercator].join(',')}`;
+      
+      let url = `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&styles=raster/${layerOptions.colormap ?? 'default'}&width=${imgParams.width}&height=${imgParams.height}&bbox=${[...imgParams.mercator].join(',')}`;
       urlOptions.forEach(o => url += o);
 
       currentSource.updateImage({
