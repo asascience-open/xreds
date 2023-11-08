@@ -48,7 +48,7 @@
         "drop_variables": ["Itime2"]
     },
     "lsofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/leofs/nos.lsofs.fields.best.nc.zarr", 
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/lsofs/nos.lsofs.fields.best.nc.zarr", 
         "type": "kerchunk",
         "chunks": {}, 
         "drop_variables": ["Itime2"]
