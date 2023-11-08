@@ -10,7 +10,13 @@
         "type": "kerchunk",
         "chunks": {}, 
         "drop_variables": ["dstart"]
-    }, 
+    },
+    "creofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/creofs/nos.creofs.fields.best.nc.zarr", 
+        "type": "kerchunk",
+        "chunks": {}, 
+        "drop_variables": ["dstart"]
+    },
     "dbofs": {
         "path": "s3://nextgen-dmac-cloud-ingest/nos/dbofs/nos.dbofs.fields.best.nc.zarr", 
         "type": "kerchunk",
