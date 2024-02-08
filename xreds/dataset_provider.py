@@ -69,6 +69,8 @@ class DatasetProvider(Plugin):
 
         if dataset_type == 'netcdf':
             ds = xr.open_dataset(dataset_path)
+        elif dataset_type == 'grib2':
+            ds = xr.open_dataset(dataset_path, engine='cfgrib')
         elif dataset_type == 'kerchunk':
             if 'key' in dataset_spec:
                 options = {'anon': False, 'use_ssl': False, 'key': dataset_spec['key'], 'secret': dataset_spec['secret']}

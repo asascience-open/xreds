@@ -5,17 +5,16 @@
         "chunks": {}, 
         "drop_variables": ["dstart"]
     },
-    "ciofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/ciofs/nos.ciofs.fields.best.nc.zarr", 
+    "hrrr": {
+        "path": "s3://nextgen-dmac/kerchunk/hrrr_subhourly.json", 
         "type": "kerchunk",
         "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "creofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/creofs/nos.creofs.fields.best.nc.zarr", 
+        "drop_variables": []
+    }, 
+    "gfswave": {
+        "path": "./datasets/gfswave_global_kerchunk.json", 
         "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
+        "chunks": {}
     },
     "dbofs": {
         "path": "s3://nextgen-dmac-cloud-ingest/nos/dbofs/nos.dbofs.fields.best.nc.zarr", 
@@ -29,40 +28,16 @@
         "chunks": {}, 
         "drop_variables": ["dstart"]
     },
-    "tbofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "ngofs2": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.fields.best.nc.zarr", 
+    "leofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/leofs/nos.leofs.fields.best.nc.zarr", 
         "type": "kerchunk",
         "chunks": {}, 
         "drop_variables": ["Itime2"]
     },
-    "wcofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr", 
+    "lmhofs": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/lmhofs/nos.lmhofs.fields.best.nc.zarr", 
         "type": "kerchunk",
         "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "rtofs_east_coast": {
-        "path": "s3://nextgen-dmac-cloud-ingest/rtofs/rtofs.rtofs_glo_3dz_6hrly_hvr_US_east.best.nc.zarr",
-        "type": "kerchunk",
-        "chunks": {},
-        "drop_variables": []
-    },
-    "rtofs_global": {
-        "path": "s3://nextgen-dmac-cloud-ingest/rtofs/rtofs.rtofs_glo_2ds_diag.best.nc.zarr",
-        "type": "kerchunk",
-        "chunks": {},
-        "drop_variables": []
-    },
-    "gfswave_global": {
-        "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
-        "type": "kerchunk", 
-        "chunks": {}, 
-        "drop_variables": ["orderedSequenceData"]
+        "drop_variables": ["Itime2"]
     }
 }
