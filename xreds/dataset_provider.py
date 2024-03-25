@@ -45,7 +45,7 @@ class DatasetProvider(Plugin):
     @hookimpl
     def get_datasets(self):
         return self.dataset_mapping.keys()
-    
+
     @hookimpl
     def get_dataset(self, dataset_id: str) -> xr.Dataset:
         cache_key = f"dataset-{dataset_id}"
@@ -57,7 +57,7 @@ class DatasetProvider(Plugin):
             if (datetime.datetime.now() - cached_ds['date']).seconds < (10 * 60):
                 logger.info(f'Using cached dataset for {dataset_id}')
                 return cached_ds['dataset']
-            else: 
+            else:
                 logger.info(f'Cached dataset for {dataset_id} is stale, reloading...')
                 self.datasets.pop(cache_key, None)
         else:
@@ -74,14 +74,14 @@ class DatasetProvider(Plugin):
         elif dataset_type == 'kerchunk':
             if 'key' in dataset_spec:
                 options = {'anon': False, 'use_ssl': False, 'key': dataset_spec['key'], 'secret': dataset_spec['secret']}
-            else: 
+            else:
                 options = {'anon': True, 'use_ssl': False}
             fs = fsspec.filesystem(
-                "filecache", 
+                "filecache",
                 expiry_time=10 * 60, # TODO: Make this driven by config per dataset, for now default to 10 minutes
-                target_protocol='reference', 
+                target_protocol='reference',
                 target_options={
-                    'fo': dataset_path, 
+                    'fo': dataset_path,
                     'target_protocol': 's3',
                     'target_options': options,
                     'remote_protocol': 's3',
@@ -102,15 +102,27 @@ class DatasetProvider(Plugin):
             # mapper = fsspec.get_mapper(dataset_location)
             ds = xr.open_zarr(dataset_path, consolidated=True)
 
+        # Check if we have a time dimension and if it is not indexed, index it
+        try:
+            time_dim = ds.cf['time'].dims[0]
+            if not ds.indexes.get(time_dim, None):
+                time_coord = ds.cf['time'].name
+                logger.info(f'Indexing time dimension {time_dim} as {time_coord}')
+                ds = ds.set_index({time_dim: time_coord})
+                if 'standard_name' not in ds[time_dim].attrs:
+                    ds[time_dim].attrs['standard_name'] = 'time'
+        except:
+            pass
+
         self.datasets[cache_key] = {
             'dataset': ds,
             'date': datetime.datetime.now()
         }
 
         #cache.put(cache_key, ds, 50)
-        if cache_key in self.datasets: 
+        if cache_key in self.datasets:
             logger.info(f'Loaded and cached dataset for {dataset_id}')
-        else: 
+        else:
             logger.info(f'Loaded dataset for {dataset_id}. Not cached due to size or current cache score')
 
         return ds
