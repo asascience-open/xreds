@@ -2,10 +2,11 @@ import os
 import xpublish
 
 from fastapi.middleware.cors import CORSMiddleware
+from xreds.plugins.size_plugin import SizePlugin
 
 from xreds.spastaticfiles import SPAStaticFiles
 from xreds.dataset_provider import DatasetProvider
-from xreds.subset_plugin import SubsetPlugin
+from xreds.plugins.subset_plugin import SubsetPlugin
 from xreds.logging import logger
 
 
@@ -21,6 +22,7 @@ rest = xpublish.Rest(
 
 rest.register_plugin(DatasetProvider())
 rest.register_plugin(SubsetPlugin())
+rest.register_plugin(SizePlugin())
 
 app = rest.app
 
