@@ -67,6 +67,8 @@ class DatasetProvider(Plugin):
         dataset_path = dataset_spec['path']
         dataset_type = dataset_spec["type"]
 
+        ds = None
+
         if dataset_type == 'netcdf':
             ds = xr.open_dataset(dataset_path)
         elif dataset_type == 'grib2':
@@ -101,6 +103,9 @@ class DatasetProvider(Plugin):
             # TODO: Enable S3  support
             # mapper = fsspec.get_mapper(dataset_location)
             ds = xr.open_zarr(dataset_path, consolidated=True)
+
+        if ds is None:
+            raise ValueError(f"Dataset {dataset_id} not found")
 
         # Check if we have a time dimension and if it is not indexed, index it
         try:
