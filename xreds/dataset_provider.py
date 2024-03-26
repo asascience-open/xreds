@@ -13,17 +13,8 @@ from fastapi import Depends
 from xpublish.dependencies import get_cache
 from xpublish import Plugin, hookimpl
 
-from .config import settings
-
-
-logger = logging.getLogger("uvicorn")
-
-gunicorn_logger = logging.getLogger('gunicorn.error')
-logger.handlers = gunicorn_logger.handlers
-if __name__ != "main":
-    logger.setLevel(gunicorn_logger.level)
-else:
-    logger.setLevel(logging.DEBUG)
+from xreds.logging import logger
+from xreds.config import settings
 
 
 class DatasetProvider(Plugin):

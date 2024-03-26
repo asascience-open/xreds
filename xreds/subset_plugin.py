@@ -6,6 +6,8 @@ from xpublish import Plugin, Dependencies, hookimpl
 
 import xarray_subset_grid.accessor # noqa
 
+from xreds.logging import logger
+
 
 def extract_polygon_query(subset_query: str):
     """Extract polygon as numpy array from subset query format
@@ -44,7 +46,7 @@ class SubsetPlugin(Plugin):
         router = APIRouter(prefix=self.dataset_router_prefix, tags=list(self.dataset_router_tags))
 
         def get_subset_dataset(dataset_id: str, subset_query: NDArray = Depends(extract_polygon_query)):
-            print(f"Getting subset dataset {dataset_id} with query {subset_query}")
+            logger.info(f"Getting subset dataset {dataset_id} with query {subset_query}")
             ds = deps.dataset(dataset_id)
             grid = ds.subset_grid.grid
             ds_subset = grid.subset_polygon(ds, subset_query)

@@ -1,4 +1,3 @@
-import logging
 import os
 import xpublish
 
@@ -7,16 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from xreds.spastaticfiles import SPAStaticFiles
 from xreds.dataset_provider import DatasetProvider
 from xreds.subset_plugin import SubsetPlugin
-
-
-logger = logging.getLogger("uvicorn")
-
-gunicorn_logger = logging.getLogger('gunicorn.error')
-logger.handlers = gunicorn_logger.handlers
-if __name__ != "main":
-    logger.setLevel(gunicorn_logger.level)
-else:
-    logger.setLevel(logging.DEBUG)
+from xreds.logging import logger
 
 
 rest = xpublish.Rest(
