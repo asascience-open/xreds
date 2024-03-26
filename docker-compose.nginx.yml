@@ -1,23 +1,23 @@
 version: '3'
 
 services:
-  nginx: 
+  nginx:
     container_name: nginx
     image: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-    ports: 
+    ports:
       - "8090:80"
-    expose: 
+    expose:
       - 8090
-    depends_on: 
+    depends_on:
       - xreds
-  xreds: 
+  xreds:
     container_name: xreds
     build: .
     volumes:
       - "./datasets:/opt/xreds/datasets"
-    ports: 
+    ports:
       - "8091:8091"
     environment:
       - PORT=8091

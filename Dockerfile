@@ -5,7 +5,7 @@ FROM node:18-bullseye
 RUN mkdir -p /opt/viewer
 WORKDIR /opt/viewer
 
-COPY viewer/*.json viewer/*.config.cjs viewer/*.config.ts viewer/yarn.lock  ./ 
+COPY viewer/*.json viewer/*.config.cjs viewer/*.config.ts viewer/yarn.lock  ./
 
 RUN yarn install
 
@@ -32,10 +32,8 @@ RUN mkdir build
 # Copy over and install python dependencies
 RUN pip3 install --upgrade pip
 # Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
-RUN pip install --no-binary :all: shapely 
+# RUN pip install --no-binary :all: shapely
 COPY requirements.txt ./requirements.txt
-RUN python3 -m pip config set global.http.sslVerify false
-RUN git config --global http.sslverify false
 RUN pip3 install -r requirements.txt
 
 # Configure matplotlib to use Agg backend
@@ -47,8 +45,8 @@ COPY static ./static
 COPY xreds ./xreds
 COPY app.py ./app.py
 
-# Copy the frontend build 
-COPY --from=0 /opt/viewer/dist ./viewer/dist 
+# Copy the frontend build
+COPY --from=0 /opt/viewer/dist ./viewer/dist
 
 # Set the port to run the server on
 ENV PORT 8090

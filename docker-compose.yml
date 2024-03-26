@@ -1,11 +1,12 @@
 version: '3'
 
 services:
-  xreds: 
+  xreds:
     image: xreds:latest
+    platform: linux/amd64
     volumes:
       - "./datasets:/opt/xreds/datasets"
-    ports: 
+    ports:
       - "8090:8090"
     environment:
       - PORT=8090
