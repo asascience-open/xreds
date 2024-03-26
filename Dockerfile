@@ -30,11 +30,9 @@ WORKDIR /opt/xreds
 RUN mkdir build
 
 # Copy over and install python dependencies
-RUN pip3 install --upgrade pip
-# Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
-# RUN pip install --no-binary :all: shapely
+RUN pip3 install --upgrade pip uv
 COPY requirements.txt ./requirements.txt
-RUN pip3 install -r requirements.txt
+RUN uv pip install --python=$(which python3) -r requirements.txt
 
 # Configure matplotlib to use Agg backend
 RUN mkdir -p /root/.config/matplotlib
