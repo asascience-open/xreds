@@ -29,8 +29,13 @@ WORKDIR /opt/xreds
 # Holder directory where react app lives in production
 RUN mkdir build
 
-# Copy over and install python dependencies
+# Install python package tools
 RUN pip3 install --upgrade pip uv
+
+# Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
+RUN uv pip install --python=$(which python3) --no-binary :all: shapely
+
+# Copy over and install dependencies
 COPY requirements.txt ./requirements.txt
 RUN uv pip install --python=$(which python3) -r requirements.txt
 
