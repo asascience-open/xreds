@@ -38,7 +38,7 @@ class SizePlugin(Plugin):
     def dataset_router(self, deps: Dependencies):
         router = APIRouter(prefix=self.dataset_router_prefix, tags=list(self.dataset_router_tags))
 
-        @router.get('/')
+        @router.get('/', summary='Get the size of the dataset in the specified unit. Default is MB')
         def get_size(dataset=Depends(deps.dataset), unit: str = 'MB'):
             unit = unit.upper()
             multiplier = multiplier_for_unit(unit)
