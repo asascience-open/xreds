@@ -1,26 +1,19 @@
-import logging
 import os
 import xpublish
 
 from fastapi.middleware.cors import CORSMiddleware
+from xreds.plugins.export import ExportPlugin
+from xreds.plugins.size_plugin import SizePlugin
 
 from xreds.spastaticfiles import SPAStaticFiles
 from xreds.dataset_provider import DatasetProvider
-
-
-logger = logging.getLogger("uvicorn")
-
-gunicorn_logger = logging.getLogger('gunicorn.error')
-logger.handlers = gunicorn_logger.handlers
-if __name__ != "main":
-    logger.setLevel(gunicorn_logger.level)
-else:
-    logger.setLevel(logging.DEBUG)
+from xreds.plugins.subset_plugin import SubsetPlugin
+from xreds.logging import logger
 
 
 rest = xpublish.Rest(
     app_kws=dict(
-        title='XREDS', 
+        title='XREDS',
         description='XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks',
         openapi_url='/xreds.json'
     ),
@@ -29,12 +22,15 @@ rest = xpublish.Rest(
 )
 
 rest.register_plugin(DatasetProvider())
+rest.register_plugin(SubsetPlugin())
+rest.register_plugin(SizePlugin())
+rest.register_plugin(ExportPlugin(netcdf_threshold=300))
 
 app = rest.app
 
 app.add_middleware(
-    CORSMiddleware, 
-    allow_origins=['*'], 
+    CORSMiddleware,
+    allow_origins=['*'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,11 +43,11 @@ app.root_path = os.environ.get('ROOT_PATH')
 if __name__ == '__main__':
     import uvicorn
 
-    # When run directly, run in debug mode 
+    # When run directly, run in debug mode
     uvicorn.run(
-        "app:app", 
-        port = 8090, 
-        reload = True, 
-        log_level = 'debug', 
+        "app:app",
+        port = 8090,
+        reload = True,
+        log_level = 'debug',
         debug = True
     )
