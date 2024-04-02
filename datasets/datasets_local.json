@@ -1,20 +1,50 @@
 {
-    "cbofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr",
-        "type": "kerchunk",
-        "chunks": {},
-        "drop_variables": ["dstart"]
-    },
-    "hrrr": {
-        "path": "./datasets/hrrr.dswrf.nc",
-        "type": "netcdf",
-        "chunks": {},
-        "drop_variables": []
-    },
-    "hrrr_subhourly": {
-        "path": "s3://nextgen-dmac/kerchunk/hrrr_subhourly.json",
-        "type": "kerchunk",
-        "chunks": {},
-        "drop_variables": []
-    }
+  "cbofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "wcofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "wcofs_2d": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.2ds.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "lsofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/lsofs/nos.lsofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "ngofs2": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "ngofs2_2d": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.2ds.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "hrrr": {
+    "path": "./datasets/hrrr.dswrf.nc",
+    "type": "netcdf",
+    "chunks": {},
+    "drop_variables": []
+  },
+  "hrrr_subhourly": {
+    "path": "s3://nextgen-dmac/kerchunk/hrrr_subhourly.json",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": []
+  }
 }

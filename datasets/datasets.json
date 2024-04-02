@@ -1,80 +1,98 @@
 {
-    "cbofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "ciofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/ciofs/nos.ciofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "creofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/creofs/nos.creofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "dbofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/dbofs/nos.dbofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "gomofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/gomofs/nos.gomofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "leofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/leofs/nos.leofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["Itime2"]
-    },
-    "lmhofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/lmhofs/nos.lmhofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["Itime2"]
-    },
-    "loofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/loofs/nos.loofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["Itime2"]
-    },
-    "lsofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/lsofs/nos.lsofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["Itime2"]
-    },
-    "ngofs2": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["Itime2"]
-    },
-    "sfbofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/sfbofs/nos.sfbofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["Itime2"]
-    },
-    "tbofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    },
-    "wcofs": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr", 
-        "type": "kerchunk",
-        "chunks": {}, 
-        "drop_variables": ["dstart"]
-    }
+  "cbofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "ciofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/ciofs/nos.ciofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "creofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/creofs/nos.creofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "dbofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/dbofs/nos.dbofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "gomofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/gomofs/nos.gomofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "gomofs_2d": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/gomofs/nos.gomofs.2ds.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "leofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/leofs/nos.leofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "lmhofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/lmhofs/nos.lmhofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "loofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/loofs/nos.loofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "lsofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/lsofs/nos.lsofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "ngofs2": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "ngofs2_2d": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.2ds.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "sfbofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/sfbofs/nos.sfbofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime2"]
+  },
+  "tbofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "wcofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  },
+  "wcofs_2d": {
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.2ds.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["dstart"]
+  }
 }
