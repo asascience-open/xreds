@@ -2,6 +2,7 @@ import os
 import xpublish
 
 from fastapi.middleware.cors import CORSMiddleware
+from xreds.plugins.export import ExportPlugin
 from xreds.plugins.size_plugin import SizePlugin
 
 from xreds.spastaticfiles import SPAStaticFiles
@@ -23,6 +24,7 @@ rest = xpublish.Rest(
 rest.register_plugin(DatasetProvider())
 rest.register_plugin(SubsetPlugin())
 rest.register_plugin(SizePlugin())
+rest.register_plugin(ExportPlugin(netcdf_threshold=300))
 
 app = rest.app
 
