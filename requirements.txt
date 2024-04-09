@@ -32,7 +32,7 @@ zarr==2.16.1
 scipy==1.9.3
 kerchunk@git+https://github.com/fsspec/kerchunk@8d8e84c619a63d4372b33b05c9bfe35fdcb6e61d
 xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@6020c0464f9b7f872f4307dab9d7c97d5d981387
-xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms@ba22a86ce344bc2de7685c3425146c1cb46a26f2
+xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms@d4646f482b78f83f49f13771f07c9715d6eb9329
 xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@0a4505b30696dec30dc95e0ffe12ea6b598930d7
 opendap-protocol<1.2.0
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@9415824f45750ede723ba273f67d3e1954d34bd7
