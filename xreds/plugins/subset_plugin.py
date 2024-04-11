@@ -3,6 +3,7 @@ from typing import Any, Sequence, Optional
 from fastapi import APIRouter, Depends
 from numpy._typing import NDArray
 from xpublish import Plugin, Dependencies, hookimpl
+from xpublish.utils.api import DATASET_ID_ATTR_KEY
 
 import xarray_subset_grid.accessor # noqa
 
@@ -150,6 +151,8 @@ class SubsetPlugin(Plugin):
             logger.info(f"Getting subset dataset {dataset_id} with query {subset_query}")
             ds = deps.dataset(dataset_id)
             ds_subset = subset_query.subset(ds)
+            ds_subset.attrs[DATASET_ID_ATTR_KEY] = dataset_id + f"/subset?{subset_query}"
+
             return ds_subset
 
         subset_deps = Dependencies(
