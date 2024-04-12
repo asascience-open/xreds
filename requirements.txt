@@ -27,7 +27,7 @@ fsspec==2023.9.2
 s3fs==2023.9.2
 uvicorn==0.17.6
 xarray==2024.1.1
-xpublish@git+https://github.com/xpublish-community/xpublish.git@ee6847d8a1739a116d79557ffc071e09a31e90f3
+xpublish@git+https://github.com/xpublish-community/xpublish.git@a4c7d179410908d7a9268cf5e285ecc552b8675d
 zarr==2.16.1
 scipy==1.9.3
 kerchunk@git+https://github.com/fsspec/kerchunk@8d8e84c619a63d4372b33b05c9bfe35fdcb6e61d

@@ -77,6 +77,12 @@
     "chunks": {},
     "drop_variables": ["Itime2"]
   },
+  "sscofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest-nosofs/nos/sscofs/sscofs.fields.best.nc.zarr",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime", "Itime2"]
+  },
   "tbofs": {
     "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr",
     "type": "kerchunk",

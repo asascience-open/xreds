@@ -151,7 +151,7 @@ class SubsetPlugin(Plugin):
             logger.info(f"Getting subset dataset {dataset_id} with query {subset_query}")
             ds = deps.dataset(dataset_id)
             ds_subset = subset_query.subset(ds)
-            ds_subset.attrs[DATASET_ID_ATTR_KEY] = dataset_id + f"/subset?{subset_query}"
+            ds_subset.attrs[DATASET_ID_ATTR_KEY] = f"{self.name}/{dataset_id}/subset?{subset_query}"
 
             return ds_subset
 
