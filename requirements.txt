@@ -5,7 +5,7 @@ cftime==1.6.2
 dask==2023.9.2
 dask_gateway==2023.9.0
 distributed==2023.9.2
-fastapi==0.103.1
+fastapi==0.109.1
 gunicorn==20.1.0
 h11==0.14.0
 h5netcdf==1.0.2
@@ -16,7 +16,7 @@ netCDF4==1.6.1
 numcodecs==0.11.0
 numpy==1.23.4
 pandas==2.1.1
-Pillow==9.2.0
+Pillow==10.3.0
 pydantic==1.10.2
 pyproj==3.4.0
 python-dateutil==2.8.2
@@ -29,7 +29,7 @@ uvicorn==0.17.6
 xarray==2024.1.1
 xpublish@git+https://github.com/xpublish-community/xpublish.git@a4c7d179410908d7a9268cf5e285ecc552b8675d
 zarr==2.16.1
-scipy==1.9.3
+scipy==1.10.0
 kerchunk@git+https://github.com/fsspec/kerchunk@8d8e84c619a63d4372b33b05c9bfe35fdcb6e61d
 xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@6020c0464f9b7f872f4307dab9d7c97d5d981387
 xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms@d4646f482b78f83f49f13771f07c9715d6eb9329
