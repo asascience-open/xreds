@@ -1,21 +1,21 @@
-import { parse, X2jOptions } from 'fast-xml-parser';
+import { XMLParser, X2jOptions } from 'fast-xml-parser';
 import { Map, LngLat, LngLatBounds } from "maplibre-gl";
 import he from 'he';
 
 const XML_PARSER_OPTIONS: Partial<X2jOptions> = {
     ignoreAttributes: false,
     parseAttributeValue: true,
-    tagValueProcessor: a => he.decode(a),
-    attrValueProcessor: a => he.decode(a, { isAttributeValue: true })
+    tagValueProcessor: (_, tagValue) => he.decode(tagValue),
 };
 
 /**
  * Parses XML data to a javascript object
- * @param data 
+ * @param data
  * @returns a javascript object representation of the xml data tree
  */
 export function xmlToJSON(data: any): any {
-    return parse(data, XML_PARSER_OPTIONS);
+    const parser = new XMLParser(XML_PARSER_OPTIONS);
+    return parser.parse(data, false);
 }
 
 /**
@@ -36,7 +36,7 @@ export function bboxContainsPoint(bbox: [number, number, number, number], point:
         if (bbox[0] === -180 && bbox[2] === -180) {
             inLon = true;
         }
-        
+
         return (inLon && inLat);
     } catch (e) {
         console.error(e);

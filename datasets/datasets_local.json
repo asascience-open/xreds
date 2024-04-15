@@ -30,20 +30,26 @@
     "drop_variables": ["Itime2"]
   },
   "ngofs2_2d": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.2ds.best.nc.zarr",
+    "path": "s3://nextgen-dmac-cloud-ingest-nosofs/nos/ngofs2/nos.ngofs2.2ds.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"]
   },
-  "hrrr": {
-    "path": "./datasets/hrrr.dswrf.nc",
-    "type": "netcdf",
+  "nyofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest-nosofs/nos/nyofs/nos.nyofs.fields.forecast.20240409.t23z.nc.zarr",
+    "type": "kerchunk",
     "chunks": {},
     "drop_variables": []
   },
-  "hrrr_subhourly": {
-    "path": "s3://nextgen-dmac/kerchunk/hrrr_subhourly.json",
+  "sscofs": {
+    "path": "s3://nextgen-dmac-cloud-ingest-nosofs/nos/sscofs/sscofs.fields.best.nc.zarr",
     "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["Itime", "Itime2"]
+  },
+  "hrrr": {
+    "path": "./datasets/hrrr.dswrf.nc",
+    "type": "netcdf",
     "chunks": {},
     "drop_variables": []
   }
