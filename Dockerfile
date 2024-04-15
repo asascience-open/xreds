@@ -5,9 +5,9 @@ FROM node:18-bullseye
 RUN mkdir -p /opt/viewer
 WORKDIR /opt/viewer
 
-COPY viewer/*.json viewer/*.config.cjs viewer/*.config.ts viewer/yarn.lock  ./
+COPY viewer/*.json viewer/*.config.cjs viewer/*.config.ts  ./
 
-RUN yarn install
+RUN npm install
 
 COPY viewer/index.html ./index.html
 COPY viewer/public ./public
