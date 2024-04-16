@@ -41,8 +41,6 @@ class DatasetProvider(Plugin):
     def get_dataset(self, dataset_id: str) -> xr.Dataset:
         cache_key = f"dataset-{dataset_id}"
 
-        #ds = cache.get(cache_key)
-
         cached_ds = self.datasets.get(cache_key, None)
         if cached_ds:
             if (datetime.datetime.now() - cached_ds['date']).seconds < (10 * 60):
@@ -61,7 +59,9 @@ class DatasetProvider(Plugin):
         ds = None
 
         if dataset_type == 'netcdf':
-            ds = xr.open_dataset(dataset_path)
+            ds = xr.open_dataset(dataset_path, engine='netcdf4', chunks=dataset_spec['chunks'], drop_variables=dataset_spec['drop_variables'])
+            if 'additional_coords' in dataset_spec:
+                ds = ds.set_coords(dataset_spec['additional_coords'])
         elif dataset_type == 'grib2':
             ds = xr.open_dataset(dataset_path, engine='cfgrib')
         elif dataset_type == 'kerchunk':
