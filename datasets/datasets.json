@@ -59,6 +59,13 @@
     "chunks": {},
     "drop_variables": ["Itime2"]
   },
+  "necofs": {
+      "path": "http://www.smast.umassd.edu:8080/thredds/dodsC/models/fvcom/NECOFS/Forecasts/NECOFS_GOM7_FORECAST.nc",
+      "type": "netcdf",
+      "chunks": {},
+      "drop_variables": ["Itime", "Itime2"],
+      "additional_coords": ["lat", "lon", "latc", "lonc", "xc", "yc"]
+  },
   "ngofs2": {
     "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.fields.best.nc.zarr",
     "type": "kerchunk",
