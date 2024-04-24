@@ -3,7 +3,10 @@
     "path": "s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
-    "drop_variables": ["dstart"]
+    "drop_variables": ["dstart"], 
+    "additional_attrs": {
+      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr"
+    }
   },
   "wcofs": {
     "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr",
