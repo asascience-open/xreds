@@ -1,4 +1,4 @@
-from typing import Any, Sequence, Optional
+from typing import Sequence, Optional
 
 from fastapi import APIRouter, Depends
 from numpy._typing import NDArray
@@ -46,7 +46,6 @@ def extract_bbox_query(subset_query: str) -> tuple[float, float, float, float]:
     Returns:
         np.ndarray: The bounding box
     """
-    import numpy as np
     import re
 
     # Extract the bbox from the query
@@ -165,6 +164,10 @@ class SubsetPlugin(Plugin):
 
         all_plugins = list(deps.plugin_manager().get_plugins())
         this_plugin = [p for p in all_plugins if p.name == self.name]
+        
+        # We can subset a vdatum dataset, but not the other way around
+        vdatum_plugin = [p for p in all_plugins if p.name == 'vdatum']
+        this_plugin.extend(vdatum_plugin)
 
         for new_router in deps.plugin_manager().subset_hook_caller('dataset_router', remove_plugins=this_plugin)(deps=subset_deps):
             router.include_router(new_router, prefix="/{subset_query}")

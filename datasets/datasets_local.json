@@ -30,10 +30,13 @@
     "drop_variables": ["Itime2"]
   },
   "ngofs2_2d": {
-    "path": "s3://nextgen-dmac-cloud-ingest-nosofs/nos/ngofs2/nos.ngofs2.2ds.best.nc.zarr",
+    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.2ds.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
-    "drop_variables": ["Itime2"]
+    "drop_variables": ["Itime2"],
+    "additional_attrs": {
+      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+    }
   },
   "nyofs": {
     "path": "s3://nextgen-dmac-cloud-ingest-nosofs/nos/nyofs/nos.nyofs.fields.forecast.20240409.t23z.nc.zarr",
