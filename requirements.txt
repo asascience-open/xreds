@@ -9,7 +9,7 @@ fastapi==0.109.1
 gunicorn==22.0.0
 h11==0.14.0
 h5netcdf==1.0.2
-h5py==3.7.0
+h5py==3.8.0
 matplotlib==3.6.1
 mercantile==1.2.1
 netCDF4==1.6.1

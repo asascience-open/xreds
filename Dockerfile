@@ -1,5 +1,5 @@
 # Build the react frontend
-FROM node:18-bullseye
+FROM node:18-bookworm
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/viewer
@@ -16,7 +16,7 @@ COPY viewer/src ./src
 RUN npm run build
 
 # Build the python service layer
-FROM python:3.10-bullseye
+FROM python:3.11-bookworm
 
 # Native dependencies
 RUN apt-get update
