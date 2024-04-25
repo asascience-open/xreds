@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build-deploy-docker:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/python:3.12.3
     parameters:
       RECIPIENT_EMAILS:
         type: string
