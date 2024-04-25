@@ -59,10 +59,7 @@ jobs:
           name: Tag and Push Docker Image to ECR
           command: |
             docker tag ${ECR_REPO}:${TAG} "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
-            docker tag ${ECR_REPO}:${TAG} "${ECR_ENDPOINT}/${ECR_REPO}:latest"
             docker push "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
-            docker push "${ECR_ENDPOINT}/${ECR_REPO}:latest"
-
 
 workflows:
   build-deploy-dev:
