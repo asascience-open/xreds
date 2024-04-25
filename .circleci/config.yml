@@ -50,12 +50,12 @@ jobs:
             curl https://asa-dev.s3.amazonaws.com/scripts/check_vulnerabilities.py > ./check_vulnerabilities.py
             python3 ./check_vulnerabilities.py
 
-      - run:
-          name: Tag and Push Docker Image to ECR
-          command: |
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
-            docker tag ${ECR_REPO}:${TAG} "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
-            docker push "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
+      # - run:
+      #     name: Tag and Push Docker Image to ECR
+      #     command: |
+      #       aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
+      #       docker tag ${ECR_REPO}:${TAG} "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
+      #       docker push "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
 
 workflows:
   build-deploy-dev:
