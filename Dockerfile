@@ -1,5 +1,5 @@
 # Build the react frontend
-FROM node:18-bookworm
+FROM node:18-alpine
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/viewer
@@ -16,11 +16,12 @@ COPY viewer/src ./src
 RUN npm run build
 
 # Build the python service layer
-FROM python:3.11-bookworm
+FROM python:3.11-slim-bookworm
 
 # Native dependencies
 RUN apt-get update
-RUN apt-get install -y libc-dev build-essential libudunits2-dev libgdal-dev libnetcdf-dev libeccodes-dev libgeos-dev cmake libopenblas-dev
+RUN apt-get upgrade -y
+RUN apt-get install -y git libc-dev gcc g++ libffi-dev build-essential libudunits2-dev libgdal-dev libnetcdf-dev libeccodes-dev libgeos-dev cmake libopenblas-dev
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/xreds
@@ -33,7 +34,7 @@ RUN mkdir build
 RUN pip3 install --upgrade pip uv
 
 # Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
-RUN uv pip install --python=$(which python3) --no-binary :all: shapely
+# RUN uv pip install --python=$(which python3) --no-binary :all: shapely
 
 # Copy over and install dependencies
 COPY requirements.txt ./requirements.txt

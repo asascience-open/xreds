@@ -49,6 +49,5 @@ if __name__ == '__main__':
         "app:app",
         port = 8090,
         reload = True,
-        log_level = 'debug',
-        debug = True
+        log_level = 'debug'
     )

@@ -12,7 +12,7 @@ from xreds.utils import load_dataset
 
 
 class DatasetProvider(Plugin):
-    name = 'xreds_datasets'
+    name: str = 'xreds_datasets'
     dataset_mapping: dict = {}
     datasets: dict = {}
 
