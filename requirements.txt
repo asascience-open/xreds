@@ -17,7 +17,7 @@ numcodecs==0.11.0
 numpy==1.23.4
 pandas==2.1.1
 Pillow==10.3.0
-pydantic==1.10.2
+pydantic==1.10.13
 pyproj==3.4.0
 python-dateutil==2.8.2
 pytz==2023.3.post1
