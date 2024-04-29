@@ -12,12 +12,12 @@ from xreds.plugins.subset_plugin import SubsetPlugin
 
 rest = xpublish.Rest(
     app_kws=dict(
-        title='XREDS',
-        description='XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks',
-        openapi_url='/xreds.json'
+        title="XREDS",
+        description="XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks",
+        openapi_url="/xreds.json",
     ),
     cache_kws=dict(available_bytes=1e9),
-    datasets=None
+    datasets=None,
 )
 
 rest.register_plugin(DatasetProvider())
@@ -29,23 +29,18 @@ app = rest.app
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.mount("/", SPAStaticFiles(directory="./viewer/dist", html=True), name="viewer")
-app.root_path = os.environ.get('ROOT_PATH')
+app.root_path = os.environ.get("ROOT_PATH")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
 
     # When run directly, run in debug mode
-    uvicorn.run(
-        "app:app",
-        port = 8090,
-        reload = True,
-        log_level = 'debug'
-    )
+    uvicorn.run("app:app", port=8090, reload=True, log_level="debug")

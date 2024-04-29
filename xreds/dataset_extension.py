@@ -21,4 +21,5 @@ class DatasetExtensionSpec:
 
 class DatasetExtension(BaseModel):
     """Dataset Extension"""
+
     name: str = Field(..., description="Name of the dataset extension")
