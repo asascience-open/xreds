@@ -4,8 +4,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"], 
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr"
+      }
     }
   },
   "ciofs": {
@@ -13,8 +15,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"], 
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ciofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ciofs_vdatums.nc.zarr"
+      }
     }
   },
   "creofs": {
@@ -22,8 +26,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"], 
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/creofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/creofs_vdatums.nc.zarr"
+      }
     }
   },
   "dbofs": {
@@ -31,8 +37,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/dbofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/dbofs_vdatums.nc.zarr"
+      }
     }
   },
   "gomofs": {
@@ -40,8 +48,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr"
+      }
     }
   },
   "gomofs_2d": {
@@ -49,8 +59,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr"
+      }
     }
   },
   "leofs": {
@@ -58,8 +70,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/leofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/leofs_vdatums.nc.zarr"
+      }
     }
   },
   "lmhofs": {
@@ -67,8 +81,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lmhofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lmhofs_vdatums.nc.zarr"
+      }
     }
   },
   "loofs": {
@@ -76,8 +92,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/loofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/loofs_vdatums.nc.zarr"
+      }
     }
   },
   "lsofs": {
@@ -85,8 +103,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lsofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lsofs_vdatums.nc.zarr"
+      }
     }
   },
   "necofs": {
@@ -101,8 +121,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+      }
     }
   },
   "ngofs2_2d": {
@@ -110,8 +132,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+      }
     }
   },
   "sfbofs": {
@@ -119,8 +143,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/sfbofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/sfbofs_vdatums.nc.zarr"
+      }
     }
   },
   "sscofs": {
@@ -134,8 +160,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/tbofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/tbofs_vdatums.nc.zarr"
+      }
     }
   },
   "wcofs": {
@@ -143,8 +171,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr"
+      }
     }
   },
   "wcofs_2d": {
@@ -152,8 +182,10 @@
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
-    "additional_attrs": {
-      "vdatum_file": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr"
+      }
     }
   }
 }
