@@ -2,7 +2,7 @@ version: '3'
 
 services:
   xreds:
-    image: xreds:new
+    image: xreds:latest
     platform: linux/amd64
     volumes:
       - "./datasets:/opt/xreds/datasets"
