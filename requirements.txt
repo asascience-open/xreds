@@ -17,6 +17,7 @@ numcodecs==0.12.1
 numpy==1.26.4
 pandas==2.2.2
 Pillow==10.3.0
+pluggy==1.5.0
 pydantic==2.7.1
 pydantic-settings==2.2.1
 pyproj==3.6.1

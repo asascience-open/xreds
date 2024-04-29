@@ -3,12 +3,19 @@ import datetime
 
 import fsspec
 import xarray as xr
+from pluggy import PluginManager
 
 from xpublish import Plugin, hookimpl
 
+from xreds.dataset_extension import DATASET_EXTENSION_PLUGIN_NAMESPACE
 from xreds.logging import logger
 from xreds.config import settings
 from xreds.utils import load_dataset
+from xreds.extensions import VDatumTransformationExtension
+
+
+dataset_extension_manager = PluginManager(DATASET_EXTENSION_PLUGIN_NAMESPACE)
+dataset_extension_manager.register(VDatumTransformationExtension, name='vdatum')
 
 
 class DatasetProvider(Plugin):
@@ -51,6 +58,17 @@ class DatasetProvider(Plugin):
 
         if ds is None:
             raise ValueError(f"Dataset {dataset_id} not found")
+        
+        # There is a better way to do this probably, but this works well and is very simple
+        extensions = dataset_spec.get('extensions', {})
+        for ext_name, ext_config in extensions.items():
+            extension = dataset_extension_manager.get_plugin(ext_name)
+            if extension is None:
+                logger.error(f"Could not find extension {ext_name} for dataset {dataset_id}")
+                continue
+            else:
+                logger.info(f"Applying extension {ext_name} to dataset {dataset_id}")
+            ds = extension().transform_dataset(ds=ds, config=ext_config)
 
         self.datasets[cache_key] = {
             'dataset': ds,
