@@ -1,0 +1,75 @@
+version: 2.1
+
+jobs:
+  build-deploy-docker:
+    docker:
+      - image: cimg/python:3.12.3
+    parameters:
+      RECIPIENT_EMAILS:
+        type: string
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Apply environment variables
+          command: |
+            echo 'export RECIPIENT_EMAILS=<<parameters.RECIPIENT_EMAILS>>' >> $BASH_ENV
+            echo 'export REPO_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME' >> $BASH_ENV
+      - run:
+          name: Install awscli
+          command: |
+            pip install awscli --upgrade
+            aws --version
+      - run:
+          name: Build Docker Image
+          command: |
+            TAG=andy-test
+            echo "export TAG=${TAG}" >> $BASH_ENV
+
+            echo "Building for TAG ${TAG}"
+            docker build -t ${ECR_REPO}:${TAG} .
+
+      - run:
+          name: Install Grype
+          command: |
+            mkdir -p $HOME/bin
+            curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b $HOME/bin
+            echo 'export PATH=$HOME/bin:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+
+      - run:
+          name: Scan the Docker image with Grype
+          command: |
+            mkdir scans
+            grype -o json "${ECR_REPO}:${TAG}" > ./scans/xreds.json
+
+      - run:
+          name: Check vulnerabilities
+          command: |
+            curl https://asa-dev.s3.amazonaws.com/scripts/check_vulnerabilities.py > ./check_vulnerabilities.py
+            python3 ./check_vulnerabilities.py
+
+      # - run:
+      #     name: Tag and Push Docker Image to ECR
+      #     command: |
+      #       aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
+      #       docker tag ${ECR_REPO}:${TAG} "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
+      #       docker push "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
+
+workflows:
+  build-deploy-dev:
+    jobs:
+      - build-deploy-docker:
+          RECIPIENT_EMAILS: "andy.nguy@tetratech.com"
+  scheduled-build-scan-deploy:
+    jobs:
+      - build-deploy-docker:
+          RECIPIENT_EMAILS: "andy.nguy@tetratech.com"
+    triggers:
+      - schedule:
+          cron: "0 9 * * 1"
+          filters:
+            branches:
+              only:
+                - main
