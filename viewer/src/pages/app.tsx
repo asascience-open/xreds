@@ -13,7 +13,8 @@ import MaterialIcon from '../components/material_icon';
 import Spinner from '../components/spinner';
 import NavBar from '../components/nav';
 import Sidebar from '../components/sidebar';
-import { useDatasetIdsQuery, useDatasets } from '../query/datasets';
+import { useDatasetIdsQuery, useDatasetsQuery } from '../query/datasets';
+import { Link } from 'react-router-dom';
 
 const colormaps: Array<{ id: string; name: string }> = [
     { id: 'rainbow', name: 'Rainbow' },
@@ -37,7 +38,7 @@ function App() {
     const lastClickPos = useRef<[number, number] | null>(null);
 
     const datasetIds = useDatasetIdsQuery();
-    const datasets = useDatasets(datasetIds.data)
+    const datasets = useDatasetsQuery(datasetIds.data);
 
     const [datasetMetadata, setDatasetMetadata] = useState<{
         [k: string]: { [j: string]: DatasetLayer };
@@ -80,8 +81,7 @@ function App() {
         //     const dataset = await fetchDataset(datasetId);
         //     setDatasets((d) => ({ ...d, [datasetId]: dataset }));
         // });
-    }, [datasetIds]);
-
+    }, [datasetIds.data]);
 
     useEffect(() => {
         if (!selectedLayer) {
@@ -436,7 +436,7 @@ function App() {
                                     />
                                 </div>
                             </div>
-                            {datasetIds.data?.map((d) => (
+                            {datasetIds.data?.map((d, i) => (
                                 <section key={d}>
                                     <div className="flex flex-row justify-between items-center content-center">
                                         <div
@@ -473,77 +473,96 @@ function App() {
                                             </h2>
                                         </div>
                                         <div className="flex flex-row justify-between items-center content-center">
-                                            {datasets[d] === undefined && (
+                                            {datasets.at(i)?.isError && (
+                                                <MaterialIcon
+                                                    className="pr-4 self-center align-middle transition-all text-red-400 hover:text-red-800"
+                                                    name="error"
+                                                    title="Error fetching dataset"
+                                                />
+                                            )}
+                                            {datasets.at(i)?.isFetching && (
                                                 <div className="flex-1 flex justify-center items-center pr-[1.1rem]">
                                                     <Spinner />
                                                 </div>
                                             )}
-                                            <MaterialIcon
+                                            {datasets.at(i)?.isFetched && (
+                                                <Link to={`/subset?dataset=${datasetIds.data.at(i)}`}>
+                                                    <MaterialIcon
+                                                        className="pr-4 self-center align-middle transition-all hover:text-blue-400"
+                                                        name="center_focus_weak"
+                                                        title="Subset and Export"
+                                                        onClick={() => {}}
+                                                    />
+                                                </Link>
+                                            )}
+                                            {/* <MaterialIcon
                                                 className="pr-4 self-center align-middle transition-all hover:text-blue-600"
                                                 name="integration_instructions"
                                                 title="Launch in JupyterHub"
                                                 onClick={() => {}}
-                                            />
-                                            <MaterialIcon
+                                            /> */}
+                                            {/* <MaterialIcon
                                                 className="self-center align-middle transition-all hover:text-blue-600"
                                                 name="dynamic_form"
                                                 title="Access via OpenDAP"
                                                 onClick={() => {}}
-                                            />
+                                            /> */}
                                         </div>
                                     </div>
                                     {!datasetsCollapsed[d] &&
-                                        Object.keys(datasets[d] ?? {}).map(
-                                            (v) => (
-                                                <div
-                                                    key={d + v}
-                                                    className={`p-1 flex flex-row justify-between items-center ${selectedLayer?.dataset === d && selectedLayer.variable === v ? 'bg-blue-100' : ''}`}
-                                                >
-                                                    <button
-                                                        className={`hover:text-blue-600 text-start`}
-                                                        onClick={() => {
-                                                            if (selectedLayer) {
-                                                                if (
-                                                                    selectedLayer.dataset ===
-                                                                        d &&
-                                                                    selectedLayer.variable ===
-                                                                        v
-                                                                ) {
-                                                                    setLayerOptions(
-                                                                        {},
-                                                                    );
-                                                                    setSelectedLayer(
-                                                                        undefined,
-                                                                    );
-                                                                    return;
-                                                                }
+                                        Object.keys(
+                                            datasets.at(i)?.data ?? {},
+                                        ).map((v) => (
+                                            <div
+                                                key={d + v}
+                                                className={`p-1 flex flex-row justify-between items-center ${selectedLayer?.dataset === d && selectedLayer.variable === v ? 'bg-blue-100' : ''}`}
+                                            >
+                                                <button
+                                                    className={`hover:text-blue-600 text-start`}
+                                                    onClick={() => {
+                                                        if (selectedLayer) {
+                                                            if (
+                                                                selectedLayer.dataset ===
+                                                                    d &&
+                                                                selectedLayer.variable ===
+                                                                    v
+                                                            ) {
+                                                                setLayerOptions(
+                                                                    {},
+                                                                );
+                                                                setSelectedLayer(
+                                                                    undefined,
+                                                                );
+                                                                return;
                                                             }
+                                                        }
 
-                                                            setLayerOptions({});
-                                                            setSelectedLayer({
-                                                                dataset: d,
-                                                                variable: v,
-                                                            });
-                                                        }}
-                                                    >
-                                                        {v}{' '}
-                                                        <span className="opacity-30">
-                                                            ({datasets[d][v]})
-                                                        </span>
-                                                    </button>
-                                                    {selectedLayer?.dataset ===
-                                                        d &&
-                                                        selectedLayer.variable ===
-                                                            v &&
-                                                        (layerLoading ||
-                                                            loadingMetadata) && (
-                                                            <div className="flex items-center justify-center">
-                                                                <Spinner />
-                                                            </div>
-                                                        )}
-                                                </div>
-                                            ),
-                                        )}
+                                                        setLayerOptions({});
+                                                        setSelectedLayer({
+                                                            dataset: d,
+                                                            variable: v,
+                                                        });
+                                                    }}
+                                                >
+                                                    {v}{' '}
+                                                    <span className="opacity-30">
+                                                        {
+                                                            datasets.at(i)
+                                                                ?.data?.[v]
+                                                        }
+                                                    </span>
+                                                </button>
+                                                {selectedLayer?.dataset === d &&
+                                                    selectedLayer.variable ===
+                                                        v &&
+                                                    (layerLoading ||
+                                                        loadingMetadata) && (
+                                                        <div className="flex items-center justify-center">
+                                                            <Spinner />
+                                                        </div>
+                                                    )}
+                                            </div>
+                                        ))}
                                 </section>
                             ))}
                         </>

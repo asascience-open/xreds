@@ -1,4 +1,8 @@
-import { useQueries, useQuery } from '@tanstack/react-query';
+import {
+    DefinedQueryObserverResult,
+    useQueries,
+    useQuery,
+} from '@tanstack/react-query';
 import { fetchDataset, fetchDatasetIds } from '../dataset';
 
 export const useDatasetIdsQuery = () =>
@@ -13,20 +17,3 @@ export const useDatasetsQuery = (datasetIds: Array<string> | undefined) =>
               }))
             : [],
     });
-
-export const useDatasets = (
-    datasetIds: Array<string> | undefined,
-): { [k: string]: any } => {
-    const datasetsQuery = useDatasetsQuery(datasetIds);
-
-    const datasets: { [k: string]: any } = {};
-    datasetsQuery?.forEach((query, i) => {
-        const datasetId = datasetIds?.[i];
-        if (query.data && datasetId) {
-            datasets[datasetId] = query.data;
-        }
-        return datasets;
-    });
-
-    return datasets;
-};
