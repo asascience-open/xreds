@@ -6,7 +6,10 @@
     "drop_variables": ["dstart"], 
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -17,7 +20,10 @@
     "drop_variables": ["dstart"], 
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ciofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ciofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -28,7 +34,10 @@
     "drop_variables": ["dstart"], 
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/creofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/creofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -39,7 +48,10 @@
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/dbofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/dbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -50,7 +62,10 @@
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -61,7 +76,10 @@
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/gomofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -72,7 +90,10 @@
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/leofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/leofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd", 
+        "vdatum_name": "igld85"
       }
     }
   },
@@ -83,7 +104,10 @@
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lmhofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lmhofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd", 
+        "vdatum_name": "igld85"
       }
     }
   },
@@ -94,7 +118,10 @@
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/loofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/loofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd", 
+        "vdatum_name": "igld85"
       }
     }
   },
@@ -105,7 +132,10 @@
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lsofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/lsofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd", 
+        "vdatum_name": "igld85"
       }
     }
   },
@@ -123,7 +153,10 @@
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -134,7 +167,10 @@
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -145,7 +181,10 @@
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/sfbofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/sfbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -162,7 +201,10 @@
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/tbofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/tbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -173,7 +215,10 @@
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -184,7 +229,10 @@
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/wcofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   }

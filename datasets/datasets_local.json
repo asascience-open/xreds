@@ -11,7 +11,10 @@
     },
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
@@ -48,7 +51,10 @@
     ],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr"
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl", 
+        "vdatum_name": "mllw"
       }
     }
   },
