@@ -1,19 +1,17 @@
 import { ImageSource, MapMouseEvent, Popup } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
-import {
-    DatasetLayer,
-    fetchDataset,
-    fetchDatasetIds,
-    fetchMetadata,
-    fetchMinMax,
-} from '../dataset';
 import { bboxContainsPoint, createImageLayerParams } from '../tools';
 import Map from '../components/map';
 import MaterialIcon from '../components/material_icon';
 import Spinner from '../components/spinner';
 import NavBar from '../components/nav';
 import Sidebar from '../components/sidebar';
-import { useDatasetIdsQuery, useDatasetsQuery } from '../query/datasets';
+import {
+    useDatasetIdsQuery,
+    useDatasetMetadataQuery,
+    useDatasetMinMaxQuery,
+    useDatasetsQuery,
+} from '../query/datasets';
 import { Link } from 'react-router-dom';
 
 const colormaps: Array<{ id: string; name: string }> = [
@@ -40,16 +38,10 @@ function App() {
     const datasetIds = useDatasetIdsQuery();
     const datasets = useDatasetsQuery(datasetIds.data);
 
-    const [datasetMetadata, setDatasetMetadata] = useState<{
-        [k: string]: { [j: string]: DatasetLayer };
-    }>({});
-
     const [selectedLayer, setSelectedLayer] = useState<
         { dataset: string; variable: string } | undefined
     >(undefined);
-    const [selectedLayerMinMax, setSelectedLayerMinMax] = useState<
-        { min: number; max: number } | undefined
-    >(undefined);
+    const selectedLayerMetadata = useDatasetMetadataQuery(selectedLayer);
     const [layerOptions, setLayerOptions] = useState<{
         date?: string;
         elevation?: string;
@@ -57,6 +49,21 @@ function App() {
         colorscaleMax?: number;
         colormap?: string;
     }>({});
+    const selectedLayerMinMax = useDatasetMinMaxQuery(
+        selectedLayer && selectedLayerMetadata.data
+            ? {
+                  dataset: selectedLayer.dataset,
+                  variable: selectedLayer.variable,
+                  date:
+                      layerOptions.date ??
+                      selectedLayerMetadata.data.defaultTime,
+                  elevation:
+                      layerOptions.elevation ??
+                      selectedLayerMetadata.data.defaultElevation?.toString(),
+              }
+            : undefined,
+    );
+
     const [layerTiling, setLayerTiling] = useState<boolean>(true);
     const [currentPopupData, setCurrentPopupData] = useState<any>(undefined);
 
@@ -65,7 +72,6 @@ function App() {
     const [datasetsCollapsed, setDatasetsCollapsed] = useState<{
         [k: string]: boolean;
     }>({});
-    const [loadingMetadata, setLoadingMetadata] = useState(false);
     const [layerLoading, setLayerLoading] = useState(false);
 
     useEffect(() => {
@@ -83,73 +89,13 @@ function App() {
         // });
     }, [datasetIds.data]);
 
-    useEffect(() => {
-        if (!selectedLayer) {
-            return;
-        }
-
-        setLoadingMetadata(true);
-        if (datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable]) {
-            const metadata =
-                datasetMetadata[selectedLayer.dataset][selectedLayer.variable];
-            fetchMinMax(
-                selectedLayer.dataset,
-                selectedLayer.variable,
-                layerOptions.date ?? metadata.defaultTime,
-                layerOptions.elevation ?? metadata.defaultElevation?.toString(),
-            )
-                .then((minmax) => {
-                    setLoadingMetadata(false);
-                    setSelectedLayerMinMax(minmax);
-                })
-                .catch((err) => {
-                    console.error(err);
-
-                    setLoadingMetadata(false);
-                    setSelectedLayerMinMax(undefined);
-                });
-        } else {
-            fetchMetadata(selectedLayer.dataset, selectedLayer.variable)
-                .then((metadata) => {
-                    fetchMinMax(
-                        selectedLayer.dataset,
-                        selectedLayer.variable,
-                        layerOptions.date ?? metadata.defaultTime,
-                        layerOptions.elevation ??
-                            metadata.defaultElevation?.toString(),
-                    ).then((minmax) => {
-                        setLoadingMetadata(false);
-                        setSelectedLayerMinMax(minmax);
-                    });
-
-                    setDatasetMetadata((datasetMetadata) => ({
-                        ...datasetMetadata,
-                        [selectedLayer.dataset]: {
-                            ...(datasetMetadata[selectedLayer.dataset] ?? {}),
-                            [selectedLayer.variable]: metadata,
-                        },
-                    }));
-                })
-                .catch((err) => {
-                    console.error(err);
-
-                    setLoadingMetadata(false);
-                    setSelectedLayerMinMax(undefined);
-                });
-        }
-
-        return () => {
-            setLoadingMetadata(false);
-            setSelectedLayerMinMax(undefined);
-        };
-    }, [selectedLayer, layerOptions.date, layerOptions.elevation]);
 
     useEffect(() => {
         if (
             !map.current ||
             !selectedLayer ||
-            !datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable] ||
-            !selectedLayerMinMax
+            !selectedLayerMetadata.data ||
+            !selectedLayerMinMax.data
         ) {
             return;
         }
@@ -160,31 +106,29 @@ function App() {
 
         let urlOptions: string[] = [];
         if (
-            (layerOptions.colorscaleMin ?? selectedLayerMinMax.min) !==
+            (layerOptions.colorscaleMin ?? selectedLayerMinMax.data.min) !==
                 undefined &&
-            (layerOptions.colorscaleMax ?? selectedLayerMinMax.max) !==
+            (layerOptions.colorscaleMax ?? selectedLayerMinMax.data.max) !==
                 undefined
         ) {
             urlOptions.push(
-                `&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMinMax.min},${layerOptions.colorscaleMax ?? selectedLayerMinMax.max}`,
+                `&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMinMax.data.min},${layerOptions.colorscaleMax ?? selectedLayerMinMax.data.max}`,
             );
         }
         if (
             (layerOptions.date ??
-                datasetMetadata[selectedLayer.dataset][selectedLayer.variable]
-                    .defaultTime) !== undefined
+                selectedLayerMetadata.data.defaultTime) !== undefined
         ) {
             urlOptions.push(
-                `&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`,
+                `&time=${layerOptions.date ?? selectedLayerMetadata.data.defaultTime}`,
             );
         }
         if (
             (layerOptions.elevation ??
-                datasetMetadata[selectedLayer.dataset][selectedLayer.variable]
-                    .defaultElevation) !== undefined
+                selectedLayerMetadata.data.defaultElevation) !== undefined
         ) {
             urlOptions.push(
-                `&elevation=${layerOptions.elevation ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultElevation}`,
+                `&elevation=${layerOptions.elevation ?? selectedLayerMetadata.data.defaultElevation}`,
             );
         }
 
@@ -197,9 +141,7 @@ function App() {
                 type: 'raster',
                 tiles: [url],
                 tileSize: TILE_SIZE,
-                bounds: datasetMetadata[selectedLayer.dataset][
-                    selectedLayer.variable
-                ].bbox,
+                bounds: selectedLayerMetadata.data.bbox,
             });
         } else {
             const imgParams = createImageLayerParams(map.current);
@@ -232,10 +174,8 @@ function App() {
 
         const onClick = async (e: MapMouseEvent) => {
             if (
-                !bboxContainsPoint(
-                    datasetMetadata[selectedLayer.dataset][
-                        selectedLayer.variable
-                    ].bbox,
+                selectedLayerMetadata.data?.bbox && !bboxContainsPoint(
+                    selectedLayerMetadata.data.bbox,
                     e.lngLat,
                 )
             ) {
@@ -254,18 +194,14 @@ function App() {
                 const bbox = `&bbox=${e.lngLat.lng - 0.1},${e.lngLat.lat - 0.1},${e.lngLat.lng + 0.1},${e.lngLat.lat + 0.1}`;
                 const time =
                     (layerOptions.date ??
-                        datasetMetadata[selectedLayer.dataset][
-                            selectedLayer.variable
-                        ].defaultTime) !== undefined
-                        ? `&time=${layerOptions.date ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultTime}`
+                        selectedLayerMetadata.data?.defaultTime) !== undefined
+                        ? `&time=${layerOptions.date ?? selectedLayerMetadata.data?.defaultTime}`
                         : '';
 
                 const elevation =
                     (layerOptions.elevation ??
-                        datasetMetadata[selectedLayer.dataset][
-                            selectedLayer.variable
-                        ].defaultElevation) !== undefined
-                        ? `&elevation=${layerOptions.elevation ?? datasetMetadata[selectedLayer.dataset][selectedLayer.variable].defaultElevation}`
+                        selectedLayerMetadata.data?.defaultElevation) !== undefined
+                        ? `&elevation=${layerOptions.elevation ?? selectedLayerMetadata.data?.defaultElevation}`
                         : '';
 
                 const response = await fetch(
@@ -331,8 +267,8 @@ function App() {
             map.current?.removeSource(sourceId);
         };
     }, [
-        datasetMetadata,
-        selectedLayerMinMax,
+        selectedLayerMetadata.data,
+        selectedLayerMinMax.data,
         layerTiling,
         layerOptions.colorscaleMin,
         layerOptions.colorscaleMax,
@@ -344,7 +280,7 @@ function App() {
             !map.current ||
             !currentPopupData ||
             !selectedLayer ||
-            !datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable]
+            !selectedLayerMetadata.data
         ) {
             return;
         }
@@ -372,7 +308,7 @@ function App() {
                 <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
                 <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
                 <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
-                <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${datasetMetadata[selectedLayer.dataset][selectedLayer.variable].units}</span>
+                <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${selectedLayerMetadata.data?.units}</span>
               `
             }
           </div>
@@ -399,10 +335,6 @@ function App() {
             popup.remove();
         };
     }, [currentPopupData]);
-
-    const selectedLayerMetadata = selectedLayer
-        ? datasetMetadata[selectedLayer.dataset]?.[selectedLayer.variable]
-        : undefined;
 
     return (
         <div className="h-screen w-screen flex flex-col overflow-hidden">
@@ -486,7 +418,9 @@ function App() {
                                                 </div>
                                             )}
                                             {datasets.at(i)?.isFetched && (
-                                                <Link to={`/subset?dataset=${datasetIds.data.at(i)}`}>
+                                                <Link
+                                                    to={`/subset?dataset=${datasetIds.data.at(i)}`}
+                                                >
                                                     <MaterialIcon
                                                         className="pr-4 self-center align-middle transition-all hover:text-blue-400"
                                                         name="center_focus_weak"
@@ -556,7 +490,7 @@ function App() {
                                                     selectedLayer.variable ===
                                                         v &&
                                                     (layerLoading ||
-                                                        loadingMetadata) && (
+                                                        selectedLayerMinMax.isFetching || selectedLayerMetadata.isFetching) && (
                                                         <div className="flex items-center justify-center">
                                                             <Spinner />
                                                         </div>
@@ -584,15 +518,15 @@ function App() {
                         <span className="text-center">
                             {selectedLayer.dataset} - {selectedLayer.variable}
                         </span>
-                        {loadingMetadata || !selectedLayerMetadata ? (
+                        {selectedLayerMinMax.isFetching || selectedLayerMetadata.isFetching || !selectedLayerMetadata.data ? (
                             <div className="flex-1 flex justify-center items-center">
                                 <Spinner />
                             </div>
                         ) : (
                             <>
                                 <span className="font-bold text-center">
-                                    {selectedLayerMetadata.title} (
-                                    {selectedLayerMetadata.units})
+                                    {selectedLayerMetadata.data.title} (
+                                    {selectedLayerMetadata.data.units})
                                 </span>
                                 <div
                                     className={
@@ -607,7 +541,7 @@ function App() {
                                             className="rounded-md p-1 mx-1"
                                             value={
                                                 layerOptions?.date ??
-                                                selectedLayerMetadata.defaultTime
+                                                selectedLayerMetadata.data.defaultTime
                                             }
                                             onChange={(e) =>
                                                 setLayerOptions({
@@ -616,7 +550,7 @@ function App() {
                                                 })
                                             }
                                         >
-                                            {selectedLayerMetadata.times?.map(
+                                            {selectedLayerMetadata.data.times?.map(
                                                 (date: string) => (
                                                     <option
                                                         key={date}
@@ -628,7 +562,7 @@ function App() {
                                             )}
                                         </select>
                                     </div>
-                                    {selectedLayerMetadata.defaultElevation !==
+                                    {selectedLayerMetadata.data.defaultElevation !==
                                         undefined && (
                                         <div
                                             className={
@@ -642,7 +576,7 @@ function App() {
                                                 className="rounded-md p-1 mx-1"
                                                 value={
                                                     layerOptions?.elevation ??
-                                                    selectedLayerMetadata.defaultElevation.toString()
+                                                    selectedLayerMetadata.data.defaultElevation.toString()
                                                 }
                                                 onChange={(e) =>
                                                     setLayerOptions({
@@ -652,7 +586,7 @@ function App() {
                                                     })
                                                 }
                                             >
-                                                {selectedLayerMetadata.elevations?.map(
+                                                {selectedLayerMetadata.data.elevations?.map(
                                                     (e: number) => (
                                                         <option
                                                             key={e.toString()}
@@ -671,7 +605,7 @@ function App() {
                                         className="w-16 mx-1 text-center rounded-md p-1"
                                         defaultValue={
                                             layerOptions.colorscaleMin ??
-                                            selectedLayerMinMax?.min ??
+                                            selectedLayerMinMax.data?.min ??
                                             0
                                         }
                                         type={'number'}
@@ -733,7 +667,7 @@ function App() {
                                         className="w-16 mx-1 text-center rounded-md p-1"
                                         defaultValue={
                                             layerOptions.colorscaleMax ??
-                                            selectedLayerMinMax?.max ??
+                                            selectedLayerMinMax.data?.max ??
                                             10
                                         }
                                         type={'number'}

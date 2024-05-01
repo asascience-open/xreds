@@ -1,9 +1,10 @@
+import { useQueries, useQuery } from '@tanstack/react-query';
 import {
-    DefinedQueryObserverResult,
-    useQueries,
-    useQuery,
-} from '@tanstack/react-query';
-import { fetchDataset, fetchDatasetIds } from '../dataset';
+    fetchDataset,
+    fetchDatasetIds,
+    fetchMetadata,
+    fetchMinMax,
+} from '../dataset';
 
 export const useDatasetIdsQuery = () =>
     useQuery({ queryKey: ['datasets'], queryFn: fetchDatasetIds });
@@ -16,4 +17,38 @@ export const useDatasetsQuery = (datasetIds: Array<string> | undefined) =>
                   queryFn: () => fetchDataset(datasetId),
               }))
             : [],
+    });
+
+export const useDatasetMetadataQuery = (
+    dataset:
+        | {
+              dataset: string;
+              variable: string;
+          }
+        | undefined,
+) =>
+    useQuery({
+        queryKey: ['dataset', 'metadata', dataset],
+        queryFn: () =>
+            dataset
+                ? fetchMetadata(dataset.dataset, dataset.variable)
+                : undefined,
+        enabled: !!dataset,
+    });
+
+export const useDatasetMinMaxQuery = (dataset: {
+    dataset: string;
+    variable: string;
+    date?: string;
+    elevation?: string;
+} | undefined) =>
+    useQuery({
+        queryKey: ['dataset', 'minmax', dataset],
+        queryFn: () => dataset !== undefined ? fetchMinMax(
+                dataset.dataset,
+                dataset.variable,
+                dataset.date,
+                dataset.elevation,
+            ) : undefined,
+        enabled: !!dataset,
     });
