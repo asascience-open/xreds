@@ -40,6 +40,16 @@ class ExportPlugin(Plugin):
 
             return formats
 
+        @router.get(
+            "/netcdf_threshold",
+            summary="Get the threshold for exporting NetCDF files",
+        )
+        def get_netcdf_threshold():
+            """
+            Returns the threshold for exporting NetCDF files
+            """
+            return {'threshold': self.netcdf_threshold}
+
         return router
 
     @hookimpl

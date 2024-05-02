@@ -7,7 +7,7 @@ from xreds.plugins.size_plugin import SizePlugin
 
 from xreds.spastaticfiles import SPAStaticFiles
 from xreds.dataset_provider import DatasetProvider
-from xreds.plugins.subset_plugin import SubsetPlugin
+from xreds.plugins.subset_plugin import SubsetPlugin, SubsetSupportPlugin
 
 
 rest = xpublish.Rest(
@@ -21,9 +21,10 @@ rest = xpublish.Rest(
 )
 
 rest.register_plugin(DatasetProvider())
+rest.register_plugin(SubsetSupportPlugin())
 rest.register_plugin(SubsetPlugin())
 rest.register_plugin(SizePlugin())
-rest.register_plugin(ExportPlugin(netcdf_threshold=300))
+rest.register_plugin(ExportPlugin(netcdf_threshold=500))
 
 app = rest.app
 
