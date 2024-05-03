@@ -10,11 +10,16 @@ export default defineConfig({
         target: 'http://0.0.0.0:8090',
         changeOrigin: true,
         secure: false,
-      }, 
+      },
       '/docs': {
         target: 'http://0.0.0.0:8090',
         changeOrigin: true,
         secure: false,
+      },
+      '/export': {
+          target: 'http://0.0.0.0:8090',
+          changeOrigin: true,
+          secure: false,
       }
     }
   }

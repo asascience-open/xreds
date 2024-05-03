@@ -14,12 +14,12 @@ class ExportPlugin(Plugin):
     dataset_router_prefix: str = '/export'
     dataset_router_tags: Sequence[str] = ['export']
 
-    netcdf_threshold: int = 500
+    export_threshold: int = 500
 
-    def __init__(self, netcdf_threshold: Optional[int] = None):
+    def __init__(self, export_threshold: Optional[int] = None):
         super().__init__(name='export')
-        if netcdf_threshold is not None:
-            self.netcdf_threshold = netcdf_threshold
+        if export_threshold is not None:
+            self.export_threshold = export_threshold
 
     @hookimpl
     def app_router(self):
@@ -40,6 +40,16 @@ class ExportPlugin(Plugin):
 
             return formats
 
+        @router.get(
+            "/threshold",
+            summary="Get the threshold for exporting files",
+        )
+        def get_netcdf_threshold():
+            """
+            Returns the threshold for exporting files in MB
+            """
+            return {'threshold': self.export_threshold}
+
         return router
 
     @hookimpl
@@ -54,7 +64,7 @@ class ExportPlugin(Plugin):
             if filename.endswith('.nc'):
                 # Export netcdf if the size is below our threshold
                 mbs = dataset.nbytes / 1024 ** 2
-                if mbs < self.netcdf_threshold:
+                if mbs < self.export_threshold:
                     nc = dataset.to_netcdf(format='NETCDF4')
                     return Response(
                         content=nc,
@@ -62,7 +72,7 @@ class ExportPlugin(Plugin):
                         headers={'Content-Disposition': f'attachment; filename={filename}', 'Content-Length': str(len(nc))}
                     )
                 else:
-                    return {'message': f'File too large to export. Limit is {self.netcdf_threshold}MB and the requested file is {mbs}MB'}
+                    return {'message': f'File too large to export. Limit is {self.export_threshold}MB and the requested file is {mbs}MB'}
 
             return {'message': 'Unsupported file format'}
 

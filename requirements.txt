@@ -37,4 +37,4 @@ xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@6020
 xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms@9574a71405e43c479b7ebcfa1e5d0def04c598d5
 xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@0a4505b30696dec30dc95e0ffe12ea6b598930d7
 opendap-protocol<1.2.0
-xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@9415824f45750ede723ba273f67d3e1954d34bd7
+xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@81ce464b6357e7353deaaf350ad1be22295d238e

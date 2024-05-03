@@ -75,7 +75,10 @@ def extract_time_query(subset_query: str) -> tuple[str, str]:
         raise ValueError("Invalid time subset query format")
 
     groups = match.groups()
-    return groups[0], groups[1]
+
+    start = groups[0]
+    end = groups[1]
+    return start, end
 
 
 class SubsetQuery:
@@ -110,6 +113,8 @@ class SubsetQuery:
         bbox = None
         time = None
 
+        logger.info(f"Extracting subset query from {subset_query}")
+
         for query in queries:
             if 'POLYGON' in query:
                 points = extract_polygon_query(query)
@@ -131,8 +136,36 @@ class SubsetQuery:
         elif self.bbox is not None:
             ds = ds.subset_grid.grid.subset_bbox(ds, self.bbox)
         if self.time is not None:
-            ds = ds.cf.sel(time=slice(*self.time))
+            # Remove Z from the time strings for now to avoid issues with parsing
+            # from xarray. This is due to most datasets not using time aware
+            # times
+            # TODO: Remove this when time aware times are supported
+            time = (self.time[0].replace('Z', ''), self.time[1].replace('Z', ''))
+            ds = ds.cf.sel(time=slice(*time))
         return ds
+
+
+def format_timestamp(value):
+    return value.dt.strftime(date_format="%Y-%m-%dT%H:%M:%SZ").values
+
+class SubsetSupportPlugin(Plugin):
+
+    name: str = 'subset_support'
+
+    dataset_router_prefix: str = '/subset_support'
+    dataset_router_tags: Sequence[str] = ['subset_support']
+
+    @hookimpl
+    def dataset_router(self, deps: Dependencies):
+        router = APIRouter(prefix=self.dataset_router_prefix, tags=list(self.dataset_router_tags))
+
+        @router.get('/time_range')
+        def time_range(dataset=Depends(deps.dataset)):
+            min_time = dataset.cf['time'].min().dt.strftime(date_format="%Y-%m-%dT%H:%M:%SZ").values
+            max_time = dataset.cf['time'].max().dt.strftime(date_format="%Y-%m-%dT%H:%M:%SZ").values
+            return {'min_time': f'{min_time}', 'max_time': f'{max_time}'}
+
+        return router
 
 
 class SubsetPlugin(Plugin):
@@ -164,7 +197,7 @@ class SubsetPlugin(Plugin):
 
         all_plugins = list(deps.plugin_manager().get_plugins())
         this_plugin = [p for p in all_plugins if p.name == self.name]
-        
+
         # We can subset a vdatum dataset, but not the other way around
         vdatum_plugin = [p for p in all_plugins if p.name == 'vdatum']
         this_plugin.extend(vdatum_plugin)
