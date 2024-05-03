@@ -20,11 +20,13 @@ rest = xpublish.Rest(
     datasets=None,
 )
 
+netcdf_threshold = int(os.environ.get("NETCDF_THRESHOLD", 500))
+
 rest.register_plugin(DatasetProvider())
 rest.register_plugin(SubsetSupportPlugin())
 rest.register_plugin(SubsetPlugin())
 rest.register_plugin(SizePlugin())
-rest.register_plugin(ExportPlugin(netcdf_threshold=500))
+rest.register_plugin(ExportPlugin(netcdf_threshold=netcdf_threshold))
 
 app = rest.app
 
