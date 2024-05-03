@@ -16,11 +16,11 @@ import { useQuery } from '@tanstack/react-query';
 import MaterialIcon from '../components/material_icon';
 import CopyUrl from '../components/copy_url';
 
-const useNetCDFThreshold = () =>
+const useExportThreshold = () =>
     useQuery({
-        queryKey: ['netcdf_threshold'],
+        queryKey: ['export_threshold'],
         queryFn: async () => {
-            const response = await fetch('/export/netcdf_threshold');
+            const response = await fetch('/export/threshold');
             const { threshold } = await response.json();
             return threshold as number;
         },
@@ -106,7 +106,7 @@ export default function SubsetTool() {
     );
     const [showSidebar, setSidebarShowing] = useState(true);
 
-    const netcdfThreshold = useNetCDFThreshold();
+    const exportThreshold = useExportThreshold();
     const datasetIds = useDatasetIdsQuery();
     // const datasets = useDatasetsQuery(datasetIds.data);
 
@@ -369,15 +369,15 @@ export default function SubsetTool() {
                                     text={
                                         selectedDatasetSize.data?.size &&
                                         selectedDatasetSize.data?.size <
-                                            (netcdfThreshold.data ?? 500)
+                                            (exportThreshold.data ?? 500)
                                             ? 'Download as NetCDF'
-                                            : `Dataset too large (> ${netcdfThreshold.data} MB) to download directly. Refine further to download as NetCDF.`
+                                            : `Dataset too large (> ${exportThreshold.data} MB) to download directly. Refine further to download as NetCDF.`
                                     }
                                     linkTitle={true}
                                     disabled={
                                         selectedDatasetSize.data?.size &&
                                         selectedDatasetSize.data?.size <
-                                            (netcdfThreshold.data ?? 500)
+                                            (exportThreshold.data ?? 500)
                                             ? false
                                             : true
                                     }
