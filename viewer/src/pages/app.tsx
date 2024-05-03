@@ -429,7 +429,7 @@ function App() {
                                                         />
                                                     </a>
                                                     <Link
-                                                        to={`/subset?dataset=${datasetIds.data.at(i)}`}
+                                                        to={`/subset_export?dataset=${datasetIds.data.at(i)}`}
                                                     >
                                                         <MaterialIcon
                                                             className="self-center align-middle transition-all hover:text-blue-400"

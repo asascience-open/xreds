@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css';
 import App from './pages/app';
 import ErrorPage from './pages/error';
-import SubsetTool from './pages/subset_tool';
+import SubsetExportPage from './pages/subset_export';
 
 const router = createBrowserRouter([
     {
@@ -15,8 +15,8 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
     },
     {
-        path: '/subset',
-        element: <SubsetTool />,
+        path: '/subset_export',
+        element: <SubsetExportPage />,
         errorElement: <ErrorPage />,
     },
 ], {
