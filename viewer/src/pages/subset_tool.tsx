@@ -14,6 +14,7 @@ import {
 import Spinner from '../components/spinner';
 import { useQuery } from '@tanstack/react-query';
 import MaterialIcon from '../components/material_icon';
+import CopyUrl from '../components/copy_url';
 
 const useNetCDFThreshold = () =>
     useQuery({
@@ -211,7 +212,11 @@ export default function SubsetTool() {
                 <div className="flex flex-col py-2">
                     <h1 className="text-2xl font-bold">Subset and Export</h1>
 
-                    {datasetIds.isFetching && <Spinner />}
+                    {datasetIds.isFetching && (
+                        <div className='w-full flex flex-row justify-center'>
+                            <Spinner />
+                        </div>
+                    )}
 
                     <form className="mt-4">
                         <label htmlFor="dataset">
@@ -236,7 +241,11 @@ export default function SubsetTool() {
 
                         {selectedDataset && (
                             <div>
-                                {availableDates.isLoading && <Spinner />}
+                                {availableDates.isLoading && (
+                                    <div className='w-full flex flex-row justify-center py-3'>
+                                        <Spinner />
+                                    </div>
+                                )}
                                 {availableDates.data && (
                                     <div className="mt-4">
                                         <label>
@@ -340,78 +349,39 @@ export default function SubsetTool() {
                                         {`${selectedDatasetSize.data?.size.toFixed(0) ?? 'unknown'} ${selectedDatasetSize.data?.unit ?? ''}`}
                                     </p>
                                 </div>
-                                <div className="flex flex-row py-2">
-                                    <MaterialIcon
-                                        name="content_copy"
-                                        className="mr-4 text-blue-500"
-                                        onClick={() => {
-                                            const host =
-                                                window.location.protocol +
-                                                '//' +
-                                                window.location.host;
-                                            const url = `${host}${selectedDatasetUrl}`;
-                                            window.navigator.clipboard.writeText(
-                                                `${url}`,
-                                            );
-                                        }}
-                                    />
-                                    <a
-                                        href={selectedDatasetUrl}
-                                        target="_blank"
-                                        className="text-blue-500 underline"
-                                    >
-                                        View Dataset Info
-                                    </a>
-                                </div>
-                                <div
-                                    className="flex flex-row py-2 cursor-pointer"
-                                    onClick={() => {
-                                        const host =
-                                            window.location.protocol +
-                                            '//' +
-                                            window.location.host;
-                                        const url = `${host}${selectedDatasetUrl}zarr/`;
-                                        window.navigator.clipboard.writeText(
-                                            `${url}`,
-                                        );
-                                    }}
-                                >
-                                    <MaterialIcon
-                                        name="content_copy"
-                                        className="mr-4 text-blue-500"
-                                    />
-                                    <span className="text-blue-500">
-                                        Copy Zarr Dataset URL
-                                    </span>
-                                </div>
-                                <div className="flex flex-row items-center py-2">
-                                    <MaterialIcon
-                                        name="download"
-                                        className={`mr-4 ${
-                                            selectedDatasetSize.data?.size &&
-                                            selectedDatasetSize.data?.size <
-                                                (netcdfThreshold.data ?? 500)
-                                                ? 'text-blue-500'
-                                                : 'text-gray-400'
-                                        }`}
-                                    />
-                                    {selectedDatasetSize.data?.size &&
-                                    selectedDatasetSize.data?.size <
-                                        (netcdfThreshold.data ?? 500) ? (
-                                        <a
-                                            href={`${selectedDatasetUrl}export/${datasetIds.data![selectedDataset!]}.nc`}
-                                            target="_blank"
-                                            className="text-blue-500 underline"
-                                        >
-                                            Download as NetCDF
-                                        </a>
-                                    ) : (
-                                        <p className="text-gray-400">
-                                            Dataset too large {`(> ${netcdfThreshold.data} MB)`} to
-                                            download directly. Refine further to download as NetCDF.
-                                        </p>
-                                    )}
-                                </div>
+                                <CopyUrl
+                                    key={selectedDatasetUrl}
+                                    url={selectedDatasetUrl}
+                                    text="View Dataset Info"
+                                    linkTitle={true}
+                                    disabled={false}
+                                />
+                                <CopyUrl
+                                    key={selectedDatasetUrl + 'zarr/'}
+                                    url={selectedDatasetUrl + 'zarr/'}
+                                    text="Copy Zarr Dataset URL"
+                                    linkTitle={false}
+                                    disabled={false}
+                                />
+                                <CopyUrl
+                                    key={`${selectedDatasetUrl}export/${datasetIds.data![selectedDataset!]}.nc`}
+                                    url={`${selectedDatasetUrl}export/${datasetIds.data![selectedDataset!]}.nc`}
+                                    text={
+                                        selectedDatasetSize.data?.size &&
+                                        selectedDatasetSize.data?.size <
+                                            (netcdfThreshold.data ?? 500)
+                                            ? 'Download as NetCDF'
+                                            : `Dataset too large (> ${netcdfThreshold.data} MB) to download directly. Refine further to download as NetCDF.`
+                                    }
+                                    linkTitle={true}
+                                    disabled={
+                                        selectedDatasetSize.data?.size &&
+                                        selectedDatasetSize.data?.size <
+                                            (netcdfThreshold.data ?? 500)
+                                            ? false
+                                            : true
+                                    }
+                                />
                             </div>
                         )}
                     </form>
