@@ -418,6 +418,7 @@ function App() {
                                             {datasets.at(i)?.isFetched && (
                                                 <>
                                                     <a
+                                                        target="_blank"
                                                         href={`/datasets/${datasetIds.data.at(i)}/`}
                                                     >
                                                         <MaterialIcon

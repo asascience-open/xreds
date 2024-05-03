@@ -35,6 +35,6 @@ scipy==1.13.0
 kerchunk@git+https://github.com/fsspec/kerchunk@8d8e84c619a63d4372b33b05c9bfe35fdcb6e61d
 xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@6020c0464f9b7f872f4307dab9d7c97d5d981387
 xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms@9574a71405e43c479b7ebcfa1e5d0def04c598d5
-xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@0a4505b30696dec30dc95e0ffe12ea6b598930d7
+xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@019e53acd2e0ad5a1d909d1acfe9863f2e90e51b
 opendap-protocol<1.2.0
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@81ce464b6357e7353deaaf350ad1be22295d238e

@@ -19,7 +19,9 @@ const router = createBrowserRouter([
         element: <SubsetTool />,
         errorElement: <ErrorPage />,
     },
-]);
+], {
+    basename: import.meta.env.VITE_XREDS_BASE_URL,
+});
 
 const queryClient = new QueryClient();
 

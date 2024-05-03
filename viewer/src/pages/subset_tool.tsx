@@ -6,16 +6,11 @@ import Map from '../components/map';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 
-import {
-    useDatasetIdsQuery,
-    useDatasetMetadataQuery,
-    useDatasetsQuery,
-} from '../query/datasets';
 import Spinner from '../components/spinner';
 import { useQuery } from '@tanstack/react-query';
-import MaterialIcon from '../components/material_icon';
 import CopyUrl from '../components/copy_url';
 import { useSearchParams } from 'react-router-dom';
+import { useDatasetIdsQuery } from '../query/datasets';
 
 const useExportThreshold = () =>
     useQuery({

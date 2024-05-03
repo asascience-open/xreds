@@ -1,3 +1,5 @@
+
+
 # Build the react frontend
 FROM node:18-alpine
 
@@ -13,25 +15,23 @@ COPY viewer/index.html ./index.html
 COPY viewer/public ./public
 COPY viewer/src ./src
 
+ARG ROOT_PATH=/xreds/
+ENV VITE_XREDS_BASE_URL=${ROOT_PATH}
 RUN npm run build
 
 # Build the python service layer
 FROM public.ecr.aws/b1r9q1p5/rps-matplotlib:latest
 
 # Native dependencies
-RUN dnf -y install \
-    gcc \
-    gcc-c++ \
-    make \
+RUN apt-get update && apt-get install -y \
     git \
-    gcc-gfortran \
-    openblas-devel \
-    geos-devel \
-    netcdf-devel \
-    proj-devel \
-    udunits2-devel \
-    eccodes-devel
-    # RUN apt-get install -y git libc-dev gcc g++ libffi-dev build-essential libudunits2-dev libgdal-dev libnetcdf-dev libeccodes-dev libgeos-dev cmake libopenblas-dev
+    libhdf5-dev \
+    libopenblas-dev \
+    libgeos-dev \
+    libnetcdf-dev \
+    libproj-dev \
+    libudunits2-dev \
+    libeccodes-dev
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/xreds
@@ -64,17 +64,8 @@ COPY --from=0 /opt/viewer/dist ./viewer/dist
 
 # Set the port to run the server on
 ENV PORT 8090
-ENV ROOT_PATH "/xreds/"
-
-RUN	dnf -y remove \
-	wget \
-	make \
-	gcc \
-	gcc-c++ \
-        git \
-        && dnf autoremove -y \
-        && dnf clean dbcache \
-        && dnf clean all
+ARG ROOT_PATH=/xreds/
+ENV ROOT_PATH ${ROOT_PATH}
 
 # Run the webserver
 CMD ["sh", "-c", "gunicorn --workers=1 --worker-class=uvicorn.workers.UvicornWorker --log-level=debug --bind=0.0.0.0:${PORT} app:app"]
