@@ -202,6 +202,36 @@ export default function SubsetTool() {
         setSelectedDatasetUrl(subsetUrl);
     }, [selectedDataset, startDate, endDate, selectedArea]);
 
+    useEffect(() => {
+        if (!selectedArea || !map.current) {
+            return;
+        }
+
+        map.current.addSource('selected-area', {
+            type: 'geojson',
+            data: selectedArea,
+        });
+
+        map.current.addLayer({
+            id: 'selected-area',
+            type: 'fill',
+            source: 'selected-area',
+            paint: {
+                'fill-color': '#088',
+                'fill-opacity': 0.5,
+            },
+        });
+
+        return () => {
+            if (!map.current) {
+                return;
+            }
+
+            map.current.removeLayer('selected-area');
+            map.current.removeSource('selected-area');
+        };
+    }, [selectedArea]);
+
     return (
         <div className="h-screen w-screen flex flex-col overflow-hidden">
             <NavBar
@@ -326,7 +356,7 @@ export default function SubsetTool() {
                                                 : 'Select area to subset'}
                                         </button>
                                     </label>
-                                    <div className="mt-2">
+                                    <div className="mt-2 flex flex-row items-center">
                                         <span
                                             className={`${selectedArea ? 'text-black' : 'text-gray-400'}`}
                                         >
@@ -334,6 +364,15 @@ export default function SubsetTool() {
                                                 ? 'Area selected!'
                                                 : 'No area selected'}
                                         </span>
+                                        { selectedArea && (
+                                        <button
+                                            type="button"
+                                            className="text-blue-400 p-2 rounded-md underline"
+                                            onClick={() => setSelectedArea(undefined)}
+                                        >
+                                            Clear
+                                        </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -344,6 +383,7 @@ export default function SubsetTool() {
                                     <h3 className="font-bold text-xl">
                                         Selected Dataset
                                     </h3>
+                                    <p className='font-bold text-gray-500'>{datasetIds.data?.[selectedDataset!]}</p>
                                     <p className="text-gray-400">
                                         Dataset Size:{' '}
                                         {`${selectedDatasetSize.data?.size.toFixed(0) ?? 'unknown'} ${selectedDatasetSize.data?.unit ?? ''}`}
