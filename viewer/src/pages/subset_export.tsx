@@ -8,7 +8,7 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 
 import Spinner from '../components/spinner';
 import { useQuery } from '@tanstack/react-query';
-import CopyUrl from '../components/copy_url';
+import CopyLink from '../components/copy_link';
 import { useSearchParams } from 'react-router-dom';
 import { useDatasetIdsQuery } from '../query/datasets';
 
@@ -51,7 +51,7 @@ const useSelectedDatasetSize = (url: string | undefined) =>
                 return undefined;
             }
 
-            const response = await fetch(`${url}/size/`);
+            const response = await fetch(`${url}size/`);
             return await response.json();
         },
         enabled: !!url,
@@ -401,21 +401,23 @@ export default function SubsetTool() {
                                         {`${selectedDatasetSize.data?.size.toFixed(0) ?? 'unknown'} ${selectedDatasetSize.data?.unit ?? ''}`}
                                     </p>
                                 </div>
-                                <CopyUrl
+                                <CopyLink
                                     key={selectedDatasetUrl}
                                     url={selectedDatasetUrl}
                                     text="View Dataset Info"
                                     linkTitle={true}
                                     disabled={false}
+                                    origin_path={'subset_export'}
                                 />
-                                <CopyUrl
+                                <CopyLink
                                     key={selectedDatasetUrl + 'zarr/'}
                                     url={selectedDatasetUrl + 'zarr/'}
                                     text="Copy Zarr Dataset URL"
                                     linkTitle={false}
                                     disabled={false}
+                                    origin_path={'subset_export'}
                                 />
-                                <CopyUrl
+                                <CopyLink
                                     key={`${selectedDatasetUrl}export/${datasetIds.data![selectedDataset!]}.nc`}
                                     url={`${selectedDatasetUrl}export/${datasetIds.data![selectedDataset!]}.nc`}
                                     text={
@@ -433,6 +435,7 @@ export default function SubsetTool() {
                                             ? false
                                             : true
                                     }
+                                    origin_path={'subset_export'}
                                 />
                             </div>
                         )}

@@ -6,6 +6,7 @@ interface CopyUrlProps {
     text: string;
     linkTitle: boolean;
     disabled: boolean;
+    origin_path?: string;
 }
 
 export default function CopyUrl({
@@ -13,6 +14,7 @@ export default function CopyUrl({
     text,
     linkTitle,
     disabled,
+    origin_path,
 }: CopyUrlProps) {
     const [copied, setCopied] = useState(false);
 
@@ -27,10 +29,11 @@ export default function CopyUrl({
                               window.location.protocol +
                               '//' +
                               window.location.host;
-                          let path =
-                              window.location.pathname.split('subset')[0];
+                          let path = origin_path
+                              ? window.location.pathname.split(origin_path)[0]
+                              : window.location.pathname;
                           if (path.endsWith('/')) {
-                                path = path.slice(0, -1);
+                              path = path.slice(0, -1);
                           }
                           const copy_url = `${host}${path}${url}`;
                           window.navigator.clipboard
@@ -51,9 +54,13 @@ export default function CopyUrl({
                                   window.location.protocol +
                                   '//' +
                                   window.location.host;
-                              let path = window.location.pathname.split('subset')[0];
+                              let path = origin_path
+                                  ? window.location.pathname.split(
+                                        origin_path,
+                                    )[0]
+                                  : window.location.pathname;
                               if (path.endsWith('/')) {
-                                    path = path.slice(0, -1);
+                                  path = path.slice(0, -1);
                               }
                               const copy_url = `${host}${path}${url}`;
                               window.navigator.clipboard.writeText(
