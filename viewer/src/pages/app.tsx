@@ -89,7 +89,6 @@ function App() {
         // });
     }, [datasetIds.data]);
 
-
     useEffect(() => {
         if (
             !map.current ||
@@ -116,8 +115,8 @@ function App() {
             );
         }
         if (
-            (layerOptions.date ??
-                selectedLayerMetadata.data.defaultTime) !== undefined
+            (layerOptions.date ?? selectedLayerMetadata.data.defaultTime) !==
+            undefined
         ) {
             urlOptions.push(
                 `&time=${layerOptions.date ?? selectedLayerMetadata.data.defaultTime}`,
@@ -174,10 +173,8 @@ function App() {
 
         const onClick = async (e: MapMouseEvent) => {
             if (
-                selectedLayerMetadata.data?.bbox && !bboxContainsPoint(
-                    selectedLayerMetadata.data.bbox,
-                    e.lngLat,
-                )
+                selectedLayerMetadata.data?.bbox &&
+                !bboxContainsPoint(selectedLayerMetadata.data.bbox, e.lngLat)
             ) {
                 setCurrentPopupData(undefined);
                 return;
@@ -200,7 +197,8 @@ function App() {
 
                 const elevation =
                     (layerOptions.elevation ??
-                        selectedLayerMetadata.data?.defaultElevation) !== undefined
+                        selectedLayerMetadata.data?.defaultElevation) !==
+                    undefined
                         ? `&elevation=${layerOptions.elevation ?? selectedLayerMetadata.data?.defaultElevation}`
                         : '';
 
@@ -418,16 +416,28 @@ function App() {
                                                 </div>
                                             )}
                                             {datasets.at(i)?.isFetched && (
-                                                <Link
-                                                    to={`/subset?dataset=${datasetIds.data.at(i)}`}
-                                                >
-                                                    <MaterialIcon
-                                                        className="pr-4 self-center align-middle transition-all hover:text-blue-400"
-                                                        name="center_focus_weak"
-                                                        title="Subset and Export"
-                                                        onClick={() => {}}
-                                                    />
-                                                </Link>
+                                                <>
+                                                    <a
+                                                        href={`/datasets/${datasetIds.data.at(i)}/`}
+                                                    >
+                                                        <MaterialIcon
+                                                            className="pr-2 self-center align-middle transition-all hover:text-blue-400"
+                                                            name="info"
+                                                            title="Dataset info"
+                                                            onClick={() => {}}
+                                                        />
+                                                    </a>
+                                                    <Link
+                                                        to={`/subset?dataset=${datasetIds.data.at(i)}`}
+                                                    >
+                                                        <MaterialIcon
+                                                            className="self-center align-middle transition-all hover:text-blue-400"
+                                                            name="output"
+                                                            title="Subset and Export"
+                                                            onClick={() => {}}
+                                                        />
+                                                    </Link>
+                                                </>
                                             )}
                                             {/* <MaterialIcon
                                                 className="pr-4 self-center align-middle transition-all hover:text-blue-600"
@@ -490,7 +500,8 @@ function App() {
                                                     selectedLayer.variable ===
                                                         v &&
                                                     (layerLoading ||
-                                                        selectedLayerMinMax.isFetching || selectedLayerMetadata.isFetching) && (
+                                                        selectedLayerMinMax.isFetching ||
+                                                        selectedLayerMetadata.isFetching) && (
                                                         <div className="flex items-center justify-center">
                                                             <Spinner />
                                                         </div>
@@ -518,7 +529,9 @@ function App() {
                         <span className="text-center">
                             {selectedLayer.dataset} - {selectedLayer.variable}
                         </span>
-                        {selectedLayerMinMax.isFetching || selectedLayerMetadata.isFetching || !selectedLayerMetadata.data ? (
+                        {selectedLayerMinMax.isFetching ||
+                        selectedLayerMetadata.isFetching ||
+                        !selectedLayerMetadata.data ? (
                             <div className="flex-1 flex justify-center items-center">
                                 <Spinner />
                             </div>
@@ -541,7 +554,8 @@ function App() {
                                             className="rounded-md p-1 mx-1"
                                             value={
                                                 layerOptions?.date ??
-                                                selectedLayerMetadata.data.defaultTime
+                                                selectedLayerMetadata.data
+                                                    .defaultTime
                                             }
                                             onChange={(e) =>
                                                 setLayerOptions({
@@ -562,8 +576,8 @@ function App() {
                                             )}
                                         </select>
                                     </div>
-                                    {selectedLayerMetadata.data.defaultElevation !==
-                                        undefined && (
+                                    {selectedLayerMetadata.data
+                                        .defaultElevation !== undefined && (
                                         <div
                                             className={
                                                 'flex flex-row items-center pt-1'

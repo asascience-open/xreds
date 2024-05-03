@@ -22,16 +22,22 @@ export default function CopyUrl({
             onClick={
                 linkTitle || disabled
                     ? undefined
-                    : async () => {
+                    : () => {
                           const host =
                               window.location.protocol +
                               '//' +
                               window.location.host;
-                          const copy_url = `${host}${url}zarr/`;
-                          const _ = await window.navigator.clipboard.writeText(
-                              `${copy_url}`,
-                          );
-                          setCopied(true);
+                          let path =
+                              window.location.pathname.split('subset')[0];
+                          if (path.endsWith('/')) {
+                                path = path.slice(0, -1);
+                          }
+                          const copy_url = `${host}${path}${url}`;
+                          window.navigator.clipboard
+                              .writeText(`${copy_url}`)
+                              .then(() => {
+                                  setCopied(true);
+                              });
                       }
             }
         >
@@ -45,7 +51,11 @@ export default function CopyUrl({
                                   window.location.protocol +
                                   '//' +
                                   window.location.host;
-                              const copy_url = `${host}${url}zarr/`;
+                              let path = window.location.pathname.split('subset')[0];
+                              if (path.endsWith('/')) {
+                                    path = path.slice(0, -1);
+                              }
+                              const copy_url = `${host}${path}${url}`;
                               window.navigator.clipboard.writeText(
                                   `${copy_url}`,
                               );

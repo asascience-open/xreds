@@ -15,6 +15,7 @@ import Spinner from '../components/spinner';
 import { useQuery } from '@tanstack/react-query';
 import MaterialIcon from '../components/material_icon';
 import CopyUrl from '../components/copy_url';
+import { useSearchParams } from 'react-router-dom';
 
 const useExportThreshold = () =>
     useQuery({
@@ -93,6 +94,8 @@ function formatAreaForQuery(area: GeoJSON.Feature | undefined): string {
 }
 
 export default function SubsetTool() {
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const map = useRef<maplibregl.Map | null>(null);
     const draw = useRef<MapboxDraw>(
         new MapboxDraw({
@@ -143,6 +146,20 @@ export default function SubsetTool() {
         setEndDate(undefined);
         setSelectedArea(undefined);
     }, [selectedDataset]);
+
+    useEffect(() => {
+        const queriedDataset = searchParams.get('dataset');
+        if (!queriedDataset) {
+            return;
+        }
+
+        const datasetId = datasetIds.data?.findIndex((id) => id === queriedDataset);
+        if (datasetId === -1) {
+            return;
+        }
+
+        setSelectedDataset(datasetId);
+    }, [datasetIds.data, searchParams]);
 
     useEffect(() => {
         if (!isSelectingArea || !map.current) {
