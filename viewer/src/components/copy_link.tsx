@@ -32,6 +32,9 @@ export default function CopyUrl({
                           let path = origin_path
                               ? window.location.pathname.split(origin_path)[0]
                               : window.location.pathname;
+                          if (path.includes(import.meta.env.VITE_XREDS_BASE_URL)) {
+                                path = path.replace(import.meta.env.VITE_XREDS_BASE_URL, '');
+                          }
                           if (path.endsWith('/')) {
                               path = path.slice(0, -1);
                           }
@@ -59,6 +62,9 @@ export default function CopyUrl({
                                         origin_path,
                                     )[0]
                                   : window.location.pathname;
+                              if (path.includes(import.meta.env.VITE_XREDS_BASE_URL)) {
+                                    path = path.replace(import.meta.env.VITE_XREDS_BASE_URL, '');
+                              }
                               if (path.endsWith('/')) {
                                   path = path.slice(0, -1);
                               }

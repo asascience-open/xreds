@@ -11,11 +11,7 @@ class SPAStaticFiles(StaticFiles):
 
     async def get_response(self, path: str, scope):
         try:
-            if (
-                not path.endswith(".js")
-                and not path.endswith(".css")
-                and not path.endswith(".html")
-            ):
+            if not '.' in path:
                 raise HTTPException(status_code=404)
             return await super().get_response(path, scope)
         except HTTPException as ex:
