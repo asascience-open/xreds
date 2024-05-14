@@ -4,8 +4,32 @@ import uuid
 from typing import List, Optional, Sequence
 
 import fsspec
+import netCDF4
+import xarray as xr
+from xarray.backends.api import dump_to_store
+from xarray.backends.netCDF4_ import NetCDF4DataStore
 from fastapi import APIRouter, Depends, Response
 from xpublish import Dependencies, Plugin, hookimpl
+
+
+def dataset_to_netcdf4_bytes(ds: xr.Dataset, name: str) -> bytes:
+    """Convert an xarray dataset to a NetCDF4 file in memory
+
+    If you dont do it this way, it requires either writing to disk or
+    using netcdf3 format which does not work with certain data types
+    https://github.com/pydata/xarray/issues/2995#issuecomment-657798184
+    """
+    # Load the dataset into memory, if this is not done, any dask arrays may not
+    # be serialized because netcdf4 store does not know what to do with it
+    loaded = ds.load()
+    nc_ds = netCDF4.Dataset(name, mode="w", diskless=True, persist=False, memory=True)
+    nc_store = NetCDF4DataStore(nc_ds)
+    dump_to_store(loaded, store=nc_store)
+
+    # See https://unidata.github.io/netcdf4-python/#in-memory-diskless-datasets
+    out_mem = nc_ds.close()
+    out_bytes = out_mem.tobytes()
+    return out_bytes
 
 
 class ExportPlugin(Plugin):
@@ -77,9 +101,7 @@ class ExportPlugin(Plugin):
                     try:
                         # TODO: more filename cleaning?
                         fname = f"{filename.split('.')[-2]}-{uuid.uuid4()}.nc"
-                        dataset.to_netcdf(fname)
-                        with open(fname, "rb") as f:
-                            nc = f.read()
+                        nc = dataset_to_netcdf4_bytes(dataset, fname)
                         return Response(
                             content=nc,
                             media_type="application/x-netcdf",

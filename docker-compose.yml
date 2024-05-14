@@ -11,3 +11,4 @@ services:
     environment:
       - PORT=8090
       - datasets_mapping_file=/opt/xreds/datasets/datasets.json
+      - EXPORT_THRESHOLD=600
