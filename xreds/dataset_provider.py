@@ -1,4 +1,4 @@
-import json
+import yaml
 import datetime
 
 import fsspec
@@ -32,7 +32,9 @@ class DatasetProvider(Plugin):
             fs = fsspec.filesystem("file")
 
         with fs.open(settings.datasets_mapping_file, "r") as f:
-            self.dataset_mapping = json.load(f)
+            #load config using yaml, which can load json or yaml
+            #because yaml is a superset of json
+            self.dataset_mapping = yaml.safe_load(f)
 
     @hookimpl
     def get_datasets(self):

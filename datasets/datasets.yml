@@ -1,0 +1,24 @@
+cbofs:
+  path: s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr
+  type: kerchunk
+  chunks: {}
+  drop_variables:
+    - dstart
+  extensions:
+    vdatum:
+      path: s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr
+      water_level_var: zeta
+      vdatum_var: mllwtomsl
+      vdatum_name: mllw
+ciofs:
+  path: s3://nextgen-dmac-cloud-ingest/nos/ciofs/nos.ciofs.fields.best.nc.zarr
+  type: kerchunk
+  chunks: {}
+  drop_variables:
+    - dstart
+  extensions:
+    vdatum:
+      path: s3://nextgen-dmac-cloud-ingest/nos/vdatums/ciofs_vdatums.nc.zarr
+      water_level_var: zeta
+      vdatum_var: mllwtomsl
+      vdatum_name: mllw

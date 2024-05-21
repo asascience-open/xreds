@@ -95,6 +95,19 @@ Datasets are specified in a key value manner, where the keys are the dataset ids
 }
 ```
 
+Equivalent yaml is also supported:
+
+```yaml
+---
+
+gfswave_global:
+  path: s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json
+  type: kerchunk
+  chunks: {}
+  drop_variables:
+    - orderedSequenceData
+```
+
 Currently `zarr`, `netcdf`, and [`kerchunk`](https://github.com/fsspec/kerchunk) dataset types are supported. This information should be saved a file and specified when running.
 
 ## Building and Deploying Docker Image
