@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Build Docker Image
           command: |
-            TAG=andy-test
+            TAG=latest
             echo "export TAG=${TAG}" >> $BASH_ENV
 
             echo "Building for TAG ${TAG}"
