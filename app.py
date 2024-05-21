@@ -46,4 +46,4 @@ if __name__ == "__main__":
     import uvicorn
 
     # When run directly, run in debug mode
-    uvicorn.run("app:app", port=8090, reload=True, log_level="debug")
+    uvicorn.run("app:app", host="0.0.0.0", port=8090, reload=True, log_level="debug")
