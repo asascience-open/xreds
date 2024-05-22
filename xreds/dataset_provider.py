@@ -11,11 +11,12 @@ from xreds.dataset_extension import DATASET_EXTENSION_PLUGIN_NAMESPACE
 from xreds.logging import logger
 from xreds.config import settings
 from xreds.utils import load_dataset
-from xreds.extensions import VDatumTransformationExtension
+from xreds.extensions import VDatumTransformationExtension, VirtualVectorsTransformationExtension
 
 
 dataset_extension_manager = PluginManager(DATASET_EXTENSION_PLUGIN_NAMESPACE)
 dataset_extension_manager.register(VDatumTransformationExtension, name="vdatum")
+dataset_extension_manager.register(VirtualVectorsTransformationExtension, name="virtual_vectors")
 
 
 class DatasetProvider(Plugin):

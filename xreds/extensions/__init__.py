@@ -1,2 +1,3 @@
 # __module__
 from .vdatum import VDatumTransformationExtension
+from .virtual_vectors import VirtualVectorsTransformationExtension

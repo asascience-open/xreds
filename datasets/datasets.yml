@@ -5,6 +5,7 @@ cbofs:
   drop_variables:
     - dstart
   extensions:
+    virtual_vectors:
     vdatum:
       path: s3://nextgen-dmac-cloud-ingest/nos/vdatums/cbofs_vdatums.nc.zarr
       water_level_var: zeta
@@ -17,6 +18,7 @@ ciofs:
   drop_variables:
     - dstart
   extensions:
+    virtual_vectors:
     vdatum:
       path: s3://nextgen-dmac-cloud-ingest/nos/vdatums/ciofs_vdatums.nc.zarr
       water_level_var: zeta
