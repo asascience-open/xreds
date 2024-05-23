@@ -26,12 +26,7 @@ class DatasetProvider(Plugin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        if settings.datasets_mapping_file.startswith("s3"):
-            fs = fsspec.filesystem("s3", anon=True)
-        else:
-            fs = fsspec.filesystem("file")
-
-        with fs.open(settings.datasets_mapping_file, "r") as f:
+        with fsspec.open(settings.datasets_mapping_file, "r") as f:
             # load config using yaml, which can load json or yaml
             # because yaml is a superset of json
             self.dataset_mapping = yaml.safe_load(f)
