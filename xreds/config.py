@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     # Root path for the service to mount at
     root_path: str = ''
 
+    # Timeout for caching datasets in seconds
+    dataset_cache_timeout: int = 10 * 60
+
     # Size threshold exporting datasets to local files
     # in MB
     export_threshold: int = 500

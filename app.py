@@ -27,7 +27,7 @@ rest.register_plugin(DatasetProvider())
 rest.register_plugin(SubsetSupportPlugin())
 rest.register_plugin(SubsetPlugin())
 rest.register_plugin(SizePlugin())
-rest.register_plugin(ExportPlugin(export_threshold=export_threshold))
+rest.register_plugin(ExportPlugin())
 
 app = rest.app
 

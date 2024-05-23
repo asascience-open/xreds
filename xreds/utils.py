@@ -23,7 +23,7 @@ def infer_dataset_type(dataset_path: str) -> str:
 
 
 def load_dataset(
-    dataset_spec: dict, redis_cache: Optional[Redis] = None
+    dataset_spec: dict, redis_cache: Optional[Redis] = None, cache_timeout: int = 600
 ) -> xr.Dataset | None:
     """Load a dataset from a path"""
     ds = None
@@ -58,12 +58,11 @@ def load_dataset(
             options = {"anon": True}
 
         if redis_cache is not None:
-            logger.warning("USING REDIS CACHE")
             reference_url = f"rediscache::{dataset_path}"
             with fsspec.open(
                 reference_url,
                 mode="rb",
-                rediscache={"redis": redis_cache, "expiry": 3 * 60},
+                rediscache={"redis": redis_cache, "expiry": cache_timeout},
                 s3={"anon": True},
             ) as f:
                 refs = ujson.load(f)
@@ -79,8 +78,7 @@ def load_dataset(
         else:
             fs = fsspec.filesystem(
                 "filecache",
-                expiry_time=10
-                * 60,  # TODO: Make this driven by config per dataset, for now default to 10 minutes
+                expiry_time=cache_timeout,
                 target_protocol="reference",
                 target_options={
                     "fo": dataset_path,

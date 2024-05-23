@@ -11,8 +11,8 @@ from xreds.dataset_extension import DATASET_EXTENSION_PLUGIN_NAMESPACE
 from xreds.dependencies.redis import get_redis
 from xreds.extensions import VDatumTransformationExtension
 from xreds.logging import logger
-from xreds.utils import load_dataset
 from xreds.redis import get_redis_cache
+from xreds.utils import load_dataset
 
 dataset_extension_manager = PluginManager(DATASET_EXTENSION_PLUGIN_NAMESPACE)
 dataset_extension_manager.register(VDatumTransformationExtension, name="vdatum")
@@ -48,7 +48,9 @@ class DatasetProvider(Plugin):
 
         cached_ds = self.datasets.get(cache_key, None)
         if cached_ds:
-            if (datetime.datetime.now() - cached_ds["date"]).seconds < (10 * 60):
+            if (datetime.datetime.now() - cached_ds["date"]).seconds < (
+                settings.dataset_cache_timeout
+            ):
                 logger.info(f"Using cached dataset for {dataset_id}")
                 return cached_ds["dataset"]
             else:
@@ -58,7 +60,11 @@ class DatasetProvider(Plugin):
             logger.info(f"No dataset found in cache for {dataset_id}, loading...")
 
         dataset_spec = self.dataset_mapping[dataset_id]
-        ds = load_dataset(dataset_spec, redis_cache=redis_cache)
+        ds = load_dataset(
+            dataset_spec,
+            redis_cache=redis_cache,
+            cache_timeout=settings.dataset_cache_timeout,
+        )
 
         if ds is None:
             raise ValueError(f"Dataset {dataset_id} not found")

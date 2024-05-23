@@ -11,6 +11,8 @@ from xarray.backends.netCDF4_ import NetCDF4DataStore
 from fastapi import APIRouter, Depends, Response
 from xpublish import Dependencies, Plugin, hookimpl
 
+from xreds.config import settings
+
 
 def dataset_to_netcdf4_bytes(ds: xr.Dataset, name: str) -> bytes:
     """Convert an xarray dataset to a NetCDF4 file in memory
@@ -43,10 +45,9 @@ class ExportPlugin(Plugin):
 
     export_threshold: int = 500
 
-    def __init__(self, export_threshold: Optional[int] = None):
+    def __init__(self):
         super().__init__(name="export")
-        if export_threshold is not None:
-            self.export_threshold = export_threshold
+        self.export_threshold = settings.export_threshold
 
     @hookimpl
     def app_router(self):
