@@ -72,8 +72,15 @@ class VDatumTransformationExtension(DatasetExtension):
             return ds
 
         target_zeta_var = config.get("water_level_var", "zeta")
-        target_datum_var = config.get("vdatum_var", "igld85tolwd")
-        target_datum_name = config.get("vdatum_name", "igld85")
+        target_datum_var = config.get("vdatum_var", None)
+        target_datum_name = config.get("vdatum_name", None)
+
+        if target_datum_var is None or target_datum_name is None:
+            logger.warning(
+                f"Dataset {ds.attrs.get('name', 'unknown')} does not have a vdatum_var or vdatum_name attribute. Skipping vdatum transformation"
+            )
+            return ds
+
         out_datum_var = f"{target_zeta_var}_{target_datum_name}"
 
         ds_transformed = transform_datum(ds, ds_vdatum, target_zeta_var, target_datum_var, target_datum_name, out_datum_var)
