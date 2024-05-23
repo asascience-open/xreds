@@ -77,7 +77,7 @@ class DatasetProvider(Plugin):
                 logger.info(f"Applying extension {ext_name} to dataset {dataset_id}")
             ds = extension().transform_dataset(ds=ds, config=ext_config)
 
-        self.datasets[cache_key] = {"dataset": ds, "date": datetime.datetime.now()}
+        # self.datasets[cache_key] = {"dataset": ds, "date": datetime.datetime.now()}
 
         if cache_key in self.datasets:
             logger.info(f"Loaded and cached dataset for {dataset_id}")

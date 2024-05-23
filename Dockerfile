@@ -68,4 +68,4 @@ ARG ROOT_PATH=/xreds/
 ENV ROOT_PATH ${ROOT_PATH}
 
 # Run the webserver
-CMD ["sh", "-c", "gunicorn --workers=4 --worker-class=uvicorn.workers.UvicornWorker --log-level=debug --bind=0.0.0.0:${PORT} app:app"]
+CMD ["sh", "-c", "gunicorn --workers=1 --worker-class=uvicorn.workers.UvicornWorker --log-level=debug --bind=0.0.0.0:${PORT} app:app"]
