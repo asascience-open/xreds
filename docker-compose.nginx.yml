@@ -22,4 +22,4 @@ services:
     environment:
       - PORT=8091
       - ROOT_PATH=:8090
-      - datasets_mapping_file=/opt/xreds/datasets/datasets.json
+      - DATASETS_MAPPING_FILE=/opt/xreds/datasets/datasets.json

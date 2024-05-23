@@ -24,7 +24,7 @@ spec:
         env:
         - name: EXPORT_THRESHOLD
           value: "600"
-        - name: datasets_mapping_file
+        - name: DATASETS_MAPPING_FILE
           value: "s3://nextgen-dmac/kerchunk/datasets.json"
 ---
 apiVersion: v1

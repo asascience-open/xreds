@@ -1,7 +1,6 @@
 import datetime
 
 import fsspec
-from redis import Redis
 import xarray as xr
 import yaml
 from pluggy import PluginManager
@@ -13,7 +12,7 @@ from xreds.dependencies.redis import get_redis
 from xreds.extensions import VDatumTransformationExtension
 from xreds.logging import logger
 from xreds.utils import load_dataset
-from xreds.redis import pool as redis_pool
+from xreds.redis import get_redis_cache
 
 dataset_extension_manager = PluginManager(DATASET_EXTENSION_PLUGIN_NAMESPACE)
 dataset_extension_manager.register(VDatumTransformationExtension, name="vdatum")
@@ -45,7 +44,7 @@ class DatasetProvider(Plugin):
     def get_dataset(self, dataset_id: str) -> xr.Dataset:
         cache_key = f"dataset-{dataset_id}"
 
-        redis_cache = Redis(connection_pool=redis_pool)
+        redis_cache = get_redis_cache()
 
         cached_ds = self.datasets.get(cache_key, None)
         if cached_ds:
@@ -77,6 +76,7 @@ class DatasetProvider(Plugin):
                 logger.info(f"Applying extension {ext_name} to dataset {dataset_id}")
             ds = extension().transform_dataset(ds=ds, config=ext_config)
 
+        # TODO: For now this cache is disabled for testing with redis
         # self.datasets[cache_key] = {"dataset": ds, "date": datetime.datetime.now()}
 
         if cache_key in self.datasets:
