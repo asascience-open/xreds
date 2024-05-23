@@ -59,15 +59,14 @@ def load_dataset(
 
         if redis_cache is not None:
             logger.warning("USING REDIS CACHE")
-            # reference_url = f"rediscache::{dataset_path}"
-            # with fsspec.open(
-            #     reference_url,
-            #     mode="r",
-            #     rediscache={"redis": redis_cache, "expiry": 60},
-            #     s3={"anon": True},
-            # ) as f:
-            #     raw_refs = f.read()
-            #     refs = ujson.loads(raw_refs)
+            reference_url = f"rediscache::{dataset_path}"
+            with fsspec.open(
+                reference_url,
+                mode="rb",
+                rediscache={"redis": redis_cache, "expiry": 3 * 60},
+                s3={"anon": True},
+            ) as f:
+                refs = ujson.load(f)
             fs = RedisCachingReferenceFileSystem(
                 redis=redis_cache,
                 expiry_time=180,

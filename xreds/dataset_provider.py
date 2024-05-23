@@ -59,7 +59,7 @@ class DatasetProvider(Plugin):
             logger.info(f"No dataset found in cache for {dataset_id}, loading...")
 
         dataset_spec = self.dataset_mapping[dataset_id]
-        ds = load_dataset(dataset_spec, redis_cache=None)
+        ds = load_dataset(dataset_spec, redis_cache=redis_cache)
 
         if ds is None:
             raise ValueError(f"Dataset {dataset_id} not found")
