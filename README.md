@@ -143,7 +143,7 @@ The following environment variables can be set to configure the app:
 - `REDIS_HOST`: [Optional] The host of the redis cache. Defaults to `localhost`
 - `REDIS_PORT`: [Optional] The port of the redis cache. Defaults to `6379`
 
-## Building and Deploying Docker Image
+## Building and Deploying Public Docker Image
 
 First follow instructions above to build the docker image tagged `xreds:latest`. Then the`xreds:latest` image needs to be tagged and deployed to the relevant docker registry.
 
