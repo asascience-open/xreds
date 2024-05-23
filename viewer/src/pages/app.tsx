@@ -1,4 +1,4 @@
-import { ImageSource, MapMouseEvent, Popup } from 'maplibre-gl';
+import { ImageSource, MapDataEvent, MapMouseEvent, Popup } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 import { bboxContainsPoint, createImageLayerParams } from '../tools';
 import Map from '../components/map';
@@ -12,7 +12,19 @@ import {
     useDatasetMinMaxQuery,
     useDatasetsQuery,
 } from '../query/datasets';
+import { tileToBBOX } from '@mapbox/tilebelt';
 import { Link } from 'react-router-dom';
+
+interface LoadingMetadata {
+    dataset: string, 
+    variable: string, 
+    bbox: number[], 
+    elevation: number | undefined,
+    startTime: number,
+    endTime: number,
+    elapsedTime: number,
+    requestTime: string,
+}
 
 const colormaps: Array<{ id: string; name: string }> = [
     { id: 'rainbow', name: 'Rainbow' },
@@ -73,6 +85,77 @@ function App() {
         [k: string]: boolean;
     }>({});
     const [layerLoading, setLayerLoading] = useState(false);
+
+    const dataLoading = useRef<{ [k: string]: LoadingMetadata }>({});
+    const dataLoaded = useRef<LoadingMetadata[]>([]);
+
+    useEffect(() => {
+        if (!map.current) {
+            return;
+        }
+
+        map.current.on("dataloading", (e: any) => {
+            if (!e.sourceId?.startsWith("xreds") || !e.source?.tiles || e.source.tiles.length === 0) {
+                return;
+            }
+
+            const urlArr = e.source.tiles[0].split("/wms/?", 2)
+            const paramArr = urlArr[1].split("&");
+            const tiles = map.current!.style.sourceCaches[e.sourceId]?._tiles;
+            if (!tiles) {
+                return;
+            }
+
+            Object.keys(tiles).forEach((k) => {
+                const currID = `${e.sourceId}---${k}`;
+                if (tiles[k].state === "loading" && !dataLoading.current[currID]) {
+                    const time = paramArr.find((p: string) => p.startsWith("time="))?.replace("time=", "");
+                    const variable = paramArr.find((p: string) => p.startsWith("layers="))?.replace("layers=", "");
+                    const elevation = paramArr.find((p: string) => p.startsWith("elevation="))?.replace("elevation=", "");
+                    dataLoading.current[currID] = {
+                        dataset: urlArr[0].replace("/datasets/", ""),
+                        variable: variable,
+                        bbox: [], 
+                        elevation: elevation !== undefined ? parseFloat(elevation) : undefined,
+                        requestTime: time,
+                        startTime: (new Date()).getTime(),
+                        endTime: -1,
+                        elapsedTime: -1
+                    }
+                }
+            });
+        });
+
+        map.current.on("data", (e: any) => {
+            if (!e.sourceId?.startsWith("xreds") || !e.source?.tiles || e.source.tiles.length === 0) {
+                return;
+            }
+
+            const tiles = map.current!.style.sourceCaches[e.sourceId]?._tiles;
+            if (!tiles) {
+                return;
+            }
+
+            Object.keys(dataLoading.current).forEach((k) => {
+                if (tiles[k.split("---")[1]] === undefined) {
+                    delete dataLoading.current[k];
+                }
+            });
+
+            Object.keys(tiles).forEach((k) => {
+                const currID = `${e.sourceId}---${k}`;
+                if (tiles[k].state === "loaded" && dataLoading.current[currID]) {
+                    const coords = tiles[k].tileID.canonical;
+                    dataLoading.current[currID].bbox = tileToBBOX([coords.x, coords.y, coords.z]);
+                    dataLoading.current[currID].endTime = (new Date()).getTime();
+                    dataLoading.current[currID].elapsedTime = dataLoading.current[currID].endTime - dataLoading.current[currID].startTime;
+
+                    dataLoaded.current.push(dataLoading.current[currID]);
+                    delete dataLoading.current[currID]; 
+                }
+            });
+        });
+    }, [])
 
     useEffect(() => {
         const datasetsCollapsed = datasetIds.data?.reduce(
@@ -365,6 +448,24 @@ function App() {
                                         }
                                     />
                                 </div>
+                                <button
+                                    onClick={() => {
+                                        let outString = "Time (s),Dataset,Variable,Time,West,South,East,North,Elevation\n"
+                                        dataLoaded.current.forEach((d) => {
+                                            outString += `${d.elapsedTime / 1000},${d.dataset},${d.variable},${d.requestTime},${d.bbox.join(",")},${d.elevation ?? ""}\n`
+                                        })
+
+                                        const link = document.createElement('a');
+                                        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(outString);
+                                        link.download = `tile_report_${(new Date()).toISOString()}.csv`;
+
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        link.remove();
+                                    }}
+                                >
+                                    Report
+                                </button>
                             </div>
                             {datasetIds.data?.map((d, i) => (
                                 <section key={d}>
