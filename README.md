@@ -103,7 +103,13 @@ Datasets are specified in a key value manner, where the keys are the dataset ids
         "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
         "type": "kerchunk",
         "chunks": {},
-        "drop_variables": ["orderedSequenceData"]
+        "drop_variables": ["orderedSequenceData"],
+        "target_protocol": "s3",
+        "target_options": {
+            "anon": false,
+            "key": "my aws key"
+            "secret": "my aws secret"
+        }
     },
     "dbofs": {
         "path": "s3://nextgen-dmac/nos/nos.dbofs.fields.best.nc.zarr",
@@ -112,6 +118,7 @@ Datasets are specified in a key value manner, where the keys are the dataset ids
             "ocean_time": 1
         },
         "drop_variables": ["dstart"]
+
     }
 }
 ```
@@ -129,7 +136,52 @@ gfswave_global:
     - orderedSequenceData
 ```
 
-Currently `zarr`, `netcdf`, and [`kerchunk`](https://github.com/fsspec/kerchunk) dataset types are supported. This information should be saved a file and specified when running.
+Currently `zarr`, `netcdf`, and [`kerchunk`](https://github.com/fsspec/kerchunk) dataset types are supported. This information should be saved in a file and specified when running via environment variable `DATASETS_MAPPING_FILE`.
+
+### Dataset Type Schema
+
+#### kerchunk
+
+```json
+{
+    "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
+    "type": "kerchunk",
+    "chunks": {},
+    "drop_variables": ["orderedSequenceData"],
+    "remote_protocol": "s3", // default is s3
+    "remote_options": {
+        "anon": true, // default is True
+    },
+    "target_protocol": "s3", // defualt is s3
+    "target_options": {
+        "anon": false, // default is True
+    },
+    "extensions": { // optional
+      "vdatum": {
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr", // fsspec path to vdatum dataset
+        "water_level_var": "zeta", // variable to use for water level
+        "vdatum_var": "mllwtomsl", // variable mapping to vdatum transformation
+        "vdatum_name": "mllw" // name of the vdatum transformation
+      }
+    }
+}
+```
+
+#### netcdf
+
+```json
+{
+    "path": "http://www.smast.umassd.edu:8080/thredds/dodsC/models/fvcom/NECOFS/Forecasts/NECOFS_GOM7_FORECAST.nc",
+    "type": "netcdf",
+    "engine": "netCDF4", // default is netCDF4
+    "chunks": {},
+    "drop_variables": ["Itime", "Itime2"],
+    "additional_coords": ["lat", "lon", "latc", "lonc", "xc", "yc"],
+    "extensions": { // optional
+        ... // Same as kerchunk options
+    }
+}
+```
 
 ## Configuration Options
 

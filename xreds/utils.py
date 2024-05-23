@@ -40,22 +40,22 @@ def load_dataset(
     drop_variables = dataset_spec.get("drop_variables", None)
     additional_coords = dataset_spec.get("additional_coords", None)
     additional_attrs = dataset_spec.get("additional_attrs", None)
-    key = dataset_spec.get("key", None)
-    secret = dataset_spec.get("secret", None)
 
     if dataset_type == "netcdf":
+        engine = dataset_spec.get("engine", "netcdf4")
         ds = xr.open_dataset(
-            dataset_path, engine="netcdf4", chunks=chunks, drop_variables=drop_variables
+            dataset_path, engine=engine, chunks=chunks, drop_variables=drop_variables
         )
         if additional_coords is not None:
             ds = ds.set_coords(additional_coords)
     elif dataset_type == "grib2":
+        # TODO: Network support?
         ds = xr.open_dataset(dataset_path, engine="cfgrib")
     elif dataset_type == "kerchunk":
-        if key is not None:
-            options = {"anon": False, "key": key, "secret": secret}
-        else:
-            options = {"anon": True}
+        target_protocol = dataset_spec.get("target_protocol", 's3')
+        target_options = dataset_spec.get("target_options", {'anon': True})
+        remote_protocol = dataset_spec.get("remote_protocol", 's3')
+        remote_options = dataset_spec.get("remote_options", {'anon': True})
 
         if redis_cache is not None:
             reference_url = f"rediscache::{dataset_path}"
@@ -63,17 +63,17 @@ def load_dataset(
                 reference_url,
                 mode="rb",
                 rediscache={"redis": redis_cache, "expiry": cache_timeout},
-                s3={"anon": True},
+                s3=target_options,
             ) as f:
                 refs = ujson.load(f)
             fs = RedisCachingReferenceFileSystem(
                 redis=redis_cache,
                 expiry_time=180,
                 fo=dataset_path,
-                target_protocol="s3",
-                target_options=options,
-                remote_protocol="s3",
-                remote_options=options,
+                target_protocol=target_protocol,
+                target_options=target_options,
+                remote_protocol=remote_protocol,
+                remote_options=remote_options,
             )
         else:
             fs = fsspec.filesystem(
@@ -82,10 +82,10 @@ def load_dataset(
                 target_protocol="reference",
                 target_options={
                     "fo": dataset_path,
-                    "target_protocol": "s3",
-                    "target_options": options,
-                    "remote_protocol": "s3",
-                    "remote_options": options,
+                    "target_protocol": target_protocol,
+                    "target_options": target_options,
+                    "remote_protocol": remote_protocol,
+                    "remote_options": remote_options,
                 },
             )
         m = fs.get_mapper("")
