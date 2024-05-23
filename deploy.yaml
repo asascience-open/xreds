@@ -22,6 +22,8 @@ spec:
         ports:
         - containerPort: 8090
         env:
+        - name: ROOT_PATH
+          value: "/xreds/"
         - name: EXPORT_THRESHOLD
           value: "600"
         - name: DATASETS_MAPPING_FILE

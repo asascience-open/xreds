@@ -28,7 +28,7 @@ jobs:
             echo "export TAG=${TAG}" >> $BASH_ENV
 
             echo "Building for TAG ${TAG}"
-            docker build -t ${ECR_REPO}:${TAG} .
+            docker build --build-arg="ROOT_PATH=/xreds/" -t ${ECR_REPO}:${TAG} .
 
       - run:
           name: Install Grype
