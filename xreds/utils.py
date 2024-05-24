@@ -52,10 +52,10 @@ def load_dataset(
         # TODO: Network support?
         ds = xr.open_dataset(dataset_path, engine="cfgrib")
     elif dataset_type == "kerchunk":
-        target_protocol = dataset_spec.get("target_protocol", 's3')
-        target_options = dataset_spec.get("target_options", {'anon': True})
-        remote_protocol = dataset_spec.get("remote_protocol", 's3')
-        remote_options = dataset_spec.get("remote_options", {'anon': True})
+        target_protocol = dataset_spec.get("target_protocol", "s3")
+        target_options = dataset_spec.get("target_options", {"anon": True})
+        remote_protocol = dataset_spec.get("remote_protocol", "s3")
+        remote_options = dataset_spec.get("remote_options", {"anon": True})
 
         if redis_cache is not None:
             reference_url = f"rediscache::{dataset_path}"
@@ -68,7 +68,7 @@ def load_dataset(
                 refs = ujson.load(f)
             fs = RedisCachingReferenceFileSystem(
                 redis=redis_cache,
-                expiry_time=180,
+                expiry_time=cache_timeout,
                 fo=dataset_path,
                 target_protocol=target_protocol,
                 target_options=target_options,
