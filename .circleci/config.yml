@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  aws-ecr: circleci/aws-ecr@9.1.0
+
 jobs:
   build-image:
     docker:
