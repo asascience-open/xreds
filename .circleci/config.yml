@@ -16,10 +16,10 @@ jobs:
       - aws-ecr/ecr_login
       - run:
           name: Build xreds image
-          command: docker build -t xreds:latest .
+          command: docker build -t ${ECR_REPO}:latest .
       - run:
           name: Archive Docker image
-          command: docker save -o image.tar xreds:latest
+          command: docker save -o image.tar ${ECR_REPO}:latest
       - persist_to_workspace:
           root: .
           paths:
@@ -57,7 +57,7 @@ jobs:
           command: |
             mkdir scans
             curl https://asa-dev.s3.amazonaws.com/scripts/grype.tmpl > ./grype.tmpl
-            grype -o template -t ./grype.tmpl xreds:latest > ./scans/xreds.csv
+            grype -o template -t ./grype.tmpl ${ECR_REPO}:latest > ./scans/xreds.csv
       - run:
           name: Check vulnerabilities
           command: |
@@ -89,7 +89,7 @@ jobs:
           command: |
             IMAGE_TAG=<<parameters.image_tag>>
             IMAGE_TAG=andy-test
-            docker tag ${ECR_REPO}:${TAG} "${ECR_ENDPOINT}/${ECR_REPO}:${IMAGE_TAG}"
+            docker tag ${ECR_REPO}:latest "${ECR_ENDPOINT}/${ECR_REPO}:${IMAGE_TAG}"
             docker push "${ECR_ENDPOINT}/${ECR_REPO}:${IMAGE_TAG}"
 
 
