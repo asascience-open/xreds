@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@9.1.0
+  aws-cli: circleci/aws-cli@4.1.3
 
 jobs:
   build-image:
@@ -77,6 +78,7 @@ jobs:
           at: /tmp/workspace
       - setup_remote_docker:
           version: 20.10.24
+      - aws-cli/setup
       - aws-ecr/ecr_login:
           public_registry: true
       - run:
