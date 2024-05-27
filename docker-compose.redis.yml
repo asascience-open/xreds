@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    restart: on-failure
+    ports:
+      - "6380:6380"
+    command: redis-server /usr/local/etc/redis/redis.conf
+  xreds:
+    container_name: xreds
+    build: .
+    volumes:
+      - "./datasets:/opt/xreds/datasets"
+    platform: linux/amd64
+    ports:
+      - "8090:8090"
+    depends_on:
+      - redis
+    environment:
+      - PORT=8090
+      - DATASETS_MAPPING_FILE=/opt/xreds/datasets/datasets.json
+      - EXPORT_THRESHOLD=600
+      - USE_REDIS_CACHE=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6380

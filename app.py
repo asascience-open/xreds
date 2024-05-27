@@ -2,9 +2,10 @@ import os
 import xpublish
 
 from fastapi.middleware.cors import CORSMiddleware
+
+from xreds.config import settings
 from xreds.plugins.export import ExportPlugin
 from xreds.plugins.size_plugin import SizePlugin
-
 from xreds.spastaticfiles import SPAStaticFiles
 from xreds.dataset_provider import DatasetProvider
 from xreds.plugins.subset_plugin import SubsetPlugin, SubsetSupportPlugin
@@ -20,13 +21,13 @@ rest = xpublish.Rest(
     datasets=None,
 )
 
-export_threshold = int(os.environ.get("EXPORT_THRESHOLD", 500))
+export_threshold = settings.export_threshold
 
 rest.register_plugin(DatasetProvider())
 rest.register_plugin(SubsetSupportPlugin())
 rest.register_plugin(SubsetPlugin())
 rest.register_plugin(SizePlugin())
-rest.register_plugin(ExportPlugin(export_threshold=export_threshold))
+rest.register_plugin(ExportPlugin())
 
 app = rest.app
 
@@ -39,7 +40,7 @@ app.add_middleware(
 )
 
 app.mount("/", SPAStaticFiles(directory="./viewer/dist", html=True), name="viewer")
-app.root_path = os.environ.get("ROOT_PATH")
+app.root_path = settings.root_path
 
 
 if __name__ == "__main__":

@@ -38,3 +38,5 @@ xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms@9574a71405e4
 xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@019e53acd2e0ad5a1d909d1acfe9863f2e90e51b
 opendap-protocol<1.2.0
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@81ce464b6357e7353deaaf350ad1be22295d238e
+redis-fsspec-cache@git+https://github.com/mpiannucci/redis-fsspec-cache.git@c5f241f113964ec844dbdd48f9eae6119290d1fa
+redis==5.0.4
