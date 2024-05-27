@@ -99,7 +99,7 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - andy-ci-update
       - scan-image:
           recipient_emails: "andy.nguy@tetratech.com"
           requires:
