@@ -1,7 +1,9 @@
 import xarray as xr
 
+from xreds.config import settings
 from xreds.dataset_extension import DatasetExtension, hookimpl
 from xreds.logging import logger
+from xreds.redis import get_redis_cache
 from xreds.utils import load_dataset
 
 
@@ -62,16 +64,24 @@ class VDatumTransformationExtension(DatasetExtension):
             )
             return ds
 
-        ds_vdatum = load_dataset({"path": vdatum_file})
+        redis_cache = get_redis_cache()
+        ds_vdatum = load_dataset({"path": vdatum_file}, redis_cache=redis_cache, cache_timeout=settings.dataset_cache_timeout)
         if ds_vdatum is None:
             logger.warning(
                 f"Could not load vdatum dataset from {vdatum_file}. Skipping vdatum transformation"
             )
             return ds
-        
+
         target_zeta_var = config.get("water_level_var", "zeta")
-        target_datum_var = config.get("vdatum_var", "igld85tolwd")
-        target_datum_name = config.get("vdatum_name", "igld85")
+        target_datum_var = config.get("vdatum_var", None)
+        target_datum_name = config.get("vdatum_name", None)
+
+        if target_datum_var is None or target_datum_name is None:
+            logger.warning(
+                f"Dataset {ds.attrs.get('name', 'unknown')} does not have a vdatum_var or vdatum_name attribute. Skipping vdatum transformation"
+            )
+            return ds
+
         out_datum_var = f"{target_zeta_var}_{target_datum_name}"
 
         ds_transformed = transform_datum(ds, ds_vdatum, target_zeta_var, target_datum_var, target_datum_name, out_datum_var)

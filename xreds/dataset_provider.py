@@ -1,18 +1,18 @@
-import yaml
 import datetime
 
 import fsspec
 import xarray as xr
+import yaml
 from pluggy import PluginManager
-
 from xpublish import Plugin, hookimpl
 
-from xreds.dataset_extension import DATASET_EXTENSION_PLUGIN_NAMESPACE
-from xreds.logging import logger
 from xreds.config import settings
-from xreds.utils import load_dataset
+from xreds.dataset_extension import DATASET_EXTENSION_PLUGIN_NAMESPACE
+from xreds.dependencies.redis import get_redis
 from xreds.extensions import VDatumTransformationExtension
-
+from xreds.logging import logger
+from xreds.redis import get_redis_cache
+from xreds.utils import load_dataset
 
 dataset_extension_manager = PluginManager(DATASET_EXTENSION_PLUGIN_NAMESPACE)
 dataset_extension_manager.register(VDatumTransformationExtension, name="vdatum")
@@ -26,14 +26,9 @@ class DatasetProvider(Plugin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        if settings.datasets_mapping_file.startswith("s3"):
-            fs = fsspec.filesystem("s3", anon=True)
-        else:
-            fs = fsspec.filesystem("file")
-
-        with fs.open(settings.datasets_mapping_file, "r") as f:
-            #load config using yaml, which can load json or yaml
-            #because yaml is a superset of json
+        with fsspec.open(settings.datasets_mapping_file, "r") as f:
+            # load config using yaml, which can load json or yaml
+            # because yaml is a superset of json
             self.dataset_mapping = yaml.safe_load(f)
 
     @hookimpl
@@ -44,9 +39,13 @@ class DatasetProvider(Plugin):
     def get_dataset(self, dataset_id: str) -> xr.Dataset:
         cache_key = f"dataset-{dataset_id}"
 
+        redis_cache = get_redis_cache()
+
         cached_ds = self.datasets.get(cache_key, None)
         if cached_ds:
-            if (datetime.datetime.now() - cached_ds["date"]).seconds < (10 * 60):
+            if (datetime.datetime.now() - cached_ds["date"]).seconds < (
+                settings.dataset_cache_timeout
+            ):
                 logger.info(f"Using cached dataset for {dataset_id}")
                 return cached_ds["dataset"]
             else:
@@ -56,7 +55,11 @@ class DatasetProvider(Plugin):
             logger.info(f"No dataset found in cache for {dataset_id}, loading...")
 
         dataset_spec = self.dataset_mapping[dataset_id]
-        ds = load_dataset(dataset_spec)
+        ds = load_dataset(
+            dataset_spec,
+            redis_cache=redis_cache,
+            cache_timeout=settings.dataset_cache_timeout,
+        )
 
         if ds is None:
             raise ValueError(f"Dataset {dataset_id} not found")

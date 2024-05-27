@@ -16,7 +16,7 @@ jobs:
       - aws-ecr/ecr_login
       - run:
           name: Build xreds image
-          command: docker build -t ${ECR_REPO}:latest .
+          command: docker build --build-arg="ROOT_PATH=/xreds/" -t ${ECR_REPO}:latest .
       - run:
           name: Archive Docker image
           command: docker save -o image.tar ${ECR_REPO}:latest
