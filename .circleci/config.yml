@@ -1,35 +1,50 @@
 version: 2.1
 
+orbs:
+  aws-ecr: circleci/aws-ecr@9.1.0
+  aws-cli: circleci/aws-cli@4.1.3
+
 jobs:
-  build-deploy-docker:
+  build-image:
     docker:
       - image: cimg/python:3.12.3
-    parameters:
-      RECIPIENT_EMAILS:
-        type: string
     steps:
       - checkout
       - setup_remote_docker:
+          version: 20.10.24
           docker_layer_caching: true
+      - aws-ecr/ecr_login
+      - run:
+          name: Build xreds image
+          command: docker build --build-arg="ROOT_PATH=/xreds/" -t ${ECR_REPO}:latest .
+      - run:
+          name: Archive Docker image
+          command: docker save -o image.tar ${ECR_REPO}:latest
+      - persist_to_workspace:
+          root: .
+          paths:
+            - image.tar
+
+
+  scan-image:
+    docker:
+      - image: cimg/python:3.12.3
+    parameters: 
+      recipient_emails:
+        type: string
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker:
+          version: 20.10.24
       - run:
           name: Apply environment variables
           command: |
-            echo 'export RECIPIENT_EMAILS=<<parameters.RECIPIENT_EMAILS>>' >> $BASH_ENV
+            echo 'export RECIPIENT_EMAILS=<<parameters.recipient_emails>>' >> $BASH_ENV
             echo 'export REPO_NAME=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME' >> $BASH_ENV
       - run:
-          name: Install awscli
-          command: |
-            pip install awscli --upgrade
-            aws --version
-      - run:
-          name: Build Docker Image
-          command: |
-            TAG=latest
-            echo "export TAG=${TAG}" >> $BASH_ENV
-
-            echo "Building for TAG ${TAG}"
-            docker build --build-arg="ROOT_PATH=/xreds/" -t ${ECR_REPO}:${TAG} .
-
+          name: Load archived image
+          command: docker load -i /tmp/workspace/image.tar
       - run:
           name: Install Grype
           command: |
@@ -37,39 +52,72 @@ jobs:
             curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b $HOME/bin
             echo 'export PATH=$HOME/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
-
       - run:
           name: Scan the Docker image with Grype
           command: |
             mkdir scans
-            grype -o json "${ECR_REPO}:${TAG}" > ./scans/xreds.json
-
+            curl https://asa-dev.s3.amazonaws.com/scripts/grype.tmpl > ./grype.tmpl
+            grype -o template -t ./grype.tmpl ${ECR_REPO}:latest > ./scans/xreds.csv
       - run:
           name: Check vulnerabilities
           command: |
+            curl https://asa-dev.s3.amazonaws.com/scripts/grype_whitelist.csv > ./whitelist.csv
             curl https://asa-dev.s3.amazonaws.com/scripts/check_vulnerabilities.py > ./check_vulnerabilities.py
             python3 ./check_vulnerabilities.py
 
+
+  push-image:
+    docker:
+      - image: cimg/python:3.11
+    parameters: 
+      image_tag:
+        type: string
+        default: "latest"
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker:
+          version: 20.10.24
+      - aws-cli/setup
+      - aws-ecr/ecr_login:
+          public_registry: true
       - run:
-          name: Tag and Push Docker Image to ECR
+          name: Load archived image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Tag and Push xreds image
           command: |
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/m2c5k9c1
-            docker tag ${ECR_REPO}:${TAG} "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
-            docker push "${ECR_ENDPOINT}/${ECR_REPO}:${TAG}"
+            IMAGE_TAG=<<parameters.image_tag>>
+            docker tag ${ECR_REPO}:latest "${ECR_ENDPOINT}/${ECR_REPO}:${IMAGE_TAG}"
+            docker push "${ECR_ENDPOINT}/${ECR_REPO}:${IMAGE_TAG}"
+
 
 workflows:
-  build-deploy-dev:
+  build-scan-push:
     jobs:
-      - build-deploy-docker:
-          RECIPIENT_EMAILS: "andy.nguy@tetratech.com"
+      - build-image:
           filters:
             branches:
               only:
                 - main
-  scheduled-build-scan-deploy:
+      - scan-image:
+          recipient_emails: "andy.nguy@tetratech.com"
+          requires:
+            - build-image
+      - push-image:
+          requires:
+            - build-image
+
+  scheduled-build-scan-push:
     jobs:
-      - build-deploy-docker:
-          RECIPIENT_EMAILS: "andy.nguy@tetratech.com"
+      - build-image
+      - scan-image:
+          recipient_emails: "andy.nguy@tetratech.com"
+          requires:
+            - build-image
+      - push-image:
+          requires:
+            - build-image
     triggers:
       - schedule:
           cron: "0 9 * * 1"
