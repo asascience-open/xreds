@@ -27,6 +27,7 @@ const colormaps: Array<{ id: string; name: string }> = [
     { id: 'Reds', name: 'Reds' },
     { id: 'cool', name: 'Cool' },
     { id: 'hot', name: 'Hot' },
+    { id: 'seismic', name: 'Seismic' },
 ];
 
 const TILE_SIZE = 512;
