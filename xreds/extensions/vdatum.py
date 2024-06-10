@@ -36,7 +36,7 @@ def transform_datum(
     for o, k in new_dims.items():
         assert ds_vdatum[target_datum_var][o].shape == ds.zeta[k].shape
 
-    zeta_to_datum = zeta + datum.rename(new_dims)
+    zeta_to_datum = zeta - datum.rename(new_dims)
     zeta_to_datum = zeta_to_datum.assign_attrs({"datum": target_datum_name})
 
     ds_transformed = ds.assign({out_datum_var: zeta_to_datum})
