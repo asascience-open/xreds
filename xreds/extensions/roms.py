@@ -21,10 +21,24 @@ class ROMSExtension(DatasetExtension):
     def transform_dataset(self, ds: xr.Dataset, config: dict) -> xr.Dataset:
         angle = ds.angle
 
-        # Start with u
-        u = ds.u.isel(ocean_time=0, s_rho=0)
+        if 's_rho' in ds.dims:
+            if 'temp' in ds:
+                default_da = ds.temp
+            elif 'salt' in ds:
+                default_da = ds.salt
+            else:
+                raise ValueError('No temperature or salinity variable found in dataset. This needed for the ROMs transformation')
+        else:
+            if 'temp_sur' in ds:
+                default_da = ds.temp_sur
+            elif 'salt_sur' in ds:
+                default_da = ds.salt_sur
+            else:
+                raise ValueError('No temperature or salinity variable found in dataset. This needed for the ROMs transformation')
 
-        u_rho = angle
+        # Start with u
+        u = ds.u
+        u_rho = default_da.copy()
         u_rho.name = 'u_rho'
         u_rho.attrs['field'] = u.attrs['field']
         u_rho.attrs['units'] = u.attrs['units']
@@ -38,14 +52,14 @@ class ROMSExtension(DatasetExtension):
             'eta_u': 'eta_rho'
         })
 
-        u_rho[:, 1:-1] = 0.5 * (u_renamed[:, :-1] + u_renamed[:, 1:])
-        u_rho[:, 0] = u_renamed[:, 0]
-        u_rho[:, -1] = u_renamed[:, -1]
+        u_rho[dict(xi_rho=slice(1, -1))] = 0.5 * (u_renamed[dict(xi_rho=slice(0, -1))] + u_renamed[dict(xi_rho=slice(1, None))])
+        u_rho[dict(xi_rho=0)] = u_renamed[dict(xi_rho=0)]
+        u_rho[dict(xi_rho=-1)] = u_renamed[dict(xi_rho=-1)]
 
         # Now do v
-        v = ds.v.isel(ocean_time=0, s_rho=0)
+        v = ds.v
 
-        v_rho = angle
+        v_rho = default_da.copy()
         v_rho.name = 'v_rho'
         v_rho.attrs['field'] = v.attrs['field']
         v_rho.attrs['units'] = v.attrs['units']
@@ -59,9 +73,9 @@ class ROMSExtension(DatasetExtension):
             'eta_v': 'eta_rho'
         })
 
-        v_rho[1:-1, :] = 0.5 * (v_renamed[:-1, :] + v_renamed[1:, :])
-        v_rho[0, :] = v_renamed[0, :]
-        v_rho[-1, :] = v_renamed[-1, :]
+        v_rho[dict(eta_rho=slice(1, -1))] = 0.5 * (v_renamed[dict(eta_rho=slice(0, -1))] + v_renamed[dict(eta_rho=slice(1, None))])
+        v_rho[dict(eta_rho=0)] = v_renamed[dict(eta_rho=0)]
+        v_rho[dict(eta_rho=-1)] = v_renamed[dict(eta_rho=-1)]
 
         u_rotated = u_rho * np.cos(angle) - v_rho * np.sin(angle)
         u_rotated = u_rotated.assign_attrs(u_rho.attrs)
