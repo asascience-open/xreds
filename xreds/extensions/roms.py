@@ -4,6 +4,7 @@ import xarray as xr
 from xreds.dataset_extension import DatasetExtension, hookimpl
 from xreds.logging import logger
 
+
 class ROMSExtension(DatasetExtension):
     """Transform ROMS currents to the global reference frame
 
@@ -33,7 +34,9 @@ class ROMSExtension(DatasetExtension):
                 default_da = ds.salt_sur
 
         if default_da is None:
-            logger.warn("No default data array found in dataset. Skipping ROMS transformation")
+            logger.warn(
+                "No default data array found in dataset. Skipping ROMS transformation"
+            )
             return ds
 
         # Start with u
@@ -49,14 +52,29 @@ class ROMSExtension(DatasetExtension):
 
         # Have to rename the dimensions to match the rho grid, otherwise
         # xarray will refuse
-        u_renamed = u.rename({"xi_u": "xi_rho", "eta_u": "eta_rho"})
-
-        u_rho[dict(xi_rho=slice(1, -1))] = 0.5 * (
-            u_renamed[dict(xi_rho=slice(0, -1))]
-            + u_renamed[dict(xi_rho=slice(1, None))]
+        u_renamed = u.rename(
+            {
+                "xi_u": "xi_rho",
+                "eta_u": "eta_rho",
+                "lat_u": "lat_rho",
+                "lon_u": "lon_rho",
+            }
         )
-        u_rho[dict(xi_rho=0)] = u_renamed[dict(xi_rho=0)]
-        u_rho[dict(xi_rho=-1)] = u_renamed[dict(xi_rho=-1)]
+
+        u_center = 0.5 * (
+            u_renamed.loc[dict(xi_rho=slice(0, -1))]
+            + u_renamed.loc[dict(xi_rho=slice(1, None))]
+        )
+        u_first = u_renamed.loc[dict(xi_rho=0)]
+        u_last = u_renamed.loc[dict(xi_rho=-1)]
+        u_rho = xr.concat(
+            [u_first, u_center, u_last],
+            dim="xi_rho",
+            coords="minimal",
+            compat="override",
+        )
+        u_rho["lat_rho"] = ds.lat_rho
+        u_rho["lon_rho"] = ds.lon_rho
 
         # Now do v
         v_name = "v_sur" if "v_sur" in ds else "v"
@@ -71,14 +89,29 @@ class ROMSExtension(DatasetExtension):
 
         # Have to rename the dimensions to match the rho grid, otherwise
         # xarray will refuse
-        v_renamed = v.rename({"xi_v": "xi_rho", "eta_v": "eta_rho"})
-
-        v_rho[dict(eta_rho=slice(1, -1))] = 0.5 * (
-            v_renamed[dict(eta_rho=slice(0, -1))]
-            + v_renamed[dict(eta_rho=slice(1, None))]
+        v_renamed = v.rename(
+            {
+                "xi_v": "xi_rho",
+                "eta_v": "eta_rho",
+                "lat_v": "lat_rho",
+                "lon_v": "lon_rho",
+            }
         )
-        v_rho[dict(eta_rho=0)] = v_renamed[dict(eta_rho=0)]
-        v_rho[dict(eta_rho=-1)] = v_renamed[dict(eta_rho=-1)]
+
+        v_center = 0.5 * (
+            v_renamed.loc[dict(eta_rho=slice(0, -1))]
+            + v_renamed.loc[dict(eta_rho=slice(1, None))]
+        )
+        v_first = v_renamed.loc[dict(eta_rho=0)]
+        v_last = v_renamed.loc[dict(eta_rho=-1)]
+        v_rho = xr.concat(
+            [v_first, v_center, v_last],
+            dim="eta_rho",
+            coords="minimal",
+            compat="override",
+        )
+        v_rho["lat_rho"] = ds.lat_rho
+        v_rho["lon_rho"] = ds.lon_rho
 
         u_rotated = u_rho * np.cos(angle) - v_rho * np.sin(angle)
         u_rotated = u_rotated.assign_attrs(u_rho.attrs)
