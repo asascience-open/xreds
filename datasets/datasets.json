@@ -10,7 +10,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   },
   "ciofs": {
@@ -24,7 +25,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   },
   "creofs": {
@@ -52,7 +54,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   },
   "gomofs": {
@@ -66,7 +69,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   },
   "gomofs_2d": {
@@ -80,7 +84,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   },
   "leofs": {
@@ -205,7 +210,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   },
   "wcofs": {
@@ -219,7 +225,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   },
   "wcofs_2d": {
@@ -233,7 +240,8 @@
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw"
-      }
+      },
+      "roms": {}
     }
   }
 }

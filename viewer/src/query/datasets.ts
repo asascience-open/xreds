@@ -14,6 +14,7 @@ export const useDatasetsQuery = (datasetIds: Array<string> | undefined) =>
         queries: datasetIds
             ? datasetIds.map((datasetId) => ({
                   queryKey: ['dataset', datasetId],
+                  staleTime: 10 * 60 * 1000,
                   queryFn: () => fetchDataset(datasetId),
               }))
             : [],
@@ -29,6 +30,7 @@ export const useDatasetMetadataQuery = (
 ) =>
     useQuery({
         queryKey: ['dataset', 'metadata', dataset],
+        staleTime: 10 * 60 * 1000,
         queryFn: () =>
             dataset
                 ? fetchMetadata(dataset.dataset, dataset.variable)
@@ -44,6 +46,7 @@ export const useDatasetMinMaxQuery = (dataset: {
 } | undefined) =>
     useQuery({
         queryKey: ['dataset', 'minmax', dataset],
+        staleTime: 10 * 60 * 1000,
         queryFn: () => dataset !== undefined ? fetchMinMax(
                 dataset.dataset,
                 dataset.variable,
