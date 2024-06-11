@@ -14,6 +14,7 @@ class ROMSExtension(DatasetExtension):
     u(LON,LAT)=u(XI,ETA)*cos(angle(i,j))-v(XI,ETA)*sin(angle(i,j))
     v(LON,LAT)=v(XI,ETA)*cos(angle(i,j))+u(XI,ETA)*sin(angle(i,j))
 
+    For an illustration of the grid see https://www.myroms.org/wiki/Numerical_Solution_Technique
     """
 
     name: str = "roms"
