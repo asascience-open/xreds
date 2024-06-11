@@ -111,6 +111,7 @@ class ROMSExtension(DatasetExtension):
             coords="minimal",
             compat="override",
         )
+        v_rho = v_rho.transpose(..., "eta_rho", "xi_rho")
         v_rho["lat_rho"] = ds.lat_rho
         v_rho["lon_rho"] = ds.lon_rho
 
