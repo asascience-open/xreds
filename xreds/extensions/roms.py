@@ -125,10 +125,6 @@ class ROMSExtension(DatasetExtension):
         v_rotated.name = f"{v_name}_rotated"
         v_rotated.attrs["long_name"] = "v velocity rotated from ROMS grid"
 
-        print(u_rotated)
-        print("----------------------")
-        print(v_rotated)
-
         ds[f"{u_name}_rotated"] = u_rotated
         ds[f"{v_name}_rotated"] = v_rotated
 
