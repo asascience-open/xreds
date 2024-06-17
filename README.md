@@ -189,9 +189,10 @@ The following environment variables can be set to configure the app:
 
 - `DATASETS_MAPPING_FILE`: The fsspec compatible path to the dataset key value store as described [here](./README.md#specifying-datasets)
 - `PORT`: The port the app should run on. Defaults to `8090`.
+- `WORKERS`: The number of worker threads handling requests. Defaults to `1`
 - `ROOT_PATH`: The root path the app will be served from. Defaults to be served from the root.
 - `DATASET_CACHE_TIMEOUT`: The time in seconds to cache the dataset metadata. Defaults to `600` (10 minutes).
-- `EXPORT_THRESHOLD`: The maximum size file to allow to be exported. Defaults to `500 MB`
+- `EXPORT_THRESHOLD`: The maximum size file to allow to be exported. Defaults to `500` mb
 - `USE_REDIS_CACHE`: Whether to use a redis cache for the app. Defaults to `False`
 - `REDIS_HOST`: [Optional] The host of the redis cache. Defaults to `localhost`
 - `REDIS_PORT`: [Optional] The port of the redis cache. Defaults to `6379`
