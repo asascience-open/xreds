@@ -1,3 +1,4 @@
+from typing import Literal
 import xarray as xr
 
 from xreds.config import settings
@@ -13,6 +14,7 @@ def transform_datum(
     target_zeta_var: str,
     target_datum_var: str,
     target_datum_name: str,
+    multiplier: float,
     out_datum_var: str,
 ) -> xr.Dataset:
     """Transform the dataset to target datum
@@ -20,6 +22,11 @@ def transform_datum(
     Args:
         ds (xr.Dataset): The dataset to transform
         ds_vdatum (xr.Dataset): The vdatum dataset
+        target_zeta_var (str): The variable name of the water level
+        target_datum_var (str): The variable name of the target datum
+        target_datum_name (str): The name of the target datum
+        multiplier (float): The multiplier to apply to the target datum. Usually 1.0 or -1.0
+        out_datum_var (str): The name of the output variable
 
     Returns:
         xr.Dataset: The transformed dataset
@@ -36,7 +43,7 @@ def transform_datum(
     for o, k in new_dims.items():
         assert ds_vdatum[target_datum_var][o].shape == ds.zeta[k].shape
 
-    zeta_to_datum = zeta - datum.rename(new_dims)
+    zeta_to_datum = zeta + (multiplier * datum.rename(new_dims))
     zeta_to_datum = zeta_to_datum.assign_attrs({"datum": target_datum_name})
 
     ds_transformed = ds.assign({out_datum_var: zeta_to_datum})
@@ -75,6 +82,7 @@ class VDatumTransformationExtension(DatasetExtension):
         target_zeta_var = config.get("water_level_var", "zeta")
         target_datum_var = config.get("vdatum_var", None)
         target_datum_name = config.get("vdatum_name", None)
+        multiplier = config.get("multiplier", 1.0)
 
         if target_datum_var is None or target_datum_name is None:
             logger.warning(
@@ -84,5 +92,13 @@ class VDatumTransformationExtension(DatasetExtension):
 
         out_datum_var = f"{target_zeta_var}_{target_datum_name}"
 
-        ds_transformed = transform_datum(ds, ds_vdatum, target_zeta_var, target_datum_var, target_datum_name, out_datum_var)
+        ds_transformed = transform_datum(
+            ds,
+            ds_vdatum,
+            target_zeta_var,
+            target_datum_var,
+            target_datum_name,
+            multiplier,
+            out_datum_var
+        )
         return ds_transformed

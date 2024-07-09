@@ -9,7 +9,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/cbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
@@ -24,7 +25,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/ciofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
@@ -39,7 +41,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/creofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       }
     }
   },
@@ -53,7 +56,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/dbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
@@ -68,7 +72,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/gomofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
@@ -83,7 +88,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/gomofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
@@ -98,7 +104,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/leofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
-        "vdatum_name": "igld85"
+        "vdatum_name": "igld85",
+        "multiplier": -1.0
       }
     }
   },
@@ -112,7 +119,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/lmhofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
-        "vdatum_name": "igld85"
+        "vdatum_name": "igld85",
+        "multiplier": 1.0
       }
     }
   },
@@ -126,7 +134,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/loofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
-        "vdatum_name": "igld85"
+        "vdatum_name": "igld85",
+        "multiplier": 1.0
       }
     }
   },
@@ -140,7 +149,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/lsofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
-        "vdatum_name": "igld85"
+        "vdatum_name": "igld85",
+        "multiplier": 1.0
       }
     }
   },
@@ -161,7 +171,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/ngofs2_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       }
     }
   },
@@ -175,7 +186,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/ngofs2_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       }
     }
   },
@@ -189,7 +201,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/sfbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       }
     }
   },
@@ -209,7 +222,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/tbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
@@ -224,7 +238,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/wcofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
@@ -239,7 +254,8 @@
         "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/wcofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw"
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
       },
       "roms": {}
     }
