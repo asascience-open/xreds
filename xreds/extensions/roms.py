@@ -125,7 +125,17 @@ class ROMSExtension(DatasetExtension):
         v_rotated.name = f"{v_name}_rotated"
         v_rotated.attrs["long_name"] = "v velocity rotated from ROMS grid"
 
-        ds[f"{u_name}_rotated"] = u_rotated
-        ds[f"{v_name}_rotated"] = v_rotated
+        ds[f"{u_name}_rotated"] = u_rotated.chunk(
+            dict(
+                xi_rho=default_da.chunksizes['xi_rho'],
+                eta_rho=default_da.chunksizes['eta_rho']
+            )
+        ).unify_chunks()
+        ds[f"{v_name}_rotated"] = v_rotated.chunk(
+            dict(
+                xi_rho=default_da.chunksizes['xi_rho'],
+                eta_rho=default_da.chunksizes['eta_rho']
+            )
+        ).unify_chunks()
 
         return ds

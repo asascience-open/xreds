@@ -88,4 +88,6 @@ class DatasetProvider(Plugin):
                 f"Loaded dataset for {dataset_id}. Not cached due to size or current cache score"
             )
 
+        print(ds.data_vars)
+
         return ds
