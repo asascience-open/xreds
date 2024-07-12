@@ -40,6 +40,8 @@ class ROMSExtension(DatasetExtension):
             )
             return ds
 
+        default_da = default_da.unify_chunks()
+
         # Start with u
         u_name = "u_sur" if "u_sur" in ds else "u"
         u = ds[u_name]
