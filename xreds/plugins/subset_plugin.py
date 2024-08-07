@@ -132,9 +132,9 @@ class SubsetQuery:
     def subset(self, ds):
         """Subset the dataset using the extracted query arguments"""
         if self.points is not None:
-            ds = ds.subset_grid.grid.subset_polygon(ds, self.points)
+            ds = ds.xsg.grid.subset_polygon(ds, self.points)
         elif self.bbox is not None:
-            ds = ds.subset_grid.grid.subset_bbox(ds, self.bbox)
+            ds = ds.xsg.grid.subset_bbox(ds, self.bbox)
         if self.time is not None:
             # Remove Z from the time strings for now to avoid issues with parsing
             # from xarray. This is due to most datasets not using time aware
