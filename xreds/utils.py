@@ -109,7 +109,11 @@ def load_dataset(
     elif dataset_type == "zarr":
         # TODO: Enable S3  support
         # mapper = fsspec.get_mapper(dataset_location)
-        ds = xr.open_zarr(dataset_path, consolidated=True)
+        try:
+            ds = xr.open_zarr(dataset_path, consolidated=True)
+        except Exception:
+            logger.warning(f"Failed to open dataset: {dataset_path}")
+            raise
 
     if ds is None:
         return None
@@ -118,10 +122,24 @@ def load_dataset(
     if additional_attrs is not None:
         ds.attrs.update(additional_attrs)
 
+    # TODO: Rethink implementation
+    # If a boolean coordinate exists along the time dimension, use it to mask
+    # the time dimension
+    # TODO: Determine time_mask_name from dataset configuration
+    time_dim = ds.cf["time"].dims[0]
+    time_mask_name = "time_mask"
+
+    if time_mask_name in ds.coords:
+        time_mask = ds[time_mask_name]
+        ds = ds.sel({time_dim: time_mask})
+
+        # Be sure to drop the time_mask coordinate (xpublish-wms does not like it)
+        ds = ds.drop(time_mask_name)
+
     # Check if we have a time dimension and if it is not indexed, index it
     try:
         time_dim = ds.cf["time"].dims[0]
-        if not ds.indexes.get(time_dim, None):
+        if ds.indexes.get(time_dim, None).empty:
             time_coord = ds.cf["time"].name
             logger.info(f"Indexing time dimension {time_dim} as {time_coord}")
             ds = ds.set_index({time_dim: time_coord})
