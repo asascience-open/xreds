@@ -1,3 +1,4 @@
+import pickle
 from typing import Optional
 
 import fsspec
@@ -7,6 +8,169 @@ from redis_fsspec_cache.reference import RedisCachingReferenceFileSystem
 
 from redis import Redis
 from xreds.logging import logger
+
+ZARR_CACHE_KEY_PREFIX = "zarr_dataset"
+
+
+def _get_cache_key(dataset_path: str, key_prefix: str) -> str:
+    return f"{key_prefix}:{dataset_path}"
+
+
+# TODO: Rethink implementation
+def _mask_time_dimension(
+    ds: xr.Dataset, time_dim: str, time_mask_name: str
+) -> xr.Dataset:
+    """Mask the time dimension of a dataset with a boolean time_mask coordinate"""
+    time_mask = ds[time_mask_name]
+    ds = ds.sel({time_dim: time_mask})
+    ds = ds.drop(time_mask_name)
+    return ds
+
+
+def _load_zarr_dataset_from_path(
+    dataset_path: str,
+    chunks: dict | None = None,
+    drop_variables: list[str] | None = None,
+) -> xr.Dataset:
+    ds = xr.open_zarr(
+        dataset_path,
+        consolidated=True,
+        chunks=chunks,
+        drop_variables=drop_variables,
+    )
+
+    # If a boolean coordinate exists along the time dimension, use it to mask the time dimension
+    # TODO: Determine time_mask_name from dataset configuration
+    time_dim = ds.cf["time"].dims[0]
+    time_mask_name = "time_mask"
+    if time_mask_name in ds.coords:
+        ds = _mask_time_dimension(ds, time_dim, time_mask_name)
+
+    return ds
+
+
+def _retrieve_cached_dataset(redis_cache: Redis, cache_key: str) -> xr.Dataset | None:
+    cached_ds = redis_cache.get(cache_key)
+    # If found in cache, deserialize and return
+    if cached_ds is not None:
+        return pickle.loads(cached_ds)
+
+    return None
+
+
+def _load_netcdf(
+    dataset_path: str,
+    engine: str,
+    chunks: dict | None = None,
+    drop_variables: list[str] | None = None,
+    additional_coords: list[str] | None = None,
+) -> xr.Dataset:
+    ds = xr.open_dataset(
+        dataset_path, engine=engine, chunks=chunks, drop_variables=drop_variables
+    )
+
+    if additional_coords is not None:
+        ds = ds.set_coords(additional_coords)
+
+    return ds
+
+
+def _load_grib2(dataset_path: str) -> xr.Dataset:
+    # TODO: Network support?
+    return xr.open_dataset(dataset_path, engine="cfgrib")
+
+
+def _load_kerchunk(
+    dataset_spec: dict,
+    dataset_path: str,
+    chunks: dict | None = None,
+    drop_variables: list[str] | None = None,
+    redis_cache: Optional[Redis] = None,
+    cache_timeout: int = 600,
+) -> xr.Dataset:
+    target_protocol = dataset_spec.get("target_protocol", "s3")
+    target_options = dataset_spec.get("target_options", {"anon": True})
+    remote_protocol = dataset_spec.get("remote_protocol", "s3")
+    remote_options = dataset_spec.get("remote_options", {"anon": True})
+
+    if redis_cache is not None:
+        reference_url = f"rediscache::{dataset_path}"
+        with fsspec.open(
+            reference_url,
+            mode="rb",
+            rediscache={"redis": redis_cache, "expiry": cache_timeout},
+            s3=target_options,
+        ) as f:
+            refs = ujson.load(f)
+        fs = RedisCachingReferenceFileSystem(
+            redis=redis_cache,
+            expiry_time=cache_timeout,
+            fo=dataset_path,
+            target_protocol=target_protocol,
+            target_options=target_options,
+            remote_protocol=remote_protocol,
+            remote_options=remote_options,
+        )
+    else:
+        fs = fsspec.filesystem(
+            "filecache",
+            expiry_time=cache_timeout,
+            target_protocol="reference",
+            target_options={
+                "fo": dataset_path,
+                "target_protocol": target_protocol,
+                "target_options": target_options,
+                "remote_protocol": remote_protocol,
+                "remote_options": remote_options,
+            },
+        )
+    m = fs.get_mapper("")
+    ds = xr.open_dataset(
+        m,
+        engine="zarr",
+        backend_kwargs=dict(consolidated=False),
+        chunks=chunks,
+        drop_variables=drop_variables,
+    )
+    try:
+        if ds.cf.coords["longitude"].dims[0] == "longitude":
+            ds = ds.assign_coords(
+                longitude=(((ds.longitude + 180) % 360) - 180)
+            ).sortby("longitude")
+            # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
+            ds = ds.rio.write_crs(4326)
+    except Exception as e:
+        logger.warning(f"Could not reindex longitude: {e}")
+        pass
+
+    return ds
+
+
+def _load_zarr(
+    dataset_path: str,
+    chunks: dict | None = None,
+    drop_variables: list[str] | None = None,
+    redis_cache: Optional[Redis] = None,
+    cache_timeout: int = 600,
+) -> xr.Dataset:
+    if redis_cache is not None:
+        # Create a unique key for the dataset
+        cache_key = _get_cache_key(dataset_path, ZARR_CACHE_KEY_PREFIX)
+        ds = _retrieve_cached_dataset(redis_cache, cache_key)
+        if ds is not None:
+            return ds
+
+    # If Redis cache is not enabled, or not found in cache, load the dataset
+    ds = _load_zarr_dataset_from_path(dataset_path, chunks, drop_variables)
+
+    # If Redis cache is enabled, serialize and store the dataset in Redis cache
+    if redis_cache is not None:
+        cache_key = _get_cache_key(dataset_path, ZARR_CACHE_KEY_PREFIX)
+        serialized_ds = pickle.dumps(ds, protocol=-1)
+        redis_cache.set(cache_key, serialized_ds, ex=cache_timeout)
+
+    # Return the dataset
+    return ds
 
 
 def infer_dataset_type(dataset_path: str) -> str:
@@ -42,78 +206,32 @@ def load_dataset(
     additional_attrs = dataset_spec.get("additional_attrs", None)
 
     if dataset_type == "netcdf":
-        engine = dataset_spec.get("engine", "netcdf4")
-        ds = xr.open_dataset(
-            dataset_path, engine=engine, chunks=chunks, drop_variables=drop_variables
-        )
-        if additional_coords is not None:
-            ds = ds.set_coords(additional_coords)
-    elif dataset_type == "grib2":
-        # TODO: Network support?
-        ds = xr.open_dataset(dataset_path, engine="cfgrib")
-    elif dataset_type == "kerchunk":
-        target_protocol = dataset_spec.get("target_protocol", "s3")
-        target_options = dataset_spec.get("target_options", {"anon": True})
-        remote_protocol = dataset_spec.get("remote_protocol", "s3")
-        remote_options = dataset_spec.get("remote_options", {"anon": True})
-
-        if redis_cache is not None:
-            reference_url = f"rediscache::{dataset_path}"
-            with fsspec.open(
-                reference_url,
-                mode="rb",
-                rediscache={"redis": redis_cache, "expiry": cache_timeout},
-                s3=target_options,
-            ) as f:
-                refs = ujson.load(f)
-            fs = RedisCachingReferenceFileSystem(
-                redis=redis_cache,
-                expiry_time=cache_timeout,
-                fo=dataset_path,
-                target_protocol=target_protocol,
-                target_options=target_options,
-                remote_protocol=remote_protocol,
-                remote_options=remote_options,
-            )
-        else:
-            fs = fsspec.filesystem(
-                "filecache",
-                expiry_time=cache_timeout,
-                target_protocol="reference",
-                target_options={
-                    "fo": dataset_path,
-                    "target_protocol": target_protocol,
-                    "target_options": target_options,
-                    "remote_protocol": remote_protocol,
-                    "remote_options": remote_options,
-                },
-            )
-        m = fs.get_mapper("")
-        ds = xr.open_dataset(
-            m,
-            engine="zarr",
-            backend_kwargs=dict(consolidated=False),
+        ds = _load_netcdf(
+            dataset_path,
+            engine=dataset_spec.get("engine", "netcdf4"),
             chunks=chunks,
             drop_variables=drop_variables,
+            additional_coords=additional_coords,
         )
-        try:
-            if ds.cf.coords["longitude"].dims[0] == "longitude":
-                ds = ds.assign_coords(
-                    longitude=(((ds.longitude + 180) % 360) - 180)
-                ).sortby("longitude")
-                # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
-                ds = ds.rio.write_crs(4326)
-        except Exception as e:
-            logger.warning(f"Could not reindex longitude: {e}")
-            pass
+    elif dataset_type == "grib2":
+        ds = _load_grib2(dataset_path)
+    elif dataset_type == "kerchunk":
+        ds = _load_kerchunk(
+            dataset_spec,
+            dataset_path,
+            chunks=chunks,
+            drop_variables=drop_variables,
+            redis_cache=redis_cache,
+            cache_timeout=cache_timeout,
+        )
     elif dataset_type == "zarr":
-        # TODO: Enable S3  support
-        # mapper = fsspec.get_mapper(dataset_location)
-        try:
-            ds = xr.open_zarr(dataset_path, consolidated=True)
-        except Exception:
-            logger.warning(f"Failed to open dataset: {dataset_path}")
-            raise
+        ds = _load_zarr(
+            dataset_path,
+            chunks=chunks,
+            drop_variables=drop_variables,
+            redis_cache=redis_cache,
+            cache_timeout=cache_timeout,
+        )
 
     if ds is None:
         return None
@@ -121,20 +239,6 @@ def load_dataset(
     # Add additional attributes to the dataset if provided
     if additional_attrs is not None:
         ds.attrs.update(additional_attrs)
-
-    # TODO: Rethink implementation
-    # If a boolean coordinate exists along the time dimension, use it to mask
-    # the time dimension
-    # TODO: Determine time_mask_name from dataset configuration
-    time_dim = ds.cf["time"].dims[0]
-    time_mask_name = "time_mask"
-
-    if time_mask_name in ds.coords:
-        time_mask = ds[time_mask_name]
-        ds = ds.sel({time_dim: time_mask})
-
-        # Be sure to drop the time_mask coordinate (xpublish-wms does not like it)
-        ds = ds.drop(time_mask_name)
 
     # Check if we have a time dimension and if it is not indexed, index it
     try:
