@@ -121,7 +121,7 @@ def load_dataset(
     # Check if we have a time dimension and if it is not indexed, index it
     try:
         time_dim = ds.cf["time"].dims[0]
-        if not ds.indexes.get(time_dim, None):
+        if ds.indexes.get(time_dim, None) is None:
             time_coord = ds.cf["time"].name
             logger.info(f"Indexing time dimension {time_dim} as {time_coord}")
             ds = ds.set_index({time_dim: time_coord})

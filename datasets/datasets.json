@@ -1,12 +1,12 @@
 {
   "cbofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/cbofs/nos.cbofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/cbofs/cbofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/cbofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/cbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -16,13 +16,13 @@
     }
   },
   "ciofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/ciofs/nos.ciofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/ciofs/ciofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/ciofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/ciofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -31,29 +31,14 @@
       "roms": {}
     }
   },
-  "creofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/creofs/nos.creofs.fields.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
-    "drop_variables": ["dstart"],
-    "extensions": {
-      "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/creofs_vdatums.nc.zarr",
-        "water_level_var": "zeta",
-        "vdatum_var": "mllwtomsl",
-        "vdatum_name": "mllw",
-        "multiplier": -1.0
-      }
-    }
-  },
   "dbofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/dbofs/nos.dbofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/dbofs/dbofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/dbofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/dbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -63,13 +48,13 @@
     }
   },
   "gomofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/gomofs/nos.gomofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/gomofs/gomofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/gomofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/gomofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -79,13 +64,13 @@
     }
   },
   "gomofs_2d": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/gomofs/nos.gomofs.2ds.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/gomofs/gomofs.2ds.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/gomofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/gomofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -95,13 +80,13 @@
     }
   },
   "leofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/leofs/nos.leofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/leofs/leofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/leofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/leofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
         "vdatum_name": "igld85",
@@ -110,13 +95,13 @@
     }
   },
   "lmhofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/lmhofs/nos.lmhofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/lmhofs/lmhofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/lmhofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/lmhofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
         "vdatum_name": "igld85",
@@ -125,13 +110,13 @@
     }
   },
   "loofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/loofs/nos.loofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/loofs/loofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/loofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/loofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
         "vdatum_name": "igld85",
@@ -140,13 +125,13 @@
     }
   },
   "lsofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/lsofs/nos.lsofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/lsofs/lsofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/lsofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/lsofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "igld85tolwd",
         "vdatum_name": "igld85",
@@ -162,13 +147,13 @@
       "additional_coords": ["lat", "lon", "latc", "lonc", "xc", "yc"]
   },
   "ngofs2": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/ngofs2/ngofs2.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/ngofs2_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/ngofs2_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -177,13 +162,13 @@
     }
   },
   "ngofs2_2d": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/ngofs2/nos.ngofs2.2ds.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/ngofs2/ngofs2.2ds.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/ngofs2_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/ngofs2_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -192,13 +177,13 @@
     }
   },
   "sfbofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/sfbofs/nos.sfbofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/sfbofs/sfbofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/sfbofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/sfbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -207,19 +192,28 @@
     }
   },
   "sscofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/sscofs/sscofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/sscofs/sscofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
-    "drop_variables": ["Itime", "Itime2"]
+    "drop_variables": ["Itime", "Itime2"],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/sscofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      }
+    }
   },
   "tbofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/tbofs/nos.tbofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/tbofs/tbofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/tbofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/tbofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -229,13 +223,13 @@
     }
   },
   "wcofs": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.fields.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/wcofs/wcofs.fields.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/wcofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/wcofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",
@@ -245,13 +239,13 @@
     }
   },
   "wcofs_2d": {
-    "path": "s3://nextgen-dmac-cloud-ingest/nos/wcofs/nos.wcofs.2ds.best.nc.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/nos/wcofs/wcofs.2ds.best.nc.zarr",
     "type": "kerchunk",
     "chunks": {},
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos_vdatums/wcofs_vdatums.nc.zarr",
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/wcofs_vdatums.nc.zarr",
         "water_level_var": "zeta",
         "vdatum_var": "mllwtomsl",
         "vdatum_name": "mllw",

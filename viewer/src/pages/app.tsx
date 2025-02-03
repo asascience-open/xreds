@@ -646,7 +646,7 @@ function App() {
                                     />
                                     <img
                                         className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer"
-                                        src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`}
+                                        src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`}
                                         onClick={() =>
                                             setColorMapPickerShowing(
                                                 !showColormapPicker,
@@ -660,7 +660,7 @@ function App() {
                                                     <li className="w-full h-2 mb-8">
                                                         <img
                                                             className="rounded-md overflow-hidden w-full cursor-pointer"
-                                                            src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`}
+                                                            src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`}
                                                             onClick={() => {
                                                                 setLayerOptions(
                                                                     {
