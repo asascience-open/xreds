@@ -13,9 +13,10 @@ export const useDatasetsQuery = (datasetIds: Array<string> | undefined) =>
     useQueries({
         queries: datasetIds
             ? datasetIds.map((datasetId) => ({
-                  queryKey: ['dataset', datasetId],
-                  staleTime: 10 * 60 * 1000,
-                  queryFn: () => fetchDataset(datasetId),
+                    refetchOnWindowFocus: false,
+                    queryKey: ['dataset', datasetId],
+                    staleTime: 10 * 60 * 1000,
+                    queryFn: () => fetchDataset(datasetId),
               }))
             : [],
     });
@@ -29,6 +30,7 @@ export const useDatasetMetadataQuery = (
         | undefined,
 ) =>
     useQuery({
+        refetchOnWindowFocus: false,
         queryKey: ['dataset', 'metadata', dataset],
         staleTime: 10 * 60 * 1000,
         queryFn: () =>
@@ -45,6 +47,7 @@ export const useDatasetMinMaxQuery = (dataset: {
     elevation?: string;
 } | undefined) =>
     useQuery({
+        refetchOnWindowFocus: false,
         queryKey: ['dataset', 'minmax', dataset],
         staleTime: 10 * 60 * 1000,
         queryFn: () => dataset !== undefined ? fetchMinMax(

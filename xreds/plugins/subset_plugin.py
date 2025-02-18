@@ -5,7 +5,7 @@ from numpy._typing import NDArray
 from xpublish import Plugin, Dependencies, hookimpl
 from xpublish.utils.api import DATASET_ID_ATTR_KEY
 
-import xarray_subset_grid.accessor # noqa
+from xarray_subset_grid.grids.ugrid import assign_ugrid_topology # noqa
 
 from xreds.logging import logger
 
@@ -131,10 +131,19 @@ class SubsetQuery:
 
     def subset(self, ds):
         """Subset the dataset using the extracted query arguments"""
-        if self.points is not None:
-            ds = ds.xsg.grid.subset_polygon(ds, self.points)
-        elif self.bbox is not None:
-            ds = ds.xsg.grid.subset_bbox(ds, self.bbox)
+        try:
+            if self.points is not None:
+                ds = ds.xsg.grid.subset_polygon(ds, self.points)
+            elif self.bbox is not None:
+                ds = ds.xsg.grid.subset_bbox(ds, self.bbox)
+        except:
+            logger.warning("Failed to subset dataset - Retrying with 'assign_ugrid_topology'")
+            ds = assign_ugrid_topology(ds, face_node_connectivity="nv")
+            if self.points is not None:
+                ds = ds.xsg.grid.subset_polygon(ds, self.points)
+            elif self.bbox is not None:
+                ds = ds.xsg.grid.subset_bbox(ds, self.bbox)
+
         if self.time is not None:
             # Remove Z from the time strings for now to avoid issues with parsing
             # from xarray. This is due to most datasets not using time aware

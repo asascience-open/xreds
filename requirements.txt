@@ -2,9 +2,10 @@ cachey~=0.2.1 # last updated 03/20
 cf-xarray~=0.10.0
 cfgrib~=0.9.15.0
 cftime~=1.6.4.post1
-dask~=2024.12.1
-dask_gateway~=2024.1.0
-distributed~=2024.12.1
+# dask/distributed are pinned because newer versions break netcdf requests
+dask==2024.11.2
+dask_gateway==2024.1.0
+distributed==2024.11.2
 fastapi~=0.115.7
 fsspec~=2024.12.0
 gunicorn~=23.0.0
@@ -33,7 +34,7 @@ s3fs~=2024.12.0
 scipy~=1.15.1
 setuptools~=75.8.0
 uvicorn~=0.34.0
-xarray~=2025.1.1
+xarray~=2025.1.2
 zarr~=2.18.4
 redis-fsspec-cache@git+https://github.com/mpiannucci/redis-fsspec-cache@main
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@main

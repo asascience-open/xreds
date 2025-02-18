@@ -2,11 +2,10 @@ import { QueryClient } from '@tanstack/query-core';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import './index.css';
 import App from './pages/app';
 import ErrorPage from './pages/error';
-import SubsetExportPage from './pages/subset_export';
 
 const router = createBrowserRouter([
     {
@@ -15,10 +14,9 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
     },
     {
-        path: '/subset_export',
-        element: <SubsetExportPage />,
-        errorElement: <ErrorPage />,
-    },
+        path: '*',
+        element: <Navigate to={"/"} replace={true} />
+    }
 ], {
     basename: import.meta.env.VITE_XREDS_BASE_URL,
 });
