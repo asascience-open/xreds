@@ -10,7 +10,7 @@ export interface MaterialIconProps {
     color?: string,
     rotation?: number,
     className?: string,
-    onClick?: () => void,
+    onClick?: (e?: any) => void,
 }
 
 const MaterialIcon = ({ color, name, title, size, style, rotation, className, onClick, type }: MaterialIconProps) => (

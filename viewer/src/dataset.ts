@@ -38,7 +38,7 @@ export async function fetchDatasetInfo(dataset: string): Promise<any> {
 }
 
 export async function fetchDatasetMenu(dataset: string): Promise<any> {
-    const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&request=GetMetadata&item=menu`);
+    const response = await fetch(`/datasets/${dataset}/wms/?service=WMS&version=1.3.0&request=GetMetadata&item=menu`);
     return await response.json();
 }
 

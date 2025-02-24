@@ -1,7 +1,7 @@
 
 
 # Build the react frontend
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Create a folder for the app to live in
 RUN mkdir -p /opt/viewer

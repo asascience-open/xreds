@@ -12,7 +12,7 @@ import {
     useDatasetMinMaxQuery,
     useDatasetsQuery,
 } from '../query/datasets';
-import { Link } from 'react-router-dom';
+import Export from '../components/export';
 
 const colormaps: Array<{ id: string; name: string }> = [
     { id: 'rainbow', name: 'Rainbow' },
@@ -39,9 +39,7 @@ function App() {
     const datasetIds = useDatasetIdsQuery();
     const datasets = useDatasetsQuery(datasetIds.data);
 
-    const [selectedLayer, setSelectedLayer] = useState<
-        { dataset: string; variable: string } | undefined
-    >(undefined);
+    const [selectedLayer, setSelectedLayer] = useState<{ dataset: string; variable: string } | undefined>(undefined);
     const selectedLayerMetadata = useDatasetMetadataQuery(selectedLayer);
     const [layerOptions, setLayerOptions] = useState<{
         date?: string;
@@ -74,6 +72,9 @@ function App() {
         [k: string]: boolean;
     }>({});
     const [layerLoading, setLayerLoading] = useState(false);
+
+    const [selectedExportDataset, setSelectedExportDataset] = useState<string | undefined>(undefined);
+    const selectedExportDatasetRef = useRef<string | undefined>(undefined);
 
     useEffect(() => {
         const datasetsCollapsed = datasetIds.data?.reduce(
@@ -174,8 +175,8 @@ function App() {
 
         const onClick = async (e: MapMouseEvent) => {
             if (
-                selectedLayerMetadata.data?.bbox &&
-                !bboxContainsPoint(selectedLayerMetadata.data.bbox, e.lngLat)
+                selectedExportDatasetRef.current !== undefined ||
+                (selectedLayerMetadata.data?.bbox && !bboxContainsPoint(selectedLayerMetadata.data.bbox, e.lngLat))
             ) {
                 setCurrentPopupData(undefined);
                 return;
@@ -335,11 +336,21 @@ function App() {
         };
     }, [currentPopupData]);
 
+    useEffect(() => {
+        selectedExportDatasetRef.current = selectedExportDataset;
+    }, [selectedExportDataset])
+
     return (
         <div className="h-screen w-screen flex flex-col overflow-hidden">
             <NavBar
                 showSidebar={showSidebar}
-                setSidebarShowing={setSidebarShowing}
+                setSidebarShowing={(show) => {
+                    if (selectedExportDatasetRef.current !== undefined) {
+                        setSelectedExportDataset(undefined);
+                    } else {
+                        setSidebarShowing(show);
+                    }
+                }}
             />
 
             <main className="flex flex-row flex-1">
@@ -429,16 +440,16 @@ function App() {
                                                             onClick={() => {}}
                                                         />
                                                     </a>
-                                                    <Link
-                                                        to={`/subset_export?dataset=${datasetIds.data.at(i)}`}
-                                                    >
-                                                        <MaterialIcon
-                                                            className="self-center align-middle transition-all hover:text-blue-400"
-                                                            name="output"
-                                                            title="Subset and Export"
-                                                            onClick={() => {}}
-                                                        />
-                                                    </Link>
+                                                    <MaterialIcon
+                                                        className="self-center align-middle transition-all hover:text-blue-400"
+                                                        name="output"
+                                                        title="Subset and Export"
+                                                        onClick={() =>{ 
+                                                            setSelectedExportDataset(datasetIds.data.at(i));
+                                                            setCurrentPopupData(undefined);
+                                                            lastClickPos.current = null;
+                                                        }}
+                                                    />
                                                 </>
                                             )}
                                             {/* <MaterialIcon
@@ -513,6 +524,11 @@ function App() {
                                 </section>
                             ))}
                         </>
+                    )}
+                </Sidebar>
+                <Sidebar showSidebar={selectedExportDataset !== undefined}>
+                    {selectedExportDataset !== undefined && (
+                        <Export map={map} dataset={selectedExportDataset} />
                     )}
                 </Sidebar>
                 <div className="flex-1">
@@ -646,7 +662,7 @@ function App() {
                                     />
                                     <img
                                         className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer"
-                                        src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`}
+                                        src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`}
                                         onClick={() =>
                                             setColorMapPickerShowing(
                                                 !showColormapPicker,
@@ -660,7 +676,7 @@ function App() {
                                                     <li className="w-full h-2 mb-8">
                                                         <img
                                                             className="rounded-md overflow-hidden w-full cursor-pointer"
-                                                            src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`}
+                                                            src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`}
                                                             onClick={() => {
                                                                 setLayerOptions(
                                                                     {

@@ -112,7 +112,7 @@ class ExportPlugin(Plugin):
                             },
                         )
                     except Exception as e:
-                        return {"message": f"Error exporting dataset: {e}"}
+                        return Response(content=f"{{\"message\": \"Error exporting dataset: {e}\"}}", status_code=500)
                     finally:
                         if fname is not None and os.path.exists(fname):
                             os.remove(fname)
