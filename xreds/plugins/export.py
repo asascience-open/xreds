@@ -94,7 +94,7 @@ class ExportPlugin(Plugin):
         )
         def export(filename: str, dataset=Depends(deps.dataset)):
             # Maximum filename length is 250 characters
-            if filename.endswith(".nc")and len(filename) < 250:
+            if filename.endswith(".nc") and len(filename) < 250:
                 # Export netcdf if the size is below our threshold
                 mbs = dataset.nbytes / 1024**2
                 if mbs < self.export_threshold:

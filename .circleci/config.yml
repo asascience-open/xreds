@@ -7,7 +7,7 @@ orbs:
 jobs:
   build-image:
     docker:
-      - image: cimg/python:3.12.7
+      - image: cimg/python:3.12.8
     steps:
       - checkout
       - setup_remote_docker:
@@ -28,7 +28,7 @@ jobs:
 
   scan-image:
     docker:
-      - image: cimg/python:3.12.7
+      - image: cimg/python:3.12.8
     parameters: 
       recipient_emails:
         type: string
@@ -68,7 +68,7 @@ jobs:
 
   push-image:
     docker:
-      - image: cimg/python:3.12.7
+      - image: cimg/python:3.12.8
     parameters: 
       image_tag:
         type: string
