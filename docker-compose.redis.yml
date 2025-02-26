@@ -3,7 +3,7 @@ version: '3'
 services:
   redis:
     container_name: redis
-    image: redis:7-alpine
+    image: redis:7.4.2-alpine
     volumes:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     restart: on-failure

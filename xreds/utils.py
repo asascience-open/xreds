@@ -93,16 +93,12 @@ def _load_kerchunk(
         )
     else:
         fs = fsspec.filesystem(
-            "filecache",
-            expiry_time=cache_timeout,
-            target_protocol="reference",
-            target_options={
-                "fo": dataset_path,
-                "target_protocol": target_protocol,
-                "target_options": target_options,
-                "remote_protocol": remote_protocol,
-                "remote_options": remote_options,
-            },
+            "reference",
+            fo=dataset_path,
+            target_protocol=target_protocol,
+            target_options=target_options,
+            remote_protocol=remote_protocol,
+            remote_options=remote_options,
         )
     m = fs.get_mapper("")
     ds = xr.open_dataset(
