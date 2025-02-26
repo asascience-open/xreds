@@ -36,7 +36,7 @@ setuptools~=75.8.0
 uvicorn~=0.34.0
 xarray~=2025.1.2
 zarr~=2.18.4
-redis-fsspec-cache@git+https://github.com/mpiannucci/redis-fsspec-cache@main
+redis-fsspec-cache@git+https://github.com/asascience-open/redis-fsspec-cache@main
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@main
 xpublish@git+https://github.com/xpublish-community/xpublish@main
 xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@main
