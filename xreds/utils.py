@@ -1,8 +1,10 @@
 from typing import Optional
 
+import asyncio
 import fsspec
 import ujson
 import xarray as xr
+from zarr.storage import FsspecStore
 from redis_fsspec_cache.reference import RedisCachingReferenceFileSystem
 
 from redis import Redis
@@ -57,41 +59,19 @@ def load_dataset(
         remote_protocol = dataset_spec.get("remote_protocol", "s3")
         remote_options = dataset_spec.get("remote_options", {"anon": True})
 
-        if redis_cache is not None:
-            reference_url = f"rediscache::{dataset_path}"
-            with fsspec.open(
-                reference_url,
-                mode="rb",
-                rediscache={"redis": redis_cache, "expiry": cache_timeout},
-                s3=target_options,
-            ) as f:
-                refs = ujson.load(f)
-            fs = RedisCachingReferenceFileSystem(
-                redis=redis_cache,
-                expiry_time=cache_timeout,
-                fo=dataset_path,
-                target_protocol=target_protocol,
-                target_options=target_options,
-                remote_protocol=remote_protocol,
-                remote_options=remote_options,
-            )
-        else:
-            fs = fsspec.filesystem(
-                "reference",
-                fo=dataset_path,
-                target_protocol=target_protocol,
-                target_options=target_options,
-                remote_protocol=remote_protocol,
-                remote_options=remote_options,
-            )
-        m = fs.get_mapper("")
         ds = xr.open_dataset(
-            m,
-            engine="zarr",
-            backend_kwargs=dict(consolidated=False),
+            dataset_path,
+            engine="kerchunk",
             chunks=chunks,
             drop_variables=drop_variables,
+            storage_options=dict(
+                target_protocol=target_protocol,
+                target_options=target_options,
+                remote_protocol=remote_protocol, 
+                remote_options=remote_options,
+            )
         )
+
         try:
             if ds.cf.coords["longitude"].dims[0] == "longitude":
                 ds = ds.assign_coords(
