@@ -1,0 +1,44 @@
+cachey~=0.2.1 # last updated 03/20
+cf-xarray~=0.10.0
+cfgrib~=0.9.15.0
+cftime~=1.6.4.post1
+# dask/distributed are pinned because newer versions break netcdf requests
+dask==2024.11.2
+dask_gateway==2024.1.0
+distributed==2024.11.2
+fastapi~=0.115.7
+fsspec~=2025.3.0
+gunicorn~=23.0.0
+h11~=0.14.0 # last updated 09/22
+h5netcdf~=1.5.0
+h5py~=3.12.1
+kerchunk==0.2.7 # pinned for zarr 2
+matplotlib~=3.10.0
+mercantile~=1.2.1 # last updated 04/21
+netCDF4~=1.7.2
+numcodecs~=0.15.0
+numpy~=1.26.4
+opendap-protocol~=1.1.1 # last updated 09/21
+pandas~=2.2.3
+pillow~=11.1.0
+pluggy~=1.5.0
+pydantic~=2.10.6
+pydantic-settings~=2.7.1
+pyproj~=3.7.0
+python-dateutil~=2.9.0.post0
+pytz~=2024.2
+rasterio~=1.4.3
+redis~=5.2.1
+rioxarray~=0.18.2
+s3fs~=2025.3.0
+scipy~=1.15.1
+setuptools~=75.8.0
+uvicorn~=0.34.0
+xarray~=2025.1.2
+zarr==2.18.4 # pinned for zarr 2
+redis-fsspec-cache@git+https://github.com/asascience-open/redis-fsspec-cache@main
+xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@main
+xpublish@git+https://github.com/xpublish-community/xpublish@main
+xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@main
+xpublish-wms@git+https://github.com/ndellicarpini/xpublish-wms@main
+xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@main

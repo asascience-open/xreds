@@ -1,11 +1,7 @@
 from typing import Optional
 
-import asyncio
-import fsspec
-import ujson
 import xarray as xr
-from zarr.storage import FsspecStore
-from redis_fsspec_cache.reference import RedisCachingReferenceFileSystem
+import zarr
 
 from redis import Redis
 from xreds.logging import logger
@@ -16,7 +12,7 @@ def infer_dataset_type(dataset_path: str) -> str:
         return "netcdf"
     elif dataset_path.endswith(".grib2"):
         return "grib2"
-    elif dataset_path.endswith(".nc.zarr") or dataset_path.endswith("json"):
+    elif dataset_path.endswith("json"):
         return "kerchunk"
     elif dataset_path.endswith(".zarr"):
         return "zarr"
@@ -28,6 +24,8 @@ def load_dataset(
     dataset_spec: dict, redis_cache: Optional[Redis] = None, cache_timeout: int = 600
 ) -> xr.Dataset | None:
     """Load a dataset from a path"""
+    is_zarr_2 = zarr.__version__.strip().startswith("2")
+
     ds = None
     dataset_path = dataset_spec["path"]
     dataset_type = dataset_spec.get("type", None)
@@ -40,25 +38,28 @@ def load_dataset(
 
     chunks = dataset_spec.get("chunks", None)
     drop_variables = dataset_spec.get("drop_variables", None)
+    target_protocol = dataset_spec.get("target_protocol", "s3")
+    target_options = dataset_spec.get("target_options", {"anon": True})
+    remote_protocol = dataset_spec.get("remote_protocol", "s3")
+    remote_options = dataset_spec.get("remote_options", {"anon": True})
+    
     additional_coords = dataset_spec.get("additional_coords", None)
     additional_attrs = dataset_spec.get("additional_attrs", None)
 
     if dataset_type == "netcdf":
-        engine = dataset_spec.get("engine", "netcdf4")
         ds = xr.open_dataset(
-            dataset_path, engine=engine, chunks=chunks, drop_variables=drop_variables
+            dataset_path, 
+            engine=dataset_spec.get("engine", "netcdf4"), 
+            chunks=chunks, 
+            drop_variables=drop_variables
         )
-        if additional_coords is not None:
-            ds = ds.set_coords(additional_coords)
     elif dataset_type == "grib2":
         # TODO: Network support?
-        ds = xr.open_dataset(dataset_path, engine="cfgrib")
+        ds = xr.open_dataset(
+            dataset_path, 
+            engine="cfgrib"
+        )
     elif dataset_type == "kerchunk":
-        target_protocol = dataset_spec.get("target_protocol", "s3")
-        target_options = dataset_spec.get("target_options", {"anon": True})
-        remote_protocol = dataset_spec.get("remote_protocol", "s3")
-        remote_options = dataset_spec.get("remote_options", {"anon": True})
-
         ds = xr.open_dataset(
             dataset_path,
             engine="kerchunk",
@@ -69,23 +70,28 @@ def load_dataset(
                 target_options=target_options,
                 remote_protocol=remote_protocol, 
                 remote_options=remote_options,
+            ),
+            open_dataset_options=dict(
+                chunks=chunks
             )
         )
-
-        try:
-            if ds.cf.coords["longitude"].dims[0] == "longitude":
-                ds = ds.assign_coords(
-                    longitude=(((ds.longitude + 180) % 360) - 180)
-                ).sortby("longitude")
-                # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
-                ds = ds.rio.write_crs(4326)
-        except Exception as e:
-            logger.warning(f"Could not reindex longitude: {e}")
-            pass
     elif dataset_type == "zarr":
-        # TODO: Enable S3  support
-        # mapper = fsspec.get_mapper(dataset_location)
-        ds = xr.open_zarr(dataset_path, consolidated=True)
+        ds = xr.open_dataset(
+            "reference://",
+            engine="zarr",
+            chunks=chunks,
+            drop_variables=drop_variables,
+            backend_kwargs=dict(
+                consolidated=False,
+                storage_options=dict(
+                    fo=dataset_path,
+                    target_protocol=target_protocol,
+                    target_options=target_options,
+                    remote_protocol=remote_protocol, 
+                    remote_options={**remote_options, "asynchronous": not is_zarr_2},
+                ),
+            )
+        )
 
     if ds is None:
         return None
@@ -93,6 +99,21 @@ def load_dataset(
     # Add additional attributes to the dataset if provided
     if additional_attrs is not None:
         ds.attrs.update(additional_attrs)
+
+    # Add additional coordinates to the dataset if provided
+    if additional_coords is not None:
+        ds = ds.set_coords(additional_coords)
+    
+    try:
+        if ds.cf.coords["longitude"].dims[0] == "longitude":
+            ds = ds.assign_coords(
+                longitude=(((ds.longitude + 180) % 360) - 180)
+            ).sortby("longitude")
+            # TODO: Yeah this should not be assumed... but for regular grids we will viz with rioxarray so for now we will assume
+            ds = ds.rio.write_crs(4326)
+    except Exception as e:
+        logger.warning(f"Could not reindex longitude: {e}")
+        pass
 
     # Check if we have a time dimension and if it is not indexed, index it
     try:

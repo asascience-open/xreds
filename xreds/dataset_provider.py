@@ -1,4 +1,5 @@
 import datetime
+import time
 
 import fsspec
 import xarray as xr
@@ -56,6 +57,8 @@ class DatasetProvider(Plugin):
         else:
             logger.info(f"No dataset found in cache for {dataset_id}, loading...")
 
+        start_time = time.time()
+
         dataset_spec = self.dataset_mapping[dataset_id]
         ds = load_dataset(
             dataset_spec,
@@ -65,6 +68,9 @@ class DatasetProvider(Plugin):
 
         if ds is None:
             raise ValueError(f"Dataset {dataset_id} not found")
+        
+        logger.debug(f"Dataset {dataset_id} load time: {time.time() - start_time}s")
+        start_time = time.time()
 
         # There is a better way to do this probably, but this works well and is very simple
         extensions = dataset_spec.get("extensions", {})
@@ -78,6 +84,8 @@ class DatasetProvider(Plugin):
             else:
                 logger.info(f"Applying extension {ext_name} to dataset {dataset_id}")
             ds = extension().transform_dataset(ds=ds, config=ext_config)
+        
+        logger.debug(f"Dataset {dataset_id} extension time: {time.time() - start_time}s")
 
         self.datasets[cache_key] = {"dataset": ds, "date": datetime.datetime.now()}
 

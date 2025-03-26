@@ -1,21 +1,23 @@
-import os
 import xpublish
 
 from fastapi.middleware.cors import CORSMiddleware
 
 from xreds.config import settings
+from xreds.logging import configure_app_logger, configure_fastapi_logger
 from xreds.plugins.export import ExportPlugin
 from xreds.plugins.size_plugin import SizePlugin
 from xreds.spastaticfiles import SPAStaticFiles
 from xreds.dataset_provider import DatasetProvider
 from xreds.plugins.subset_plugin import SubsetPlugin, SubsetSupportPlugin
 
+configure_app_logger()
 
 rest = xpublish.Rest(
     app_kws=dict(
         title="XREDS",
         description="XArray Environmental Data Services exposes environmental model data in common data formats for digestion in applications and notebooks",
         openapi_url="/xreds.json",
+        lifespan=configure_fastapi_logger
     ),
     cache_kws=dict(available_bytes=1e9),
     datasets=None,
@@ -46,4 +48,4 @@ if __name__ == "__main__":
     import uvicorn
 
     # When run directly, run in debug mode
-    uvicorn.run("app:app", host="0.0.0.0", port=8090, reload=False, log_level="debug")
+    uvicorn.run("app:app", host="0.0.0.0", port=8090, reload=False)
