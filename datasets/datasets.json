@@ -2,7 +2,7 @@
   "cbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/cbofs/cbofs.fields.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -18,7 +18,7 @@
   "ciofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/ciofs/ciofs.fields.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -34,7 +34,7 @@
   "dbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/dbofs/dbofs.fields.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -50,7 +50,7 @@
   "gomofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/gomofs/gomofs.fields.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -66,7 +66,7 @@
   "gomofs_2d": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/gomofs/gomofs.2ds.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -209,7 +209,7 @@
   "tbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/tbofs/tbofs.fields.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -225,7 +225,7 @@
   "wcofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/wcofs/wcofs.fields.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -241,7 +241,7 @@
   "wcofs_2d": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/wcofs/wcofs.2ds.best.nc.zarr",
     "type": "zarr",
-    "chunks": {},
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -254,7 +254,7 @@
       "roms": {}
     }
   },
-  "cora_native_grid": {
+  "cora": {
     "path": "s3://noaa-nos-cora-pds/V1.1/assimilated/native_grid/zarr/fort.63_1979-2022.zarr",
     "type": "zarr",
     "chunks": {
