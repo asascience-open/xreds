@@ -1,10 +1,13 @@
-import datetime
+import pickle
 import time
+from datetime import datetime, timedelta
 
 import fsspec
+import redis
 import xarray as xr
 import yaml
 from pluggy import PluginManager
+from typing import Optional
 from xpublish import Plugin, hookimpl
 
 from xreds.config import settings
@@ -22,9 +25,16 @@ dataset_extension_manager.register(ROMSExtension, name="roms")
 
 
 class DatasetProvider(Plugin):
+    class Config:
+        arbitrary_types_allowed = True
+
     name: str = "xreds_datasets"
     dataset_mapping: dict = {}
-    datasets: dict = {}
+    dataset_loading: dict = {}
+
+    cache_expiry: dict = {}
+    memory_cache: dict = {}
+    redis_cache: Optional[redis.Redis] = get_redis_cache()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -40,60 +50,147 @@ class DatasetProvider(Plugin):
 
     @hookimpl
     def get_dataset(self, dataset_id: str) -> xr.Dataset:
-        cache_key = f"dataset-{dataset_id}"
+        if (settings.use_memory_cache or self.redis_cache is not None) and self._is_dataset_loading(dataset_id):
+            logger.info(f"Waiting for dataset {dataset_id} to finish loading")
+            while (self._is_dataset_loading(dataset_id)):
+                time.sleep(0.5)
 
-        redis_cache = get_redis_cache()
+        cached_ds = self._load_dataset_from_cache(dataset_id)
+        if cached_ds is not None:
+            return cached_ds
 
-        cached_ds = self.datasets.get(cache_key, None)
-        if cached_ds:
-            if (datetime.datetime.now() - cached_ds["date"]).seconds < (
-                settings.dataset_cache_timeout
-            ):
-                logger.info(f"Using cached dataset for {dataset_id}")
-                return cached_ds["dataset"]
-            else:
-                logger.info(f"Cached dataset for {dataset_id} is stale, reloading...")
-                self.datasets.pop(cache_key, None)
-        else:
-            logger.info(f"No dataset found in cache for {dataset_id}, loading...")
+        try:
+            load_time = time.time()
+            debug_time = time.time()
 
-        start_time = time.time()
+            dataset_spec = self.dataset_mapping[dataset_id]
+            self._set_dataset_loading(dataset_id, True)
+            ds = load_dataset(dataset_spec)
 
-        dataset_spec = self.dataset_mapping[dataset_id]
-        ds = load_dataset(
-            dataset_spec,
-            redis_cache=redis_cache,
-            cache_timeout=settings.dataset_cache_timeout,
-        )
+            if ds is None:
+                raise ValueError(f"Dataset {dataset_id} not found")
+            
+            logger.debug(f"Dataset {dataset_id} load time: {time.time() - debug_time}s")
+            debug_time = time.time()
 
-        if ds is None:
-            raise ValueError(f"Dataset {dataset_id} not found")
+            # There is a better way to do this probably, but this works well and is very simple
+            extensions = dataset_spec.get("extensions", {})
+            for ext_name, ext_config in extensions.items():
+                extension = dataset_extension_manager.get_plugin(ext_name)
+                if extension is None:
+                    logger.error(
+                        f"Could not find extension {ext_name} for dataset {dataset_id}"
+                    )
+                    continue
+                else:
+                    logger.info(f"Applying extension {ext_name} to dataset {dataset_id}")
+                ds = extension().transform_dataset(ds=ds, config=ext_config)
+            
+            logger.debug(f"Dataset {dataset_id} extension time: {time.time() - debug_time}s")
+            logger.info(f"Loaded dataset for {dataset_id} in {time.time() - load_time}s")
+
+            self._add_dataset_to_cache(dataset_id, ds)
+            self._set_dataset_loading(dataset_id, False)
+            return ds
+        except:
+            self._set_dataset_loading(dataset_id, False)
+            raise
+
+    def _load_dataset_from_cache(self, dataset_id: str):
+        cache_key = self._get_dataset_cache_key(dataset_id)
+
+        if cache_key in self.cache_expiry and datetime.now() > self.cache_expiry[cache_key]:
+            self.cache_expiry.pop(cache_key)
+            if cache_key in self.memory_cache:
+                self.memory_cache.pop(cache_key)
+            if self.redis_cache is not None and self.redis_cache.exists(cache_key):
+                self.redis_cache.delete(cache_key)
+
+            logger.info(f"Cached dataset for {dataset_id} is stale, reloading...")
+            return None
         
-        logger.debug(f"Dataset {dataset_id} load time: {time.time() - start_time}s")
-        start_time = time.time()
-
-        # There is a better way to do this probably, but this works well and is very simple
-        extensions = dataset_spec.get("extensions", {})
-        for ext_name, ext_config in extensions.items():
-            extension = dataset_extension_manager.get_plugin(ext_name)
-            if extension is None:
-                logger.error(
-                    f"Could not find extension {ext_name} for dataset {dataset_id}"
-                )
-                continue
-            else:
-                logger.info(f"Applying extension {ext_name} to dataset {dataset_id}")
-            ds = extension().transform_dataset(ds=ds, config=ext_config)
+        if cache_key in self.memory_cache:
+            logger.info(f"Using memory cached dataset for {dataset_id}")
+            return self.memory_cache[cache_key]
         
-        logger.debug(f"Dataset {dataset_id} extension time: {time.time() - start_time}s")
+        if self.redis_cache is not None:
+            serialized_ds = self.redis_cache.get(cache_key)
+            if serialized_ds is not None:
+                start_time = time.time()
+                ds = pickle.loads(serialized_ds)
+                    
+                logger.debug(f"Using redis cached dataset for {dataset_id} (deserialization time: {time.time() - start_time}s)")
+                if settings.use_memory_cache and dataset_id not in self.memory_cache:
+                    self._add_dataset_to_memory_cache(dataset_id, ds)
 
-        self.datasets[cache_key] = {"dataset": ds, "date": datetime.datetime.now()}
+                return ds
 
-        if cache_key in self.datasets:
-            logger.info(f"Loaded and cached dataset for {dataset_id}")
+        logger.info(f"No dataset found in cache for {dataset_id}, loading...")
+        return None
+
+    def _add_dataset_to_cache(self, dataset_id: str, ds: xr.Dataset):
+        cache_key = self._get_dataset_cache_key(dataset_id)
+
+        if self.redis_cache is not None:
+            start_time = time.time()
+            serialized_ds = pickle.dumps(ds, protocol=-1)
+            self.redis_cache.set(cache_key, serialized_ds, ex=settings.dataset_cache_timeout)
+            logger.info(f"Redis cached dataset for {dataset_id} (serialization time: {time.time() - start_time}s)")
+        
+        if settings.use_memory_cache:
+            self._add_dataset_to_memory_cache(dataset_id, ds)
+            
+    def _add_dataset_to_memory_cache(self, dataset_id: str, ds: xr.Dataset):
+        cache_key = self._get_dataset_cache_key(dataset_id)
+
+        if settings.memory_cache_num_datasets > 0:
+            diff = len(list(self.memory_cache.keys())) - (settings.memory_cache_num_datasets + 1)
+            if diff > 0:
+                for i in range(diff):
+                    oldest_key = None
+                    oldest_date = None
+                    for key, val in self.cache_expiry.items():
+                        if oldest_key is None or val < oldest_date:
+                            oldest_key = key
+                            oldest_date = val
+
+                    if oldest_key is not None:
+                        self.cache_expiry.pop(oldest_key)
+                        self.memory_cache.pop(oldest_key)
+                        logger.info(f"Popped dataset {oldest_key} from memory cache")
+
+        self.memory_cache[cache_key] = ds
+        self.cache_expiry[cache_key] = datetime.now() + timedelta(seconds=settings.dataset_cache_timeout)
+        logger.info(f"Memory cached dataset for {dataset_id}")
+
+    def _is_dataset_loading(self, dataset_id: str):     
+        loading_key = self._get_loading_cache_key(dataset_id)
+
+        if loading_key in self.dataset_loading:
+            return True
+        if self.redis_cache and self.redis_cache.exists(loading_key):
+            return True
+        
+        return False
+    
+    def _set_dataset_loading(self, dataset_id: str, loading: bool):        
+        loading_key = self._get_loading_cache_key(dataset_id)
+
+        if loading:
+            if settings.use_memory_cache:
+                self.dataset_loading[loading_key] = True
+            if self.redis_cache is not None:
+                self.redis_cache.set(loading_key, "true", ex=int(settings.dataset_cache_timeout / 2))
         else:
-            logger.info(
-                f"Loaded dataset for {dataset_id}. Not cached due to size or current cache score"
-            )
+            if loading_key in self.dataset_loading:
+                self.dataset_loading.pop(loading_key)
+            if self.redis_cache is not None and self.redis_cache.exists(loading_key):
+                self.redis_cache.delete(loading_key)
 
-        return ds
+    @staticmethod
+    def _get_dataset_cache_key(dataset_id: str):
+        return f"dataset-{dataset_id}"
+
+    @staticmethod
+    def _get_loading_cache_key(dataset_id: str):
+        return f"loading-{dataset_id}"

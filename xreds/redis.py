@@ -9,7 +9,6 @@ from xreds.logging import logger
 
 def create_redis_pool(settings: Settings) -> Optional[redis.ConnectionPool]:
     if not settings.use_redis_cache:
-        logger.warning("Not using redis cache")
         return None
 
     redis_host = settings.redis_host

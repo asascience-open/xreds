@@ -20,9 +20,7 @@ def infer_dataset_type(dataset_path: str) -> str:
     return "unknown"
 
 
-def load_dataset(
-    dataset_spec: dict, redis_cache: Optional[Redis] = None, cache_timeout: int = 600
-) -> xr.Dataset | None:
+def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
     """Load a dataset from a path"""
     is_zarr_2 = zarr.__version__.strip().startswith("2")
 
