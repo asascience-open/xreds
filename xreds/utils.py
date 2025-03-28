@@ -9,6 +9,7 @@ from redis_fsspec_cache.reference import RedisCachingReferenceFileSystem
 from redis import Redis
 from xreds.logging import logger
 
+TIME_DIM_MASK_COORD_NAME = "time_mask"
 ZARR_CACHE_KEY_PREFIX = "zarr_dataset"
 
 
@@ -190,6 +191,7 @@ def _load_zarr(
     redis_cache: Optional[Redis] = None,
     cache_timeout: int = 600,
 ) -> xr.Dataset:
+    # If redis cache is enabled, try to retrieve the dataset from cache
     if redis_cache is not None:
         # Create a unique key for the dataset
         cache_key = _get_cache_key(dataset_path, ZARR_CACHE_KEY_PREFIX)
@@ -197,8 +199,12 @@ def _load_zarr(
         if ds is not None:
             return ds
 
-    # If Redis cache is not enabled, or not found in cache, load the dataset
+    # Fallback to loading the dataset from disk
     ds = _load_zarr_dataset_from_path(dataset_path, chunks, drop_variables)
+
+    # Mask the time dimension if a time_mask coordinate is present
+    if TIME_DIM_MASK_COORD_NAME in ds.coords:
+        ds = _mask_time_dimension(ds, ds.cf["time"].dims[0], TIME_DIM_MASK_COORD_NAME)
 
     # If Redis cache is enabled, serialize and store the dataset in Redis cache
     if redis_cache is not None:
@@ -221,6 +227,16 @@ def _load_zarr_dataset_from_path(
         chunks=chunks,
         drop_variables=drop_variables,
     )
+
+
+def _mask_time_dimension(
+    ds: xr.Dataset, time_dim: str, time_mask_name: str
+) -> xr.Dataset:
+    """Mask the time dimension of a dataset with a boolean time_mask coordinate"""
+    time_mask = ds[time_mask_name]
+    ds = ds.sel({time_dim: time_mask})
+    ds = ds.drop(time_mask_name)
+    return ds
 
 
 def _retrieve_cached_dataset(redis_cache: Redis, cache_key: str) -> xr.Dataset | None:
