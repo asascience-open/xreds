@@ -12,47 +12,91 @@ from xreds.logging import logger
 ZARR_CACHE_KEY_PREFIX = "zarr_dataset"
 
 
+def load_dataset(
+    dataset_spec: dict, redis_cache: Optional[Redis] = None, cache_timeout: int = 600
+) -> xr.Dataset | None:
+    """Load a dataset from a path"""
+    ds = None
+    dataset_path = dataset_spec["path"]
+    dataset_type = dataset_spec.get("type", None)
+    if not dataset_type:
+        dataset_type = _infer_dataset_type(dataset_path)
+        logger.info(f"Inferred dataset type {dataset_type} for {dataset_path}")
+    if dataset_type == "unknown":
+        logger.error(f"Could not infer dataset type for {dataset_path}")
+        return None
+
+    chunks = dataset_spec.get("chunks", None)
+    drop_variables = dataset_spec.get("drop_variables", None)
+    additional_coords = dataset_spec.get("additional_coords", None)
+    additional_attrs = dataset_spec.get("additional_attrs", None)
+
+    if dataset_type == "netcdf":
+        ds = _load_netcdf(
+            dataset_path,
+            engine=dataset_spec.get("engine", "netcdf4"),
+            chunks=chunks,
+            drop_variables=drop_variables,
+            additional_coords=additional_coords,
+        )
+    elif dataset_type == "grib2":
+        ds = _load_grib2(dataset_path)
+    elif dataset_type == "kerchunk":
+        ds = _load_kerchunk(
+            dataset_spec,
+            dataset_path,
+            chunks=chunks,
+            drop_variables=drop_variables,
+            redis_cache=redis_cache,
+            cache_timeout=cache_timeout,
+        )
+    elif dataset_type == "zarr":
+        ds = _load_zarr(
+            dataset_path,
+            chunks=chunks,
+            drop_variables=drop_variables,
+            redis_cache=redis_cache,
+            cache_timeout=cache_timeout,
+        )
+
+    if ds is None:
+        return None
+
+    # Add additional attributes to the dataset if provided
+    if additional_attrs is not None:
+        ds.attrs.update(additional_attrs)
+
+    # Check if we have a time dimension and if it is not indexed, index it
+    try:
+        time_dim = ds.cf["time"].dims[0]
+        if ds.indexes.get(time_dim, None) is None:
+            time_coord = ds.cf["time"].name
+            logger.info(f"Indexing time dimension {time_dim} as {time_coord}")
+            ds = ds.set_index({time_dim: time_coord})
+            if "standard_name" not in ds[time_dim].attrs:
+                ds[time_dim].attrs["standard_name"] = "time"
+    except Exception as e:
+        logger.warning(f"Could not index time dimension: {e}")
+        pass
+
+    return ds
+
+
 def _get_cache_key(dataset_path: str, key_prefix: str) -> str:
     return f"{key_prefix}:{dataset_path}"
 
 
-def _load_zarr_dataset_from_path(
-    dataset_path: str,
-    chunks: dict | None = None,
-    drop_variables: list[str] | None = None,
-) -> xr.Dataset:
-    return xr.open_zarr(
-        dataset_path,
-        consolidated=True,
-        chunks=chunks,
-        drop_variables=drop_variables,
-    )
+def _infer_dataset_type(dataset_path: str) -> str:
+    if dataset_path.endswith(".nc"):
+        return "netcdf"
+    elif dataset_path.endswith(".grib2"):
+        return "grib2"
+    elif dataset_path.endswith(".nc.zarr") or dataset_path.endswith("json"):
+        return "kerchunk"
+    elif dataset_path.endswith(".zarr"):
+        return "zarr"
 
-
-def _retrieve_cached_dataset(redis_cache: Redis, cache_key: str) -> xr.Dataset | None:
-    cached_ds = redis_cache.get(cache_key)
-    # If found in cache, deserialize and return
-    if cached_ds is not None:
-        return pickle.loads(cached_ds)
-
-    return None
-
-
-def _load_netcdf(
-    dataset_path: str,
-    engine: str,
-    chunks: dict | None = None,
-    drop_variables: list[str] | None = None,
-    additional_coords: list[str] | None = None,
-) -> xr.Dataset:
-    ds = xr.open_dataset(
-        dataset_path, engine=engine, chunks=chunks, drop_variables=drop_variables
-    )
-
-    if additional_coords is not None:
-        ds = ds.set_coords(additional_coords)
-
-    return ds
+    return "unknown"
 
 
 def _load_grib2(dataset_path: str) -> xr.Dataset:
@@ -122,6 +166,23 @@ def _load_kerchunk(
     return ds
 
 
+def _load_netcdf(
+    dataset_path: str,
+    engine: str,
+    chunks: dict | None = None,
+    drop_variables: list[str] | None = None,
+    additional_coords: list[str] | None = None,
+) -> xr.Dataset:
+    ds = xr.open_dataset(
+        dataset_path, engine=engine, chunks=chunks, drop_variables=drop_variables
+    )
+
+    if additional_coords is not None:
+        ds = ds.set_coords(additional_coords)
+
+    return ds
+
+
 def _load_zarr(
     dataset_path: str,
     chunks: dict | None = None,
@@ -149,84 +210,23 @@ def _load_zarr(
     return ds
 
 
-def infer_dataset_type(dataset_path: str) -> str:
-    if dataset_path.endswith(".nc"):
-        return "netcdf"
-    elif dataset_path.endswith(".grib2"):
-        return "grib2"
-    elif dataset_path.endswith(".nc.zarr") or dataset_path.endswith("json"):
-        return "kerchunk"
-    elif dataset_path.endswith(".zarr"):
-        return "zarr"
+def _load_zarr_dataset_from_path(
+    dataset_path: str,
+    chunks: dict | None = None,
+    drop_variables: list[str] | None = None,
+) -> xr.Dataset:
+    return xr.open_zarr(
+        dataset_path,
+        consolidated=True,
+        chunks=chunks,
+        drop_variables=drop_variables,
+    )
 
-    return "unknown"
 
+def _retrieve_cached_dataset(redis_cache: Redis, cache_key: str) -> xr.Dataset | None:
+    cached_ds = redis_cache.get(cache_key)
+    # If found in cache, deserialize and return
+    if cached_ds is not None:
+        return pickle.loads(cached_ds)
 
-def load_dataset(
-    dataset_spec: dict, redis_cache: Optional[Redis] = None, cache_timeout: int = 600
-) -> xr.Dataset | None:
-    """Load a dataset from a path"""
-    ds = None
-    dataset_path = dataset_spec["path"]
-    dataset_type = dataset_spec.get("type", None)
-    if not dataset_type:
-        dataset_type = infer_dataset_type(dataset_path)
-        logger.info(f"Inferred dataset type {dataset_type} for {dataset_path}")
-    if dataset_type == "unknown":
-        logger.error(f"Could not infer dataset type for {dataset_path}")
-        return None
-
-    chunks = dataset_spec.get("chunks", None)
-    drop_variables = dataset_spec.get("drop_variables", None)
-    additional_coords = dataset_spec.get("additional_coords", None)
-    additional_attrs = dataset_spec.get("additional_attrs", None)
-
-    if dataset_type == "netcdf":
-        ds = _load_netcdf(
-            dataset_path,
-            engine=dataset_spec.get("engine", "netcdf4"),
-            chunks=chunks,
-            drop_variables=drop_variables,
-            additional_coords=additional_coords,
-        )
-    elif dataset_type == "grib2":
-        ds = _load_grib2(dataset_path)
-    elif dataset_type == "kerchunk":
-        ds = _load_kerchunk(
-            dataset_spec,
-            dataset_path,
-            chunks=chunks,
-            drop_variables=drop_variables,
-            redis_cache=redis_cache,
-            cache_timeout=cache_timeout,
-        )
-    elif dataset_type == "zarr":
-        ds = _load_zarr(
-            dataset_path,
-            chunks=chunks,
-            drop_variables=drop_variables,
-            redis_cache=redis_cache,
-            cache_timeout=cache_timeout,
-        )
-
-    if ds is None:
-        return None
-
-    # Add additional attributes to the dataset if provided
-    if additional_attrs is not None:
-        ds.attrs.update(additional_attrs)
-
-    # Check if we have a time dimension and if it is not indexed, index it
-    try:
-        time_dim = ds.cf["time"].dims[0]
-        if ds.indexes.get(time_dim, None) is None:
-            time_coord = ds.cf["time"].name
-            logger.info(f"Indexing time dimension {time_dim} as {time_coord}")
-            ds = ds.set_index({time_dim: time_coord})
-            if "standard_name" not in ds[time_dim].attrs:
-                ds[time_dim].attrs["standard_name"] = "time"
-    except Exception as e:
-        logger.warning(f"Could not index time dimension: {e}")
-        pass
-
-    return ds
+    return None
