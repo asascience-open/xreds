@@ -254,7 +254,7 @@
       "roms": {}
     }
   },
-  "cora": {
+  "cora_native": {
     "path": "s3://noaa-nos-cora-pds/V1.1/assimilated/native_grid/zarr/fort.63_1979-2022.zarr",
     "type": "zarr",
     "chunks": {

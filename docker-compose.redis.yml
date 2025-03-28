@@ -12,7 +12,10 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf
   xreds:
     container_name: xreds
-    build: .
+    build:
+      context: .
+      args:
+      - WORKERS=1
     volumes:
       - "./datasets:/opt/xreds/datasets"
     restart: on-failure

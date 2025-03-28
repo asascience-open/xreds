@@ -70,5 +70,8 @@ ENV ROOT_PATH ${ROOT_PATH}
 ARG WORKERS=1
 ENV WORKERS ${WORKERS}
 
+ARG LOG_LEVEL="debug"
+ENV LOG_LEVEL ${LOG_LEVEL}
+
 # Run the webserver
-CMD ["sh", "-c", "gunicorn --workers=${WORKERS} --worker-class=uvicorn.workers.UvicornWorker --log-level=debug --bind=0.0.0.0:${PORT} app:app"]
+CMD ["sh", "-c", "gunicorn --workers=${WORKERS} --worker-class=uvicorn.workers.UvicornWorker --log-level=${LOG_LEVEL} --bind=0.0.0.0:${PORT} app:app"]
