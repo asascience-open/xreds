@@ -1,4 +1,3 @@
-import os
 import xpublish
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,13 +12,6 @@ from xreds.plugins.subset_plugin import SubsetPlugin, SubsetSupportPlugin
 
 configure_app_logger()
 logger.info(f"XREDs started with settings: {settings.__dict__}")
-
-if settings.dask_local_cluster and (__name__ == "__main__" or "gunicorn" in os.environ.get("SERVER_SOFTWARE", "")):
-    from dask.distributed import Client, LocalCluster
-    client = Client(LocalCluster(
-        n_workers=settings.dask_local_cluster_num_workers, 
-        processes=settings.dask_local_cluster_processes
-    ))
 
 rest = xpublish.Rest(
     app_kws=dict(

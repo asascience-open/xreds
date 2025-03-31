@@ -14,15 +14,6 @@ class Settings(BaseSettings):
     # in MB
     export_threshold: int = 500
 
-    # Whether to initialize a Dask Local Cluster on app initialization
-    dask_local_cluster: bool = False
-
-    # Whether to use Workers or Processes for Dask Local Cluster
-    dask_local_cluster_processes: bool = True
-
-    # Number of Dask Workers/Processes to spawn per gunicorn worker
-    dask_local_cluster_num_workers: int = 1
-
     # Timeout for caching datasets in seconds
     dataset_cache_timeout: int = 10 * 60
 
