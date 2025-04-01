@@ -12,6 +12,7 @@ gunicorn~=23.0.0
 h11~=0.14.0 # last updated 09/22
 h5netcdf~=1.5.0
 h5py~=3.12.1
+kerchunk==0.2.7 # pinned for zarr 2
 matplotlib~=3.10.0
 mercantile~=1.2.1 # last updated 04/21
 netCDF4~=1.7.2
@@ -34,11 +35,10 @@ scipy~=1.15.1
 setuptools~=75.8.0
 uvicorn~=0.34.0
 xarray~=2025.1.2
-zarr~=3.0.5
-kerchunk@git+https://github.com/ndellicarpini/kerchunk@main
+zarr==2.18.4 # pinned for zarr 2
 redis-fsspec-cache@git+https://github.com/asascience-open/redis-fsspec-cache@main
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@main
-xpublish@git+https://github.com/xpublish-community/xpublish@zarr3compat
+xpublish@git+https://github.com/xpublish-community/xpublish@main
 xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@main
 xpublish-wms@git+https://github.com/ndellicarpini/xpublish-wms@main
 xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@main

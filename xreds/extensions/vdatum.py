@@ -72,7 +72,7 @@ class VDatumTransformationExtension(DatasetExtension):
             return ds
 
         redis_cache = get_redis_cache()
-        ds_vdatum = load_dataset({"path": vdatum_file}, redis_cache=redis_cache, cache_timeout=settings.dataset_cache_timeout)
+        ds_vdatum = load_dataset({"path": vdatum_file})
         if ds_vdatum is None:
             logger.warning(
                 f"Could not load vdatum dataset from {vdatum_file}. Skipping vdatum transformation"

@@ -12,9 +12,13 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf
   xreds:
     container_name: xreds
-    build: .
+    build:
+      context: .
+      args:
+      - WORKERS=1
     volumes:
       - "./datasets:/opt/xreds/datasets"
+    restart: on-failure
     platform: linux/amd64
     ports:
       - "8090:8090"
@@ -24,6 +28,7 @@ services:
       - PORT=8090
       - DATASETS_MAPPING_FILE=/opt/xreds/datasets/datasets.json
       - EXPORT_THRESHOLD=600
+      - MEMORY_CACHE_NUM_DATASETS=3
       - USE_REDIS_CACHE=true
       - REDIS_HOST=redis
       - REDIS_PORT=6380

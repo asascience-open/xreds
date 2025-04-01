@@ -5,8 +5,11 @@ services:
     container_name: xreds
     build:
         context: .
+        args:
+        - WORKERS=1
     volumes:
       - "./datasets:/opt/xreds/datasets"
+    restart: on-failure
     platform: linux/amd64
     ports:
       - "8090:8090"

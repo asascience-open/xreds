@@ -1,8 +1,8 @@
 {
   "cbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/cbofs/cbofs.fields.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -17,8 +17,8 @@
   },
   "ciofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/ciofs/ciofs.fields.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -33,8 +33,8 @@
   },
   "dbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/dbofs/dbofs.fields.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -49,8 +49,8 @@
   },
   "gomofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/gomofs/gomofs.fields.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -65,8 +65,8 @@
   },
   "gomofs_2d": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/gomofs/gomofs.2ds.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -81,7 +81,7 @@
   },
   "leofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/leofs/leofs.fields.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
@@ -96,7 +96,7 @@
   },
   "lmhofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/lmhofs/lmhofs.fields.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
@@ -111,7 +111,7 @@
   },
   "loofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/loofs/loofs.fields.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
@@ -126,7 +126,7 @@
   },
   "lsofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/lsofs/lsofs.fields.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
@@ -148,7 +148,7 @@
   },
   "ngofs2": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/ngofs2/ngofs2.fields.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
@@ -163,7 +163,7 @@
   },
   "ngofs2_2d": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/ngofs2/ngofs2.2ds.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
@@ -178,7 +178,7 @@
   },
   "sfbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/sfbofs/sfbofs.fields.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime2"],
     "extensions": {
@@ -193,7 +193,7 @@
   },
   "sscofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/sscofs/sscofs.fields.best.nc.zarr",
-    "type": "kerchunk",
+    "type": "zarr",
     "chunks": {},
     "drop_variables": ["Itime", "Itime2"],
     "extensions": {
@@ -208,8 +208,8 @@
   },
   "tbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/tbofs/tbofs.fields.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -224,8 +224,8 @@
   },
   "wcofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/wcofs/wcofs.fields.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -240,8 +240,8 @@
   },
   "wcofs_2d": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/wcofs/wcofs.2ds.best.nc.zarr",
-    "type": "kerchunk",
-    "chunks": {},
+    "type": "zarr",
+    "chunks": "auto",
     "drop_variables": ["dstart"],
     "extensions": {
       "vdatum": {
@@ -252,6 +252,14 @@
         "multiplier": -1.0
       },
       "roms": {}
+    }
+  },
+  "cora_native": {
+    "path": "s3://noaa-nos-cora-pds/V1.1/assimilated/native_grid/zarr/fort.63_1979-2022.zarr",
+    "type": "zarr",
+    "chunks": {
+        "time": 24,
+        "node": 160000
     }
   }
 }
