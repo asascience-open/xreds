@@ -22,7 +22,7 @@ def infer_dataset_type(dataset_path: str) -> str:
 
 def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
     """Load a dataset from a path"""
-    is_zarr_2 = zarr.__version__.strip().startswith("2")
+    is_zarr_2 = zarr.__version__ < "3.0.0"
 
     ds = None
     dataset_path = dataset_spec["path"]
