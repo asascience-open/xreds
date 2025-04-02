@@ -17,7 +17,7 @@ from xreds.extensions import VDatumTransformationExtension
 from xreds.extensions.roms import ROMSExtension
 from xreds.logging import logger
 from xreds.redis import get_redis_cache
-from xreds.utils import load_dataset
+from xreds.dataset_utils import load_dataset
 
 dataset_extension_manager = PluginManager(DATASET_EXTENSION_PLUGIN_NAMESPACE)
 dataset_extension_manager.register(VDatumTransformationExtension, name="vdatum")

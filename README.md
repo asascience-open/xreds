@@ -117,8 +117,10 @@ Datasets are specified in a key value manner, where the keys are the dataset ids
         "chunks": {
             "ocean_time": 1
         },
-        "drop_variables": ["dstart"]
-
+        "drop_variables": ["dstart"],
+        "mask_variables": {
+            "time": "time_mask"
+        }
     }
 }
 ```
@@ -140,45 +142,50 @@ Currently `zarr`, `netcdf`, and [`kerchunk`](https://github.com/fsspec/kerchunk)
 
 ### Dataset Type Schema
 
-#### kerchunk
-
 ```json
 {
+    // path to dataset - used in xr.open_dataset(path)
     "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
+    // type of dataset - supported options: ZARR | KERCHUNK | NETCDF
     "type": "kerchunk",
+    // (optional) engine used when opening dataset - only used when type=netcdf
+    // [default: None]
+    "engine": "netcdf4",
+    // (optional) chunking strategy for dataset - see xr.open_dataset docs
+    // [default: None]
     "chunks": {},
+    // (optional) array of dataset variable names to drop - see xr.open_dataset docs
+    // [default: None]
     "drop_variables": ["orderedSequenceData"],
-    "remote_protocol": "s3", // default is s3
+    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
+    // [default: "s3"]
+    "remote_protocol": "s3",
+    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
+    // [default: {"anon": True}]
     "remote_options": {
-        "anon": true, // default is True
+        "anon": true,
     },
-    "target_protocol": "s3", // defualt is s3
+    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
+    // [default: "s3"]
+    "target_protocol": "s3",
+    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
+    // [default: {"anon": True}]
     "target_options": {
-        "anon": false, // default is True
+        "anon": false,
     },
-    "extensions": { // optional
+    // (optional) extensions to apply to the dataset - supports "vdatum" & "roms"
+    // [default: None]
+    "extensions": {
       "vdatum": {
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr", // fsspec path to vdatum dataset
-        "water_level_var": "zeta", // variable to use for water level
-        "vdatum_var": "mllwtomsl", // variable mapping to vdatum transformation
-        "vdatum_name": "mllw" // name of the vdatum transformation
+        // fsspec path to vdatum dataset
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr", 
+        // variable to use for water level
+        "water_level_var": "zeta", 
+        // variable mapping to vdatum transformation
+        "vdatum_var": "mllwtomsl", 
+        // name of the vdatum transformation
+        "vdatum_name": "mllw" 
       }
-    }
-}
-```
-
-#### netcdf
-
-```json
-{
-    "path": "http://www.smast.umassd.edu:8080/thredds/dodsC/models/fvcom/NECOFS/Forecasts/NECOFS_GOM7_FORECAST.nc",
-    "type": "netcdf",
-    "engine": "netCDF4", // default is netCDF4
-    "chunks": {},
-    "drop_variables": ["Itime", "Itime2"],
-    "additional_coords": ["lat", "lon", "latc", "lonc", "xc", "yc"],
-    "extensions": { // optional
-        ... // Same as kerchunk options
     }
 }
 ```
@@ -192,6 +199,8 @@ The following environment variables can be set to configure the app:
 - `WORKERS`: The number of worker threads handling requests. Defaults to `1`
 - `ROOT_PATH`: The root path the app will be served from. Defaults to be served from the root.
 - `DATASET_CACHE_TIMEOUT`: The time in seconds to cache the dataset metadata. Defaults to `600` (10 minutes).
+- `USE_MEMORY_CACHE`: Whether to save loaded datasets into worker memory. Defaults to `True`
+- `MEMORY_CACHE_NUM_DATASETS`: Number of datasets that are concurrently loaded into worker memory, with 0 being unlimited. Defaults to `0`
 - `EXPORT_THRESHOLD`: The maximum size file to allow to be exported. Defaults to `500` mb
 - `USE_REDIS_CACHE`: Whether to use a redis cache for the app. Defaults to `False`
 - `REDIS_HOST`: [Optional] The host of the redis cache. Defaults to `localhost`
