@@ -105,15 +105,13 @@ def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
 
     # mask variables by different variable in ds based on dataset_spec
     if mask_variables is not None:
-        try:
-            for data_var, mask_var in mask_variables.items():
+        for data_var, mask_var in mask_variables.items():
+            try:
                 curr_mask = ds[mask_var]
                 ds = ds.sel({mask_var: curr_mask})
                 ds = ds.drop(mask_var)
-
-        except Exception as e:
-            logger.warning(f"Could not apply requested mask(s): {e}")
-            pass
+            except Exception as e:
+                logger.warning(f"Could not apply requested mask ({mask_var}) on ({data_var}): {e}")
 
     return ds
 
