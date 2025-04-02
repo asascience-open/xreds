@@ -5,7 +5,7 @@ from xreds.config import settings
 from xreds.dataset_extension import DatasetExtension, hookimpl
 from xreds.logging import logger
 from xreds.redis import get_redis_cache
-from xreds.utils import load_dataset
+from xreds.dataset_utils import load_dataset
 
 
 def transform_datum(
