@@ -3,6 +3,7 @@ import xpublish
 from fastapi.middleware.cors import CORSMiddleware
 
 from xreds.config import settings
+from xreds.middleware import RequestCancelledMiddleware
 from xreds.logging import logger, configure_app_logger, configure_fastapi_logger
 from xreds.plugins.export import ExportPlugin
 from xreds.plugins.size_plugin import SizePlugin
@@ -34,6 +35,7 @@ rest.register_plugin(ExportPlugin())
 
 app = rest.app
 
+app.add_middleware(RequestCancelledMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

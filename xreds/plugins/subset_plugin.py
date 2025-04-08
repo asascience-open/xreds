@@ -131,18 +131,26 @@ class SubsetQuery:
 
     def subset(self, ds):
         """Subset the dataset using the extracted query arguments"""
-        try:
-            if self.points is not None:
-                ds = ds.xsg.grid.subset_polygon(ds, self.points)
-            elif self.bbox is not None:
-                ds = ds.xsg.grid.subset_bbox(ds, self.bbox)
-        except:
-            logger.warning("Failed to subset dataset - Retrying with 'assign_ugrid_topology'")
-            ds = assign_ugrid_topology(ds, face_node_connectivity="nv")
-            if self.points is not None:
-                ds = ds.xsg.grid.subset_polygon(ds, self.points)
-            elif self.bbox is not None:
-                ds = ds.xsg.grid.subset_bbox(ds, self.bbox)
+
+        # try to subset grid using different standard connectivity node var names
+        # TODO - something smarter
+        connectivity_nodes = [None, "nv", "element"]
+        for node in connectivity_nodes:
+            try:
+                curr_ds = ds
+                if node is not None:
+                    logger.warning(f"Failed to subset dataset - Retrying with 'assign_ugrid_topology={node}'")
+                    curr_ds = assign_ugrid_topology(curr_ds, face_node_connectivity=node)
+                if self.points is not None:
+                    curr_ds = curr_ds.xsg.grid.subset_polygon(curr_ds, self.points)
+                elif self.bbox is not None:
+                    curr_ds = curr_ds.xsg.grid.subset_bbox(curr_ds, self.bbox)
+            except:
+                continue
+
+            # set ds if no errors occured during subset
+            ds = curr_ds
+            break
 
         if self.time is not None:
             # Remove Z from the time strings for now to avoid issues with parsing
