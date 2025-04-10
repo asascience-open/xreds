@@ -31,6 +31,15 @@
       "roms": {}
     }
   },
+  "cora_native": {
+    "path": "s3://noaa-nos-cora-pds/V1.1/assimilated/native_grid/zarr/fort.63_1979-2022.zarr",
+    "type": "zarr",
+    "drop_variables": ["adcirc_mesh", "ibtype", "ibtypee", "nbvv", "nvdll", "nvell"],
+    "chunks": {
+        "time": 24,
+        "node": 160000
+    }
+  },
   "dbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/dbofs/dbofs.fields.best.nc.zarr",
     "type": "zarr",
@@ -176,6 +185,36 @@
       }
     }
   },
+  "rtofs_east": {
+    "path": "s3://noaa-nodd-kerchunk-pds/rtofs/rtofs.rtofs_glo_3dz_6hrly_hvr_US_east.best.nc.zarr",
+    "type": "zarr",
+    "chunks": "auto",
+    "drop_variables": []
+  },
+  "rtofs_west": {
+    "path": "s3://noaa-nodd-kerchunk-pds/rtofs/rtofs.rtofs_glo_3dz_6hrly_hvr_US_west.best.nc.zarr",
+    "type": "zarr",
+    "chunks": "auto",
+    "drop_variables": []
+  },
+  "rtofs_alaska": {
+    "path": "s3://noaa-nodd-kerchunk-pds/rtofs/rtofs.rtofs_glo_3dz_6hrly_hvr_alaska.best.nc.zarr",
+    "type": "zarr",
+    "chunks": "auto",
+    "drop_variables": []
+  },
+  "rtofs_2d": {
+    "path": "s3://noaa-nodd-kerchunk-pds/rtofs/rtofs.rtofs_glo_2ds_diag.best.nc.zarr",
+    "type": "zarr",
+    "chunks": "auto",
+    "drop_variables": []
+  },
+  "rtofs_2d_ice": {
+    "path": "s3://noaa-nodd-kerchunk-pds/rtofs/rtofs.rtofs_glo_2ds_ice.best.nc.zarr",
+    "type": "zarr",
+    "chunks": "auto",
+    "drop_variables": []
+  },
   "sfbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/sfbofs/sfbofs.fields.best.nc.zarr",
     "type": "zarr",
@@ -204,6 +243,15 @@
         "vdatum_name": "mllw",
         "multiplier": -1.0
       }
+    }
+  },
+  "stofs_2d": {
+    "path": "s3://noaa-nodd-kerchunk-pds/stofs/stofs_2d_glo/stofs_2d_glo.fields.cwl.best.zarr",
+    "type": "zarr",
+    "drop_variables": ["_nc4_non_coord_max_nvell", "_nc4_non_coord_nvel", "adcirc_mesh", "ibtype", "nbvv", "nvell"],
+    "chunks": {
+      "time": 32,
+      "node": 511401
     }
   },
   "tbofs": {
@@ -252,14 +300,6 @@
         "multiplier": -1.0
       },
       "roms": {}
-    }
-  },
-  "cora_native": {
-    "path": "s3://noaa-nos-cora-pds/V1.1/assimilated/native_grid/zarr/fort.63_1979-2022.zarr",
-    "type": "zarr",
-    "chunks": {
-        "time": 24,
-        "node": 160000
     }
   }
 }

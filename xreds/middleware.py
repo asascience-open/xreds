@@ -26,5 +26,5 @@ class RequestCancelledMiddleware(BaseHTTPMiddleware):
         try:
             return await handler_task
         except asyncio.CancelledError:
-            logger.warning(f"Cancelled request: {request.scope["path"]}{request.scope["query_string"].decode()}")
+            logger.warning(f"Attempt to cancel request: {request.scope["path"]}{request.scope["query_string"].decode()}")
             return Response(status_code=200)
