@@ -117,9 +117,9 @@ class DatasetProvider(Plugin):
 
         # check if dataset is expired - if so refetch data
         if datetime.now() > self.cache_times[cache_key]["expiration"]:
-            self.cache_times.pop(cache_key)
+            del self.cache_times[cache_key]
             if cache_key in self.memory_cache:
-                self.memory_cache.pop(cache_key)
+                del self.memory_cache[cache_key]
             if self.redis_cache is not None and self.redis_cache.exists(cache_key):
                 self.redis_cache.delete(cache_key)
 
@@ -186,8 +186,8 @@ class DatasetProvider(Plugin):
                             oldest_date = val["requested"]
 
                     if oldest_key is not None:
-                        self.cache_times.pop(oldest_key)
-                        self.memory_cache.pop(oldest_key)
+                        del self.cache_times[oldest_key]
+                        del self.memory_cache[oldest_key]
                         logger.info(f"Popped dataset {oldest_key} from memory cache")
         
         logger.info(f"Memory cached dataset for {dataset_id}")
@@ -221,7 +221,7 @@ class DatasetProvider(Plugin):
                 self.redis_cache.set(loading_key, "true", ex=180)
         else:
             if loading_key in self.dataset_loading:
-                self.dataset_loading.pop(loading_key)
+                del self.dataset_loading[loading_key]
             if self.redis_cache is not None and self.redis_cache.exists(loading_key):
                 self.redis_cache.delete(loading_key)
 
