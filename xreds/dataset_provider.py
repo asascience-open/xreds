@@ -39,10 +39,14 @@ class DatasetProvider(Plugin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        with fsspec.open(settings.datasets_mapping_file, "r") as f:
-            # load config using yaml, which can load json or yaml
-            # because yaml is a superset of json
-            self.dataset_mapping = yaml.safe_load(f)
+        # load config using yaml, which can load json or yaml
+        # because yaml is a superset of json
+        try:
+            with fsspec.open(settings.datasets_mapping_file, "r") as f:
+                self.dataset_mapping = yaml.safe_load(f)
+        except:
+            with fsspec.open(settings.datasets_mapping_file, "r", anon=True) as f:
+                self.dataset_mapping = yaml.safe_load(f)
 
     @hookimpl
     def get_datasets(self):
