@@ -1,5 +1,5 @@
 import { ImageSource, MapMouseEvent, Popup } from 'maplibre-gl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { bboxContainsPoint, createImageLayerParams } from '../tools';
 import Map from '../components/map';
 import MaterialIcon from '../components/material_icon';
@@ -13,6 +13,7 @@ import {
     useDatasetsQuery,
 } from '../query/datasets';
 import Export from '../components/export';
+import SimpleSelect from '../components/simple_select';
 
 const colormaps: Array<{ id: string; name: string }> = [
     { id: 'rainbow', name: 'Rainbow' },
@@ -75,6 +76,10 @@ function App() {
 
     const [selectedExportDataset, setSelectedExportDataset] = useState<string | undefined>(undefined);
     const selectedExportDatasetRef = useRef<string | undefined>(undefined);
+
+    const layerTimeOptions = useMemo(() => selectedLayerMetadata.data?.times?.map(
+        (date: string) => ({ value: date, label: date })
+    ), [selectedLayerMetadata.data?.times])
 
     useEffect(() => {
         const datasetsCollapsed = datasetIds.data?.reduce(
@@ -543,7 +548,7 @@ function App() {
                     />
                 </div>
                 {selectedLayer && (
-                    <div className="absolute bottom-9 md:bottom-8 right-2 md:right-4 h-40 w-72 md:w-96 bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
+                    <div className="absolute bottom-9 right-2 md:right-4 h-40 w-72 md:w-96 bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
                         <span className="text-center">
                             {selectedLayer.dataset} - {selectedLayer.variable}
                         </span>
@@ -565,34 +570,26 @@ function App() {
                                     }
                                 >
                                     <div
-                                        className={'flex flex-row items-center'}
+                                        className={'flex flex-row items-center pt-2'}
                                     >
                                         <span className={'pl-1'}>Date:</span>
-                                        <select
-                                            className="rounded-md p-1 mx-1"
-                                            value={
-                                                layerOptions?.date ??
-                                                selectedLayerMetadata.data
-                                                    .defaultTime
-                                            }
-                                            onChange={(e) =>
+                                        <SimpleSelect
+                                            key={"date-dropdown"}
+                                            className="rounded-md mx-1 w-[14rem]"
+                                            menuPlacement={"top"}
+                                            isSearchable={false}
+                                            value={{
+                                                value: layerOptions?.date ?? selectedLayerMetadata.data.defaultTime,
+                                                label: layerOptions?.date ?? selectedLayerMetadata.data.defaultTime,
+                                            }}
+                                            onChange={(e: any) =>
                                                 setLayerOptions({
                                                     ...layerOptions,
-                                                    date: e.target.value,
+                                                    date: e.value,
                                                 })
                                             }
-                                        >
-                                            {selectedLayerMetadata.data.times?.map(
-                                                (date: string) => (
-                                                    <option
-                                                        key={date}
-                                                        value={date}
-                                                    >
-                                                        {date}
-                                                    </option>
-                                                ),
-                                            )}
-                                        </select>
+                                            options={layerTimeOptions}
+                                        />
                                     </div>
                                     {selectedLayerMetadata.data
                                         .defaultElevation !== undefined && (
@@ -604,43 +601,34 @@ function App() {
                                             <span className={'pl-1'}>
                                                 Elevation:
                                             </span>
-                                            <select
-                                                className="rounded-md p-1 mx-1"
-                                                value={
-                                                    layerOptions?.elevation ??
-                                                    selectedLayerMetadata.data.defaultElevation.toString()
-                                                }
-                                                onChange={(e) =>
+                                            <SimpleSelect
+                                                className="rounded-md mx-1 w-[12rem]"
+                                                menuPlacement={"top"}
+                                                isSearchable={false}
+                                                value={{
+                                                    value: layerOptions?.elevation ?? selectedLayerMetadata.data.defaultElevation.toString(),
+                                                    label: layerOptions?.elevation ?? selectedLayerMetadata.data.defaultElevation.toString(),
+                                                }}
+                                                onChange={(e: any) =>
                                                     setLayerOptions({
                                                         ...layerOptions,
-                                                        elevation:
-                                                            e.target.value,
+                                                        elevation: e.value,
                                                     })
                                                 }
-                                            >
-                                                {selectedLayerMetadata.data.elevations?.map(
-                                                    (e: number) => (
-                                                        <option
-                                                            key={e.toString()}
-                                                            value={e.toString()}
-                                                        >
-                                                            {+e.toFixed(4)}
-                                                        </option>
-                                                    ),
+                                                options={selectedLayerMetadata.data.elevations?.map(
+                                                    (e: number) => ({ value: e.toString(), label: +e.toFixed(4) })
                                                 )}
-                                            </select>
+                                            />
                                         </div>
                                     )}
                                 </div>
-                                <div className="w-full flex-1 flex flex-row items-center content-center justify-around font-bold">
+                                <div className="w-full flex-1 flex flex-row items-center content-center justify-around">
                                     <input
-                                        className="w-16 mx-1 text-center rounded-md p-1"
-                                        defaultValue={
-                                            layerOptions.colorscaleMin ??
-                                            selectedLayerMinMax.data?.min ??
-                                            0
-                                        }
+                                        className="w-16 mx-1 text-center rounded-md px-1 border border-solid border-[#cccccc]
+                                                   [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        defaultValue={(layerOptions.colorscaleMin ?? selectedLayerMinMax.data?.min ?? 0).toFixed(3)}
                                         type={'number'}
+                                        max={layerOptions.colorscaleMax ?? selectedLayerMinMax.data?.max}
                                         onBlur={(e) =>
                                             setLayerOptions({
                                                 ...layerOptions,
@@ -696,13 +684,11 @@ function App() {
                                         </div>
                                     )}
                                     <input
-                                        className="w-16 mx-1 text-center rounded-md p-1"
-                                        defaultValue={
-                                            layerOptions.colorscaleMax ??
-                                            selectedLayerMinMax.data?.max ??
-                                            10
-                                        }
+                                        className="w-16 mx-1 text-center rounded-md px-1 border border-solid border-[#cccccc] 
+                                                   [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        defaultValue={(layerOptions.colorscaleMax ?? selectedLayerMinMax.data?.max ?? 10).toFixed(3)}
                                         type={'number'}
+                                        min={layerOptions.colorscaleMin ?? selectedLayerMinMax.data?.min}
                                         onBlur={(e) =>
                                             setLayerOptions({
                                                 ...layerOptions,

@@ -33,7 +33,7 @@ s3fs~=2025.3.0
 scipy~=1.15.1
 setuptools~=75.8.0
 uvicorn~=0.34.0
-xarray~=2025.1.2
+xarray~=2025.3.1
 zarr~=3.0.5
 kerchunk@git+https://github.com/ndellicarpini/kerchunk@main
 redis-fsspec-cache@git+https://github.com/asascience-open/redis-fsspec-cache@main
