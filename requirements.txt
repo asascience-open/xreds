@@ -38,7 +38,7 @@ zarr~=3.0.5
 kerchunk@git+https://github.com/ndellicarpini/kerchunk@main
 redis-fsspec-cache@git+https://github.com/asascience-open/redis-fsspec-cache@main
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@main
-xpublish@git+https://github.com/xpublish-community/xpublish@zarr3compat
+xpublish@git+https://github.com/xpublish-community/xpublish@main
 xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@main
 xpublish-wms@git+https://github.com/ndellicarpini/xpublish-wms@main
 xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@main
