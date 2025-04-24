@@ -78,7 +78,7 @@ class ExportPlugin(Plugin):
             """
             Returns the threshold for exporting files in MB
             """
-            return {"threshold": self.export_threshold}
+            return {"threshold": self.export_threshold, "unit": "MB"}
 
         return router
 
