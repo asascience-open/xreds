@@ -5,7 +5,7 @@ metadata:
   labels:
     app: xreds
 spec:
-  replicas: 8
+  replicas: 6
   selector:
     matchLabels:
       app: xreds
@@ -32,12 +32,10 @@ spec:
               value: "/xreds/"
             - name: EXPORT_THRESHOLD
               value: "500"
-            - name: WORKERS
-              value: "1"
             - name: DATASETS_MAPPING_FILE
               value: "s3://nextgen-dmac/kerchunk/datasets.json"
             - name: MEMORY_CACHE_NUM_DATASETS
-              value: "4"
+              value: "3"
             - name: USE_MEMORY_CACHE
               value: "true"
             - name: USE_REDIS_CACHE
