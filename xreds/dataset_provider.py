@@ -9,6 +9,9 @@ import yaml
 from pluggy import PluginManager
 from typing import Optional
 from xpublish import Plugin, hookimpl
+import socket
+from fastapi.responses import RedirectResponse
+import starlette.status as status
 
 from xreds.config import settings
 from xreds.dataset_extension import DATASET_EXTENSION_PLUGIN_NAMESPACE
@@ -22,6 +25,7 @@ from xreds.dataset_utils import load_dataset
 dataset_extension_manager = PluginManager(DATASET_EXTENSION_PLUGIN_NAMESPACE)
 dataset_extension_manager.register(VDatumTransformationExtension, name="vdatum")
 dataset_extension_manager.register(ROMSExtension, name="roms")
+POD_NAME = socket.gethostname()
 
 
 class DatasetProvider(Plugin):
@@ -59,12 +63,18 @@ class DatasetProvider(Plugin):
         if (settings.use_memory_cache or self.redis_cache is not None) and self._is_dataset_loading(dataset_id):
             logger.info(f"Waiting for dataset {dataset_id} to finish loading")
             while (self._is_dataset_loading(dataset_id)):
-                time.sleep(0.5)
+                time.sleep(0.5)        
 
         # check if dataset already exists - if so load from cache
-        cached_ds = self._load_dataset_from_cache(dataset_id)
+        cached_ds = self._load_dataset_from_memory_cache(dataset_id)
         if cached_ds is not None:
             return cached_ds
+        
+        # the dataset may not be loaded on this pod, but maybe it's on another
+        pod = self.redis_cache.get(f"dataset:{dataset_id}")
+        if pod and pod.decode() != POD_NAME:            
+            return RedirectResponse(url=f"http://{pod.decode()}:8090/dataset/{dataset_id}", 
+                                    status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
         try:
             load_time = time.time()
@@ -109,7 +119,7 @@ class DatasetProvider(Plugin):
     #  - if memory caching is enabled -> checks first and loads from variable
     #  - if redis caching is enabled -> checks and then deserializes if exists
     #  - else -> return None
-    def _load_dataset_from_cache(self, dataset_id: str):
+    def _load_dataset_from_memory_cache(self, dataset_id: str) -> Optional[xr.Dataset]:
         cache_key = self._get_dataset_cache_key(dataset_id)
 
         # make sure that cache_times has record of current dataset
@@ -131,12 +141,17 @@ class DatasetProvider(Plugin):
             return None
         else:
             self.cache_times[cache_key]["requested"] = datetime.now()
-        
+
         # load data from memory cache if exists
         if cache_key in self.memory_cache:
             logger.info(f"Using memory cached dataset for {dataset_id}")
-            return self.memory_cache[cache_key]
+            return self.memory_cache[cache_key]        
+        return None
         
+    # load metadata from Redis if exists
+    def _load_dataset_from_redis_cache(self, dataset_id: str) -> Optional[xr.Dataset]:
+
+        cache_key = self._get_dataset_cache_key(dataset_id)
         # load data from redis cache if exists
         if self.redis_cache is not None:
             serialized_ds = self.redis_cache.get(cache_key)
@@ -164,6 +179,8 @@ class DatasetProvider(Plugin):
             serialized_ds = pickle.dumps(ds, protocol=-1)
             self.redis_cache.set(cache_key, serialized_ds, ex=settings.dataset_cache_timeout)
             logger.info(f"Redis cached dataset for {dataset_id} (serialization time: {time.time() - start_time}s)")
+            # add an entry to the redis cache for the pod that has the dataset
+            self.redis_cache.set(f"dataset:{dataset_id}", POD_NAME)
         
         # also add dataset to memory cache if enabled
         if settings.use_memory_cache:
