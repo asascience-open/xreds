@@ -2,11 +2,10 @@
 FROM node:22-alpine
 
 # Create a folder for the app to live in
-RUN mkdir -p /opt/viewer
+#RUN mkdir -p /opt/viewer
 WORKDIR /opt/viewer
 
 COPY viewer/*.json viewer/*.config.cjs viewer/*.config.ts  ./
-
 RUN npm install
 
 COPY viewer/index.html ./index.html
@@ -29,28 +28,29 @@ RUN apt-get update && apt-get install -y \
     libnetcdf-dev \
     libproj-dev \
     libudunits2-dev \
-    libeccodes-dev
+    libeccodes-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a folder for the app to live in
-RUN mkdir -p /opt/xreds
+#RUN mkdir -p /opt/xreds
 WORKDIR /opt/xreds
 
 # Holder directory where react app lives in production
 RUN mkdir build
 
 # Install python package tools
-RUN pip3 install --upgrade pip uv
+RUN pip3 install --upgrade pip uv --no-cache-dir
 
 # Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
 # RUN uv pip install --python=$(which python3) --no-binary :all: shapely
 
 # Copy over and install dependencies
-COPY requirements.txt ./requirements.txt
-RUN uv pip install --python=/usr/local/bin/python3 -r requirements.txt
+COPY requirements.txt .
+RUN uv pip install --python=/usr/local/bin/python3 -r requirements.txt --no-cache-dir
 
 # Configure matplotlib to use Agg backend
-RUN mkdir -p /root/.config/matplotlib
-RUN echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc
+RUN mkdir -p /root/.config/matplotlib && \
+    echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc
 
 # Copy over python app source code
 COPY static ./static
