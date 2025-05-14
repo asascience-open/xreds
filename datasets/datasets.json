@@ -40,6 +40,25 @@
         "node": 160000
     }
   },
+  "cora_icechunk": {
+    "path": "s3://nextgen-dmac-icechunk-test/cora",
+    "type": "virtual-icechunk",
+    "drop_variables": ["adcirc_mesh", "ibtype", "ibtypee", "nbvv", "nvdll", "nvell"],
+    "chunks": {
+        "time": 24,
+        "node": 160000
+    },
+    "storage_options": {
+      "type": "s3",
+      "anonymous": true,
+      "virtual_chunk_container": {
+        "type": "s3",
+        "store": {
+          "region": "us-east-1"
+        }
+      }
+    }
+  },
   "dbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/dbofs/dbofs.fields.best.nc.zarr",
     "type": "zarr",
