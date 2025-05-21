@@ -10,7 +10,7 @@ from xreds.logging import logger
 def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
     """Load a dataset from a path"""
     ds = None
-    dataset_path = dataset_spec["path"]
+    dataset_path = dataset_spec.get("path", "")
     dataset_type = dataset_spec.get("type", None)
     if not dataset_type:
         dataset_type = _infer_dataset_type(dataset_path)
@@ -151,7 +151,7 @@ def _load_kerchunk(
     dataset_path: str, 
     chunks: Optional[str | dict], 
     drop_variables: Optional[str | list[str]],
-    storage_options: Optional[dict]
+    storage_options: dict
 ):
     if not os.path.exists(dataset_path):
         storage_options["target_protocol"] = storage_options.get("target_protocol", "s3")
@@ -174,7 +174,7 @@ def _load_zarr(
     dataset_path: str, 
     chunks: Optional[str | dict], 
     drop_variables: Optional[str | list[str]],
-    storage_options: Optional[dict],
+    storage_options: dict,
 ):
     if os.path.exists(dataset_path):
         return xr.open_dataset(
@@ -215,7 +215,7 @@ def _load_virtual_icechunk(
     dataset_path: str, 
     chunks: Optional[str | dict], 
     drop_variables: Optional[str | list[str]],
-    storage_options: Optional[dict],
+    storage_options: dict,
 ):
     ic_creds = None
     ic_config = icechunk.RepositoryConfig.default()
@@ -231,31 +231,37 @@ def _load_virtual_icechunk(
                 s3=icechunk.s3_credentials(**chunk_params.get("credentials", {"anonymous": True}))
             )
 
-    ic_storage = icechunk.local_filesystem_storage(dataset_path)
-    repo_type = storage_options.pop("type", "s3").lower()
+    repo_type = storage_options.pop(
+        "type",  
+        "local" if dataset_path != "" and os.path.exists(dataset_path) 
+                else dataset_path.split(":")[0]
+    ).lower()
+
+    ic_storage = None
     if repo_type == "s3":
         parsed_bucket = dataset_path.replace("s3://", "").split("/")[0]
         parsed_prefix = dataset_path.replace("s3://", "").split("/")[-1]
 
         ic_storage = icechunk.s3_storage(
-            **storage_options,
-            bucket=storage_options.get("bucket", parsed_bucket),
-            prefix=storage_options.get("prefix", parsed_prefix),
+            bucket=storage_options.pop("bucket", parsed_bucket),
+            prefix=storage_options.pop("prefix", parsed_prefix),
+            **storage_options
         )
 
-    if not icechunk.Repository.exists(ic_storage):
+    if ic_storage is None or not icechunk.Repository.exists(ic_storage):
         raise Exception(f"Could not open icechunk repository for {dataset_path}")
 
     repo = icechunk.Repository.open(ic_storage, ic_config, ic_creds)
-    branches = repo.list_branches()
-    session = repo.readonly_session(
-        "main" if "main" in branches else
-        "master" if "master" in branches else
-        branches[0]
-    )
-
+    
+    branch = storage_options.get("branch", dataset_path.split("@")[-1] if "@" in dataset_path else None)
+    if branch is None:
+        all_branches = list(repo.list_branches())
+        branch = ("main" if "main" in all_branches
+                  else "master" if "master" in all_branches
+                  else all_branches[0])
+    
     return xr.open_zarr(
-        session.store,
+        repo.readonly_session(branch).store,
         chunks=chunks,
         drop_variables=drop_variables,
         consolidated=False, 
