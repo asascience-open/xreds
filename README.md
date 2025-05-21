@@ -104,11 +104,13 @@ Datasets are specified in a key value manner, where the keys are the dataset ids
         "type": "kerchunk",
         "chunks": {},
         "drop_variables": ["orderedSequenceData"],
-        "target_protocol": "s3",
-        "target_options": {
-            "anon": false,
-            "key": "my aws key"
-            "secret": "my aws secret"
+        "storage_options": {
+            "target_protocol": "s3",
+            "target_options": {
+                "anon": false,
+                "key": "my aws key"
+                "secret": "my aws secret"
+            }
         }
     },
     "dbofs": {
@@ -138,7 +140,7 @@ gfswave_global:
     - orderedSequenceData
 ```
 
-Currently `zarr`, `netcdf`, and [`kerchunk`](https://github.com/fsspec/kerchunk) dataset types are supported. This information should be saved in a file and specified when running via environment variable `DATASETS_MAPPING_FILE`.
+Currently `zarr`, `netcdf`, [`virtual-icechunk`](https://icechunk.io/en/latest/icechunk-python/virtual/#creating-a-virtual-dataset-with-virtualizarr), and [`kerchunk`](https://github.com/fsspec/kerchunk) dataset types are supported. This information should be saved in a file and specified when running via environment variable `DATASETS_MAPPING_FILE`.
 
 ### Dataset Type Schema
 
@@ -157,24 +159,22 @@ Currently `zarr`, `netcdf`, and [`kerchunk`](https://github.com/fsspec/kerchunk)
     // (optional) array of dataset variable names to drop - see xr.open_dataset docs
     // [default: None]
     "drop_variables": ["orderedSequenceData"],
-    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
-    // [default: "s3"]
-    "remote_protocol": "s3",
-    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
-    // [default: {"anon": True}]
-    "remote_options": {
-        "anon": true,
+    // (optional) when type=kerchunk|zarr - see fsspec ReferenceFileSystem
+    //            when type=virtual-icechunk - see virtualizarr/icechunk
+    "storage_options": {
+        // passed to fsspec ReferenceFileSystem
+        "remote_protocol": "s3",
+        // passed to fsspec ReferenceFileSystem
+        "remote_options": {
+            "anon": true,
+        },
+        // passed to fsspec ReferenceFileSystem
+        "target_protocol": "s3",
+        // passed to fsspec ReferenceFileSystem
+        "target_options": {
+            "anon": false,
+        },
     },
-    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
-    // [default: "s3"]
-    "target_protocol": "s3",
-    // (optional) see fsspec ReferenceFileSystem - only used when type=kerchunk|zarr
-    // [default: {"anon": True}]
-    "target_options": {
-        "anon": false,
-    },
-    // (optional) extensions to apply to the dataset - supports "vdatum" & "roms"
-    // [default: None]
     "extensions": {
       "vdatum": {
         // fsspec path to vdatum dataset

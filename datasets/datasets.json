@@ -40,6 +40,21 @@
         "node": 160000
     }
   },
+  "cora_icechunk": {
+    "path": "s3://nextgen-dmac-icechunk-test/cora-main-individual",
+    "type": "virtual-icechunk",
+    "drop_variables": ["adcirc_mesh", "ibtype", "ibtypee", "nbvv", "nvdll", "nvell"],
+    "storage_options": {
+      "anonymous": true,
+      "virtual_chunk_container": {
+        "type": "s3",
+        "store": {
+          "anonymous": true,
+          "region": "us-east-1"
+        }
+      }
+    }
+  },
   "dbofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/dbofs/dbofs.fields.best.nc.zarr",
     "type": "zarr",

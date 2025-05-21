@@ -1,3 +1,4 @@
+import copy
 import pickle
 import time
 from datetime import datetime, timedelta
@@ -71,7 +72,7 @@ class DatasetProvider(Plugin):
             debug_time = time.time()
 
             # load data
-            dataset_spec = self.dataset_mapping[dataset_id]
+            dataset_spec = copy.deepcopy(self.dataset_mapping[dataset_id])
             self._set_dataset_loading(dataset_id, True)
             ds = load_dataset(dataset_spec)
 
