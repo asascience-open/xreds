@@ -2,6 +2,7 @@ import asyncio
 from fastapi import Request, Response
 from typing import Callable
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.gzip import GZipMiddleware, IdentityResponder
 from xreds.logging import logger
 
 # taken from https://github.com/fastapi/fastapi/discussions/11360
@@ -28,3 +29,19 @@ class RequestCancelledMiddleware(BaseHTTPMiddleware):
         except asyncio.CancelledError:
             logger.warning(f"Attempt to cancel request: {request.scope['path']}?{request.scope['query_string'].decode()}")
             return Response(status_code=200)
+
+# modified from https://github.com/encode/starlette/blob/master/starlette/middleware/gzip.py
+class WmsGZipMiddleware(GZipMiddleware):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":  # pragma: no cover
+            await self.app(scope, receive, send)
+            return
+
+        if scope.get("path", "").lower().rstrip("/").split("/")[-1] == "wms":
+            return await super().__call__(scope, receive, send)
+        else:
+            responder = IdentityResponder(self.app, self.minimum_size)
+            return await responder(scope, receive, send)
