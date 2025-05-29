@@ -1,6 +1,7 @@
 import os
 from typing import Optional, Union
 
+import icechunk
 import xarray as xr
 import zarr
 
@@ -9,7 +10,7 @@ from xreds.logging import logger
 def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
     """Load a dataset from a path"""
     ds = None
-    dataset_path = dataset_spec["path"]
+    dataset_path = dataset_spec.get("path", "")
     dataset_type = dataset_spec.get("type", None)
     if not dataset_type:
         dataset_type = _infer_dataset_type(dataset_path)
@@ -22,11 +23,7 @@ def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
     drop_variables = dataset_spec.get("drop_variables", None)
     mask_variables = dataset_spec.get("mask_variables", None)
 
-    target_protocol = dataset_spec.get("target_protocol", "s3")
-    target_options = dataset_spec.get("target_options", {"anon": True})
-    remote_protocol = dataset_spec.get("remote_protocol", "s3")
-    remote_options = dataset_spec.get("remote_options", {"anon": True})
-    
+    storage_options = dataset_spec.get("storage_options", {})    
     additional_coords = dataset_spec.get("additional_coords", None)
     additional_attrs = dataset_spec.get("additional_attrs", None)
 
@@ -48,24 +45,21 @@ def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
             dataset_path,
             chunks=chunks,
             drop_variables=drop_variables,
-            remote_storage_options=dict(
-                target_protocol=target_protocol,
-                target_options=target_options,
-                remote_protocol=remote_protocol, 
-                remote_options=remote_options,
-            )
+            storage_options=storage_options
         )
     elif dataset_type == "zarr":
         ds = _load_zarr(
             dataset_path,
             chunks=chunks,
             drop_variables=drop_variables,
-            remote_storage_options=dict(
-                target_protocol=target_protocol,
-                target_options=target_options,
-                remote_protocol=remote_protocol, 
-                remote_options=remote_options,
-            )
+            storage_options=storage_options
+        )
+    elif dataset_type == "virtual-icechunk":
+        ds = _load_virtual_icechunk(
+            dataset_path,
+            chunks=chunks,
+            drop_variables=drop_variables,
+            storage_options=storage_options
         )
 
     if ds is None:
@@ -157,15 +151,20 @@ def _load_kerchunk(
     dataset_path: str, 
     chunks: Optional[str | dict], 
     drop_variables: Optional[str | list[str]],
-    remote_storage_options: Optional[dict]
+    storage_options: dict
 ):
-    storage_options = remote_storage_options if not os.path.exists(dataset_path) else None
+    if not os.path.exists(dataset_path):
+        storage_options["target_protocol"] = storage_options.get("target_protocol", "s3")
+        storage_options["target_options"] = storage_options.get("target_options", {"anon": True})
+        storage_options["remote_protocol"] = storage_options.get("remote_protocol", "s3")
+        storage_options["remote_options"] = storage_options.get("remote_options", {"anon": True})
+
     return xr.open_dataset(
         dataset_path,
         engine="kerchunk",
         chunks=chunks,
         drop_variables=drop_variables,
-        storage_options=storage_options,
+        storage_options=storage_options if len(storage_options) > 0 else None,
         open_dataset_options=dict(
             chunks=chunks
         )
@@ -175,7 +174,7 @@ def _load_zarr(
     dataset_path: str, 
     chunks: Optional[str | dict], 
     drop_variables: Optional[str | list[str]],
-    remote_storage_options: Optional[dict],
+    storage_options: dict,
 ):
     if os.path.exists(dataset_path):
         return xr.open_dataset(
@@ -187,8 +186,12 @@ def _load_zarr(
         )
     else:
         storage_options = {
-            **(remote_storage_options if remote_storage_options is not None else {}),
-            "fo": dataset_path
+            **(storage_options if storage_options is not None else {}),
+            "fo": dataset_path,
+            "target_protocol": storage_options.get("target_protocol", "s3"),
+            "target_options": storage_options.get("target_options", {"anon": True}),
+            "remote_protocol": storage_options.get("remote_protocol", "s3"),
+            "remote_options": storage_options.get("remote_options", {"anon": True})
         }
 
         is_zarr_2 = zarr.__version__ < "3.0.0"
@@ -207,3 +210,60 @@ def _load_zarr(
                 storage_options=storage_options,
             )
         )
+
+def _load_virtual_icechunk(
+    dataset_path: str, 
+    chunks: Optional[str | dict], 
+    drop_variables: Optional[str | list[str]],
+    storage_options: dict,
+):
+    ic_creds = None
+    ic_config = icechunk.RepositoryConfig.default()
+    if "virtual_chunk_container" in storage_options:
+        chunk_params = storage_options.pop("virtual_chunk_container", {})
+        if chunk_params.get("type", "s3").lower() == "s3":
+            ic_config.set_virtual_chunk_container(
+                icechunk.VirtualChunkContainer(
+                    "s3", "s3://", icechunk.s3_store(**chunk_params.get("store", {}))
+                )
+            )
+            ic_creds = icechunk.containers_credentials(
+                s3=icechunk.s3_credentials(**chunk_params.get("credentials", {"anonymous": True}))
+            )
+
+    repo_type = storage_options.pop(
+        "type",  
+        "local" if dataset_path != "" and os.path.exists(dataset_path) 
+                else dataset_path.split(":")[0]
+    ).lower()
+
+    ic_storage = None
+    if repo_type == "s3":
+        parsed_bucket = dataset_path.replace("s3://", "").split("/")[0]
+        parsed_prefix = dataset_path.replace("s3://", "").split("/")[-1]
+
+        ic_storage = icechunk.s3_storage(
+            bucket=storage_options.pop("bucket", parsed_bucket),
+            prefix=storage_options.pop("prefix", parsed_prefix),
+            **storage_options
+        )
+
+    if ic_storage is None or not icechunk.Repository.exists(ic_storage):
+        raise Exception(f"Could not open icechunk repository for {dataset_path}")
+
+    repo = icechunk.Repository.open(ic_storage, ic_config, ic_creds)
+    
+    branch = storage_options.get("branch", dataset_path.split("@")[-1] if "@" in dataset_path else None)
+    if branch is None:
+        all_branches = list(repo.list_branches())
+        branch = ("main" if "main" in all_branches
+                  else "master" if "master" in all_branches
+                  else all_branches[0])
+    
+    return xr.open_zarr(
+        repo.readonly_session(branch).store,
+        chunks=chunks,
+        drop_variables=drop_variables,
+        consolidated=False, 
+        zarr_format=3
+    )

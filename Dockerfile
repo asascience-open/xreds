@@ -25,6 +25,8 @@ FROM public.ecr.aws/b1r9q1p5/rps-matplotlib:latest
 # Native dependencies
 RUN apt-get update && apt-get install -y \
     git \
+    curl \
+    build-essential \
     libhdf5-dev \
     libopenblas-dev \
     libgeos-dev \
@@ -39,6 +41,9 @@ WORKDIR /opt/xreds
 
 # Holder directory where react app lives in production
 RUN mkdir build
+
+# Install rust build tools
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Install python package tools
 RUN pip3 install --upgrade pip uv

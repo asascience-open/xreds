@@ -15,8 +15,8 @@ h5py~=3.12.1
 matplotlib~=3.10.0
 mercantile~=1.2.1 # last updated 04/21
 netCDF4~=1.7.2
-numcodecs~=0.15.0
-numpy~=1.26.4
+numcodecs~=0.16.1
+numpy~=2.2.5
 opendap-protocol~=1.1.1 # last updated 09/21
 pandas~=2.2.3
 pillow~=11.1.0
@@ -42,3 +42,5 @@ xpublish@git+https://github.com/xpublish-community/xpublish@main
 xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@main
 xpublish-wms@git+https://github.com/ndellicarpini/xpublish-wms@main
 xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@main
+virtualizarr@git+https://github.com/zarr-developers/VirtualiZarr@develop
+icechunk@git+https://github.com/earth-mover/icechunk.git#subdirectory=icechunk-python
