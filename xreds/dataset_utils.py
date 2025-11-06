@@ -212,7 +212,7 @@ def _load_zarr(
         )
 
 def _load_virtual_icechunk(
-    dataset_path: str, 
+    dataset_path: str,
     chunks: Optional[str | dict], 
     drop_variables: Optional[str | list[str]],
     storage_options: dict,
@@ -222,13 +222,17 @@ def _load_virtual_icechunk(
     if "virtual_chunk_container" in storage_options:
         chunk_params = storage_options.pop("virtual_chunk_container", {})
         if chunk_params.get("type", "s3").lower() == "s3":
+            store = chunk_params.get("store", {})
+            print('Store: ', store)
             ic_config.set_virtual_chunk_container(
                 icechunk.VirtualChunkContainer(
-                    "s3", "s3://", icechunk.s3_store(**chunk_params.get("store", {}))
+                    url_prefix=store.get("path", ""), 
+                    store=icechunk.s3_store(region=store.get("region", "us-east-1"), 
+                                            anonymous=store.get("anonymous", True))
                 )
             )
             ic_creds = icechunk.containers_credentials(
-                s3=icechunk.s3_credentials(**chunk_params.get("credentials", {"anonymous": True}))
+                {store.get("path", ""): icechunk.s3_anonymous_credentials()}
             )
 
     repo_type = storage_options.pop(
@@ -240,12 +244,12 @@ def _load_virtual_icechunk(
     ic_storage = None
     if repo_type == "s3":
         parsed_bucket = dataset_path.replace("s3://", "").split("/")[0]
-        parsed_prefix = dataset_path.replace("s3://", "").split("/")[-1]
+        parsed_prefix = '/'.join(dataset_path.replace("s3://", "").split("/")[1:])
 
         ic_storage = icechunk.s3_storage(
             bucket=storage_options.pop("bucket", parsed_bucket),
             prefix=storage_options.pop("prefix", parsed_prefix),
-            **storage_options
+            anonymous=storage_options.pop("anonymous", True)
         )
 
     if ic_storage is None or not icechunk.Repository.exists(ic_storage):
@@ -253,17 +257,21 @@ def _load_virtual_icechunk(
 
     repo = icechunk.Repository.open(ic_storage, ic_config, ic_creds)
     
-    branch = storage_options.get("branch", dataset_path.split("@")[-1] if "@" in dataset_path else None)
+    branch = storage_options.get("branch", None)
     if branch is None:
         all_branches = list(repo.list_branches())
         branch = ("main" if "main" in all_branches
                   else "master" if "master" in all_branches
                   else all_branches[0])
-    
-    return xr.open_zarr(
+        
+    ds = xr.open_zarr(
         repo.readonly_session(branch).store,
         chunks=chunks,
         drop_variables=drop_variables,
         consolidated=False, 
         zarr_format=3
     )
+
+    ds_sorted = ds.sortby('ocean_time')
+    
+    return ds_sorted
