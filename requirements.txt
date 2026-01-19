@@ -38,9 +38,9 @@ zarr~=3.0.5
 virtualizarr~=1.3.2
 icechunk~=1.1.10
 kerchunk~=0.2.9
-xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms@main
+xpublish-wms~=0.13.2
+xpublish~=0.4.2
+xpublish-opendap~=0.2.0
+xpublish-edr~=0.9.0
 redis-fsspec-cache@git+https://github.com/asascience-open/redis-fsspec-cache@main
 xarray-subset-grid@git+https://github.com/asascience-open/xarray-subset-grid@main
-xpublish@git+https://github.com/xpublish-community/xpublish@main
-xpublish-opendap@git+https://github.com/xpublish-community/xpublish-opendap@main
-xpublish-edr@git+https://github.com/xpublish-community/xpublish-edr@main
