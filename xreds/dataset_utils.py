@@ -249,6 +249,7 @@ def _load_virtual_icechunk(
         ic_storage = icechunk.s3_storage(
             bucket=storage_options.pop("bucket", parsed_bucket),
             prefix=storage_options.pop("prefix", parsed_prefix),
+            region=storage_options.pop("region", "us-east-1"),
             anonymous=storage_options.pop("anonymous", True)
         )
 
@@ -272,6 +273,12 @@ def _load_virtual_icechunk(
         zarr_format=3
     )
 
-    ds_sorted = ds.sortby('ocean_time')
-    
-    return ds_sorted
+    # sort time (temporary? fix for possible out-of-order time dim in aggregations)
+    try:
+        time_dim = ds.cf["time"].dims[0]
+        if time_dim:
+            return ds.sortby(time_dim)
+    except Exception as e:
+        logger.warning(f"Could not sort time for virtual_icechunk dataset {dataset_path}: {e}")
+
+    return ds

@@ -23,6 +23,7 @@
     ],
     "storage_options": {
       "anonymous": true,
+      "region": "us-east-1",
       "virtual_chunk_container": {
         "type": "s3",
         "store": {
@@ -82,6 +83,7 @@
     ],
     "storage_options": {
       "anonymous": true,
+      "region": "us-east-1",
       "virtual_chunk_container": {
         "type": "s3",
         "store": {
