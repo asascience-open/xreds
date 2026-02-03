@@ -252,6 +252,8 @@ def _load_virtual_icechunk(
             region=storage_options.pop("region", "us-east-1"),
             anonymous=storage_options.pop("anonymous", True)
         )
+    if repo_type == "local":
+        ic_storage = icechunk.local_filesystem_storage(path=dataset_path)
 
     if ic_storage is None or not icechunk.Repository.exists(ic_storage):
         raise Exception(f"Could not open icechunk repository for {dataset_path}")
