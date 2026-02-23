@@ -23,21 +23,21 @@ def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
     drop_variables = dataset_spec.get("drop_variables", None)
     mask_variables = dataset_spec.get("mask_variables", None)
 
-    storage_options = dataset_spec.get("storage_options", {})    
+    storage_options = dataset_spec.get("storage_options", {})
     additional_coords = dataset_spec.get("additional_coords", None)
     additional_attrs = dataset_spec.get("additional_attrs", None)
 
     if dataset_type == "netcdf":
         ds = _load_netcdf(
-            dataset_path, 
-            engine=dataset_spec.get("engine", "netcdf4"), 
-            chunks=chunks, 
+            dataset_path,
+            engine=dataset_spec.get("engine", "netcdf4"),
+            chunks=chunks,
             drop_variables=drop_variables
         )
     elif dataset_type == "grib2":
         ds = _load_grib(
-            dataset_path, 
-            chunks=chunks, 
+            dataset_path,
+            chunks=chunks,
             drop_variables=drop_variables
         )
     elif dataset_type == "kerchunk":
@@ -72,7 +72,7 @@ def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
     # Add additional coordinates to the dataset if provided
     if additional_coords is not None:
         ds = ds.set_coords(additional_coords)
-    
+
     try:
         if ds.cf.coords["longitude"].dims[0] == "longitude":
             ds = ds.assign_coords(
@@ -122,34 +122,34 @@ def _infer_dataset_type(dataset_path: str) -> str:
     return "unknown"
 
 def _load_netcdf(
-    dataset_path: str, 
-    engine: Optional[str], 
-    chunks: Optional[str | dict], 
+    dataset_path: str,
+    engine: Optional[str],
+    chunks: Optional[str | dict],
     drop_variables: Optional[str | list[str]],
 ):
     return xr.open_dataset(
-        dataset_path, 
-        engine=engine if engine is not None else "netcdf4", 
-        chunks=chunks, 
+        dataset_path,
+        engine=engine if engine is not None else "netcdf4",
+        chunks=chunks,
         drop_variables=drop_variables
     )
 
 # TODO: Network support?
 def _load_grib(
     dataset_path: str,
-    chunks: Optional[str | dict], 
+    chunks: Optional[str | dict],
     drop_variables: Optional[str | list[str]],
 ):
     return xr.open_dataset(
-        dataset_path, 
-        engine="cfgrib", 
-        chunks=chunks, 
+        dataset_path,
+        engine="cfgrib",
+        chunks=chunks,
         drop_variables=drop_variables
     )
 
 def _load_kerchunk(
-    dataset_path: str, 
-    chunks: Optional[str | dict], 
+    dataset_path: str,
+    chunks: Optional[str | dict],
     drop_variables: Optional[str | list[str]],
     storage_options: dict
 ):
@@ -171,8 +171,8 @@ def _load_kerchunk(
     )
 
 def _load_zarr(
-    dataset_path: str, 
-    chunks: Optional[str | dict], 
+    dataset_path: str,
+    chunks: Optional[str | dict],
     drop_variables: Optional[str | list[str]],
     storage_options: dict,
 ):
@@ -212,8 +212,8 @@ def _load_zarr(
         )
 
 def _load_virtual_icechunk(
-    dataset_path: str, 
-    chunks: Optional[str | dict], 
+    dataset_path: str,
+    chunks: Optional[str | dict],
     drop_variables: Optional[str | list[str]],
     storage_options: dict,
 ):
@@ -222,48 +222,65 @@ def _load_virtual_icechunk(
     if "virtual_chunk_container" in storage_options:
         chunk_params = storage_options.pop("virtual_chunk_container", {})
         if chunk_params.get("type", "s3").lower() == "s3":
+            store = chunk_params.get("store", {})
+            print('Store: ', store)
             ic_config.set_virtual_chunk_container(
                 icechunk.VirtualChunkContainer(
-                    "s3", "s3://", icechunk.s3_store(**chunk_params.get("store", {}))
+                    url_prefix=store.get("path", ""),
+                    store=icechunk.s3_store(region=store.get("region", "us-east-1"),
+                                            anonymous=store.get("anonymous", True))
                 )
             )
             ic_creds = icechunk.containers_credentials(
-                s3=icechunk.s3_credentials(**chunk_params.get("credentials", {"anonymous": True}))
+                {store.get("path", ""): icechunk.s3_anonymous_credentials()}
             )
 
     repo_type = storage_options.pop(
-        "type",  
-        "local" if dataset_path != "" and os.path.exists(dataset_path) 
+        "type",
+        "local" if dataset_path != "" and os.path.exists(dataset_path)
                 else dataset_path.split(":")[0]
     ).lower()
 
     ic_storage = None
     if repo_type == "s3":
         parsed_bucket = dataset_path.replace("s3://", "").split("/")[0]
-        parsed_prefix = dataset_path.replace("s3://", "").split("/")[-1]
+        parsed_prefix = '/'.join(dataset_path.replace("s3://", "").split("/")[1:])
 
         ic_storage = icechunk.s3_storage(
             bucket=storage_options.pop("bucket", parsed_bucket),
             prefix=storage_options.pop("prefix", parsed_prefix),
-            **storage_options
+            region=storage_options.pop("region", "us-east-1"),
+            anonymous=storage_options.pop("anonymous", True)
         )
+    if repo_type == "local":
+        ic_storage = icechunk.local_filesystem_storage(path=dataset_path)
 
     if ic_storage is None or not icechunk.Repository.exists(ic_storage):
         raise Exception(f"Could not open icechunk repository for {dataset_path}")
 
     repo = icechunk.Repository.open(ic_storage, ic_config, ic_creds)
-    
-    branch = storage_options.get("branch", dataset_path.split("@")[-1] if "@" in dataset_path else None)
+
+    branch = storage_options.get("branch", None)
     if branch is None:
         all_branches = list(repo.list_branches())
         branch = ("main" if "main" in all_branches
                   else "master" if "master" in all_branches
                   else all_branches[0])
-    
-    return xr.open_zarr(
+
+    ds = xr.open_zarr(
         repo.readonly_session(branch).store,
         chunks=chunks,
         drop_variables=drop_variables,
-        consolidated=False, 
+        consolidated=False,
         zarr_format=3
     )
+
+    # sort time (temporary? fix for possible out-of-order time dim in aggregations)
+    try:
+        time_dim = ds.cf["time"].dims[0]
+        if time_dim:
+            return ds.sortby(time_dim)
+    except Exception as e:
+        logger.warning(f"Could not sort time for virtual_icechunk dataset {dataset_path}: {e}")
+
+    return ds
