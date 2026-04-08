@@ -9,7 +9,7 @@ distributed==2024.11.2
 fastapi~=0.115.7
 fsspec~=2025.3.0
 gunicorn~=23.0.0
-h11~=0.14.0 # last updated 09/22
+h11~=0.16.0
 h5netcdf~=1.5.0
 h5py~=3.12.1
 matplotlib~=3.10.0
