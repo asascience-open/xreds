@@ -18,7 +18,7 @@
     }
   },
   "cbofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/cbofs/cbofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/cbofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -57,7 +57,7 @@
     }
   },
   "ciofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/ciofs/ciofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/ciofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -112,7 +112,7 @@
     }
   },
   "dbofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/dbofs/dbofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/dbofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -151,7 +151,7 @@
     }
   },
   "gomofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/gomofs/gomofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/gomofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -207,7 +207,7 @@
     }
   },
   "leofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/leofs/leofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/leofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -244,7 +244,7 @@
     }
   },
   "lmhofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/lmhofs/lmhofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/lmhofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -281,7 +281,7 @@
     }
   },
   "loofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/loofs/loofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/loofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -318,7 +318,7 @@
     }
   },
   "lsofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/lsofs/lsofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/lsofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -372,7 +372,7 @@
     }
   },
   "ngofs2_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/ngofs2/ngofs2.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/ngofs2.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -468,7 +468,7 @@
     }
   },
   "sfbofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/sfbofs/sfbofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/sfbofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -506,7 +506,7 @@
     }
   },
   "sscofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/sscofs/sscofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/sscofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -574,7 +574,7 @@
     }
   },
   "tbofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/tbofs/tbofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/tbofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
@@ -613,7 +613,7 @@
     }
   },
   "wcofs_zarr3": {
-    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/wcofs/wcofs.zarr",
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/wcofs.zarr",
     "type": "zarr-obstore",
     "storage_options": {
       "region": "us-east-1"
