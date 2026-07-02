@@ -1,10 +1,8 @@
 import os
 from typing import Optional, Union
 
-import boto3
 import icechunk
 import obstore as obs
-from obstore.auth.boto3 import Boto3CredentialProvider
 import xarray as xr
 import zarr
 
@@ -231,16 +229,9 @@ def _load_zarr_obstore(
     if os.path.exists(dataset_path):
         store = obs.store.LocalStore(dataset_path, mkdir=False)
     else:
-
-        session = boto3.Session(
-            **{k: v for k, v in {
-                "region_name": storage_options.get("region"),
-                "profile_name": storage_options.get("profile"),
-            }.items() if v is not None}
-        )
         store = obs.store.from_url(
             dataset_path,
-            credential_provider=Boto3CredentialProvider(session=session),
+            skip_signature=True,
         )
 
     return xr.open_dataset(
