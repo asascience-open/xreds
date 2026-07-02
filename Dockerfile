@@ -20,7 +20,7 @@ ENV VITE_XREDS_BASE_URL=${ROOT_PATH}
 RUN npm run build
 
 # Build the python service layer
-FROM public.ecr.aws/b1r9q1p5/rps-matplotlib:latest
+FROM public.ecr.aws/b1r9q1p5/rps-matplotlib:python3.12
 
 # Native dependencies
 RUN apt-get update && apt-get install -y \
