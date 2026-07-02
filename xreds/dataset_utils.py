@@ -1,7 +1,10 @@
 import os
 from typing import Optional, Union
 
+import boto3
 import icechunk
+import obstore as obs
+from obstore.auth.boto3 import Boto3CredentialProvider
 import xarray as xr
 import zarr
 
@@ -49,6 +52,13 @@ def load_dataset(dataset_spec: dict) -> xr.Dataset | None:
         )
     elif dataset_type == "zarr":
         ds = _load_zarr(
+            dataset_path,
+            chunks=chunks,
+            drop_variables=drop_variables,
+            storage_options=storage_options
+        )
+    elif dataset_type == "zarr-obstore":
+        ds = _load_zarr_obstore(
             dataset_path,
             chunks=chunks,
             drop_variables=drop_variables,
@@ -210,6 +220,37 @@ def _load_zarr(
                 storage_options=storage_options,
             )
         )
+
+def _load_zarr_obstore(
+    dataset_path: str,
+    chunks: Optional[str | dict],
+    drop_variables: Optional[str | list[str]],
+    storage_options: dict,
+):
+
+    if os.path.exists(dataset_path):
+        store = obs.store.LocalStore(dataset_path, mkdir=False)
+    else:
+
+        session = boto3.Session(
+            **{k: v for k, v in {
+                "region_name": storage_options.get("region"),
+                "profile_name": storage_options.get("profile"),
+            }.items() if v is not None}
+        )
+        store = obs.store.from_url(
+            dataset_path,
+            credential_provider=Boto3CredentialProvider(session=session),
+        )
+
+    return xr.open_dataset(
+        zarr.storage.ObjectStore(store),
+        engine="zarr",
+        chunks=chunks,
+        drop_variables=drop_variables,
+        decode_times=True,
+        backend_kwargs=dict(consolidated=False)
+    )
 
 def _load_virtual_icechunk(
     dataset_path: str,

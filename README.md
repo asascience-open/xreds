@@ -148,7 +148,7 @@ Currently `zarr`, `netcdf`, [`virtual-icechunk`](https://icechunk.io/en/latest/i
 {
     // path to dataset - used in xr.open_dataset(path)
     "path": "s3://nextgen-dmac/kerchunk/gfswave_global_kerchunk.json",
-    // type of dataset - supported options: ZARR | KERCHUNK | NETCDF
+    // type of dataset - supported options: ZARR | KERCHUNK | NETCDF | VIRTUAL-ICECHUNK | ZARR-OBSTORE
     "type": "kerchunk",
     // (optional) engine used when opening dataset - only used when type=netcdf
     // [default: None]
@@ -174,17 +174,22 @@ Currently `zarr`, `netcdf`, [`virtual-icechunk`](https://icechunk.io/en/latest/i
         "target_options": {
             "anon": false,
         },
+
+        // when type=zarr-obstore:
+
+        "region": "us-east-1", // passed to boto3 Session / credential provider
+        "profile": "default" // passed to boto3 Session / credential provider
     },
     "extensions": {
       "vdatum": {
         // fsspec path to vdatum dataset
-        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr", 
+        "path": "s3://nextgen-dmac-cloud-ingest/nos/vdatums/ngofs2_vdatums.nc.zarr",
         // variable to use for water level
-        "water_level_var": "zeta", 
+        "water_level_var": "zeta",
         // variable mapping to vdatum transformation
-        "vdatum_var": "mllwtomsl", 
+        "vdatum_var": "mllwtomsl",
         // name of the vdatum transformation
-        "vdatum_name": "mllw" 
+        "vdatum_name": "mllw"
       }
     }
 }

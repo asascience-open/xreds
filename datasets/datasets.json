@@ -17,29 +17,52 @@
       "roms": {}
     }
   },
-  "cbofs_icechunk_15d_virtual": {
-    "path": "s3://nextgen-dmac-icechunk-test/cbofs-new",
-    "type": "virtual-icechunk",
+  "cbofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/cbofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
     "drop_variables": [
       "dstart"
     ],
-    "storage_options": {
-      "anonymous": true,
-      "region": "us-east-1",
-      "virtual_chunk_container": {
-        "type": "s3",
-        "store": {
-          "path": "s3://noaa-nos-ofs-pds/",
-          "anonymous": true,
-          "region": "us-east-1"
-        }
-      }
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/cbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      },
+      "roms": {}
     }
   },
   "ciofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/ciofs/ciofs.fields.best.nc.zarr",
     "type": "zarr",
     "chunks": "auto",
+    "drop_variables": [
+      "dstart"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/ciofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      },
+      "roms": {}
+    }
+  },
+  "ciofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/ciofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
     "drop_variables": [
       "dstart"
     ],
@@ -88,29 +111,52 @@
       "roms": {}
     }
   },
-  "dbofs_icechunk_15d_virtual": {
-    "path": "s3://nextgen-dmac-icechunk-test/dbofs-new",
-    "type": "virtual-icechunk",
+  "dbofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/dbofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
     "drop_variables": [
       "dstart"
     ],
-    "storage_options": {
-      "anonymous": true,
-      "region": "us-east-1",
-      "virtual_chunk_container": {
-        "type": "s3",
-        "store": {
-          "path": "s3://noaa-nos-ofs-pds/",
-          "anonymous": true,
-          "region": "us-east-1"
-        }
-      }
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/dbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      },
+      "roms": {}
     }
   },
   "gomofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/gomofs/gomofs.fields.best.nc.zarr",
     "type": "zarr",
     "chunks": "auto",
+    "drop_variables": [
+      "dstart"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/gomofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      },
+      "roms": {}
+    }
+  },
+  "gomofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/gomofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
     "drop_variables": [
       "dstart"
     ],
@@ -160,21 +206,49 @@
       }
     }
   },
-  "leofs_icechunk": {
-    "path": "s3://nextgen-dmac-icechunk-test/leofs",
-    "type": "virtual-icechunk",
+  "leofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/leofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
     "chunks": {},
     "drop_variables": [
       "Itime2"
     ],
-    "storage_options": {
-      "anonymous": true,
-      "region": "us-east-1"
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/leofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd",
+        "vdatum_name": "igld85",
+        "multiplier": -1.0
+      }
     }
   },
   "lmhofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/lmhofs/lmhofs.fields.best.nc.zarr",
     "type": "zarr",
+    "chunks": {},
+    "drop_variables": [
+      "Itime2"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/lmhofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd",
+        "vdatum_name": "igld85",
+        "multiplier": 1.0
+      }
+    }
+  },
+  "lmhofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/lmhofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
     "chunks": {},
     "drop_variables": [
       "Itime2"
@@ -206,9 +280,49 @@
       }
     }
   },
+  "loofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/loofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
+    "drop_variables": [
+      "Itime2"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/loofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd",
+        "vdatum_name": "igld85",
+        "multiplier": 1.0
+      }
+    }
+  },
   "lsofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/lsofs/lsofs.fields.best.nc.zarr",
     "type": "zarr",
+    "chunks": {},
+    "drop_variables": [
+      "Itime2"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/lsofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "igld85tolwd",
+        "vdatum_name": "igld85",
+        "multiplier": 1.0
+      }
+    }
+  },
+  "lsofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/lsofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
     "chunks": {},
     "drop_variables": [
       "Itime2"
@@ -243,6 +357,26 @@
   "ngofs2": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/ngofs2/ngofs2.fields.best.nc.zarr",
     "type": "zarr",
+    "chunks": {},
+    "drop_variables": [
+      "Itime2"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/ngofs2_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      }
+    }
+  },
+  "ngofs2_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/ngofs2.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
     "chunks": {},
     "drop_variables": [
       "Itime2"
@@ -333,9 +467,50 @@
       }
     }
   },
+  "sfbofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/sfbofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
+    "drop_variables": [
+      "Itime2"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/sfbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      }
+    }
+  },
   "sscofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/sscofs/sscofs.fields.best.nc.zarr",
     "type": "zarr",
+    "chunks": {},
+    "drop_variables": [
+      "Itime",
+      "Itime2"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/sscofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      }
+    }
+  },
+  "sscofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/sscofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
     "chunks": {},
     "drop_variables": [
       "Itime",
@@ -398,10 +573,52 @@
       "roms": {}
     }
   },
+  "tbofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/tbofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
+    "drop_variables": [
+      "dstart"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/tbofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      },
+      "roms": {}
+    }
+  },
   "wcofs": {
     "path": "s3://noaa-nodd-kerchunk-pds/nos/wcofs/wcofs.fields.best.nc.zarr",
     "type": "zarr",
     "chunks": "auto",
+    "drop_variables": [
+      "dstart"
+    ],
+    "extensions": {
+      "vdatum": {
+        "path": "s3://noaa-nodd-kerchunk-pds/nos_vdatums/wcofs_vdatums.nc.zarr",
+        "water_level_var": "zeta",
+        "vdatum_var": "mllwtomsl",
+        "vdatum_name": "mllw",
+        "multiplier": -1.0
+      },
+      "roms": {}
+    }
+  },
+  "wcofs_zarr3": {
+    "path": "s3://noaa-nodd-kerchunk-pds/zarr3/wcofs.zarr",
+    "type": "zarr-obstore",
+    "storage_options": {
+      "region": "us-east-1"
+    },
+    "chunks": {},
     "drop_variables": [
       "dstart"
     ],
@@ -432,6 +649,24 @@
         "multiplier": -1.0
       },
       "roms": {}
+    }
+  },
+  "rtv_h_6km_east": {
+    "path": "s3://nextgen-dmac-icechunk-test/rtv_h_6km_east",
+    "type": "virtual-icechunk",
+    "chunks": {},
+    "storage_options": {
+      "anonymous": true,
+      "region": "us-east-1"
+    }
+  },
+  "rtv_h_6km_west": {
+    "path": "s3://nextgen-dmac-icechunk-test/rtv_h_6km_west",
+    "type": "virtual-icechunk",
+    "chunks": {},
+    "storage_options": {
+      "anonymous": true,
+      "region": "us-east-1"
     }
   }
 }
