@@ -42,8 +42,8 @@ WORKDIR /opt/xreds
 # Holder directory where react app lives in production
 RUN mkdir build
 
-# Install rust build tools
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# Install rust build tools, using a build cache so /root/.rustup isn't included in the image (only needed at build time)
+RUN --mount=type=cache,target=/root/.rustup curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Install python package tools
 RUN pip3 install --upgrade pip uv
@@ -53,7 +53,11 @@ RUN pip3 install --upgrade pip uv
 
 # Copy over and install dependencies
 COPY requirements.txt ./requirements.txt
-RUN uv pip install --python=/usr/local/bin/python3 -r requirements.txt
+ARG PIP_FORCE=0
+# Mount a build cache for /root/.cache/uv so python dependencies aren't duplicated in the image
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=cache,target=/root/.rustup \
+    UV_LINK_MODE=copy uv pip install --python=/usr/local/bin/python3 -r requirements.txt
 
 # Configure matplotlib to use Agg backend
 RUN mkdir -p /root/.config/matplotlib
@@ -68,15 +72,15 @@ COPY app.py ./app.py
 COPY --from=0 /opt/viewer/dist ./viewer/dist
 
 # Set the port to run the server on
-ENV PORT 8090
+ENV PORT=8090
 ARG ROOT_PATH
-ENV ROOT_PATH ${ROOT_PATH}
+ENV ROOT_PATH=${ROOT_PATH}
 
 ARG WORKERS=1
-ENV WORKERS ${WORKERS}
+ENV WORKERS=${WORKERS}
 
 ARG LOG_LEVEL="debug"
-ENV LOG_LEVEL ${LOG_LEVEL}
+ENV LOG_LEVEL=${LOG_LEVEL}
 
 # Run the webserver
 CMD ["sh", "-c", "gunicorn --workers=${WORKERS} --worker-class=uvicorn.workers.UvicornWorker --log-level=${LOG_LEVEL} --bind=0.0.0.0:${PORT} app:app"]

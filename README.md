@@ -60,7 +60,7 @@ The docker container for the app can be built with:
 docker build -t xreds:latest .
 ```
 
-There are aso build arguments available when building the docker image:
+There are also build arguments available when building the docker image:
 
 - `ROOT_PATH`: The root path the app will be served from. Defaults to `/xreds/`.
 - `WORKERS`: The number of gunicorn workers to run. Defaults to `1`.

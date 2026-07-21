@@ -31,6 +31,19 @@ const colormaps: Array<{ id: string; name: string }> = [
     { id: 'seismic', name: 'Seismic' },
 ];
 
+const TILE_STYLE_OPTIONS: { value: string, label: string }[] = [
+    { value: 'raster/default', label: 'Raster' },
+    { value: 'vector-arrow/default', label: 'Vector - colormap' },
+    { value: 'vector-arrow/none', label: 'Vector - arrows only' },
+    { value: 'vector-arrow-color/default', label: 'Vector - colored arrows' },
+    { value: 'vector-cells-arrow/default', label: 'Vector - cell center arrows' },
+    { value: 'vector-cells-arrow/none', label: 'Vector - cell center arrows only' },
+    { value: 'vector-cells-arrow-color/default', label: 'Vector - cell center colored arrows' },
+];
+
+const ARROW_DENSITY_OPTIONS: { value: number, label: string }[] =
+    [1, 2, 3].map((n) => ({ value: n, label: n.toString() }))
+
 const TILE_SIZE = 512;
 
 function App() {
@@ -40,28 +53,43 @@ function App() {
     const datasetIds = useDatasetIdsQuery();
     const datasets = useDatasetsQuery(datasetIds.data);
 
-    const [selectedLayer, setSelectedLayer] = useState<{ dataset: string; variable: string } | undefined>(undefined);
-    const selectedLayerMetadata = useDatasetMetadataQuery(selectedLayer);
+    const [selectedLayers, setSelectedLayers] = useState<{ dataset: string; variables: Set<string> } | undefined>(undefined);
+    const selectedLayersMetadata = useDatasetMetadataQuery(selectedLayers);
+    const firstLayer = selectedLayers?.variables.keys().next().value;
+    // TODO: refactor all the references to this so it uses `selectedLayersMetadata`.
+    // create a single query object just for the first layer to avoid refactoring for now
+    const selectedLayerMetadata = {
+        ...selectedLayersMetadata,
+        data: firstLayer != null ? selectedLayersMetadata.data?.[firstLayer] : undefined,
+    }
+    const joinedLayers = useMemo(
+        () => selectedLayers?.variables.values().toArray().join(','),
+        [selectedLayers?.variables],
+    )
+
     const [layerOptions, setLayerOptions] = useState<{
         date?: string;
         elevation?: string;
         colorscaleMin?: number;
         colorscaleMax?: number;
         colormap?: string;
+        arrowColor?: string;
+        styles?: string;
+        density?: number;
     }>({});
+
     const selectedLayerMinMax = useDatasetMinMaxQuery(
-        selectedLayer && selectedLayerMetadata.data
-            ? {
-                  dataset: selectedLayer.dataset,
-                  variable: selectedLayer.variable,
-                  date:
-                      layerOptions.date ??
-                      selectedLayerMetadata.data.defaultTime,
-                  elevation:
-                      layerOptions.elevation ??
-                      selectedLayerMetadata.data.defaultElevation?.toString(),
-              }
-            : undefined,
+        selectedLayers && selectedLayerMetadata.data
+        && {
+            dataset: selectedLayers.dataset,
+            variable: joinedLayers,
+            date:
+                layerOptions.date ??
+                selectedLayerMetadata.data.defaultTime,
+            elevation:
+                layerOptions.elevation ??
+                selectedLayerMetadata.data.defaultElevation?.toString(),
+        }
     );
 
     const [layerTiling, setLayerTiling] = useState<boolean>(true);
@@ -69,6 +97,7 @@ function App() {
 
     const [showSidebar, setSidebarShowing] = useState(true);
     const [showColormapPicker, setColorMapPickerShowing] = useState(false);
+    const [showAdvancedLayerOptions, setShowAdvancedLayerOptions] = useState(false);
     const [datasetsCollapsed, setDatasetsCollapsed] = useState<{
         [k: string]: boolean;
     }>({});
@@ -80,6 +109,7 @@ function App() {
     const layerTimeOptions = useMemo(() => selectedLayerMetadata.data?.times?.map(
         (date: string) => ({ value: date, label: date })
     ), [selectedLayerMetadata.data?.times])
+    const selectMenuPortalTarget = typeof document !== 'undefined' ? document.body : undefined;
 
     useEffect(() => {
         const datasetsCollapsed = datasetIds.data?.reduce(
@@ -97,51 +127,45 @@ function App() {
     }, [datasetIds.data]);
 
     useEffect(() => {
+        setShowAdvancedLayerOptions(false);
+    }, [selectedLayers]);
+
+    useEffect(() => {
         if (
             !map.current ||
-            !selectedLayer ||
+            !selectedLayers ||
             !selectedLayerMetadata.data ||
             !selectedLayerMinMax.data
         ) {
             return;
         }
 
-        const sourceId = `xreds-${selectedLayer.dataset}-${selectedLayer.variable}`;
+        const sourceId = `xreds-${selectedLayers.dataset}-${joinedLayers}`;
 
         console.log(`Adding layer: ${sourceId}`);
 
-        let urlOptions: string[] = [];
-        if (
-            (layerOptions.colorscaleMin ?? selectedLayerMinMax.data.min) !==
-                undefined &&
-            (layerOptions.colorscaleMax ?? selectedLayerMinMax.data.max) !==
-                undefined
-        ) {
-            urlOptions.push(
-                `&colorscalerange=${layerOptions.colorscaleMin ?? selectedLayerMinMax.data.min},${layerOptions.colorscaleMax ?? selectedLayerMinMax.data.max}`,
-            );
-        }
-        if (
-            (layerOptions.date ?? selectedLayerMetadata.data.defaultTime) !==
-            undefined
-        ) {
-            urlOptions.push(
-                `&time=${layerOptions.date ?? selectedLayerMetadata.data.defaultTime}`,
-            );
-        }
-        if (
-            (layerOptions.elevation ??
-                selectedLayerMetadata.data.defaultElevation) !== undefined
-        ) {
-            urlOptions.push(
-                `&elevation=${layerOptions.elevation ?? selectedLayerMetadata.data.defaultElevation}`,
-            );
-        }
+        const colorscaleMin = layerOptions.colorscaleMin ?? selectedLayerMinMax.data.min;
+        const colorscaleMax = layerOptions.colorscaleMax ?? selectedLayerMinMax.data.max;
+        const urlOptions = {
+            colorscalerange: colorscaleMin != null && colorscaleMax != null ? `${colorscaleMin},${colorscaleMax}` : undefined,
+            time: layerOptions.date ?? selectedLayerMetadata.data.defaultTime,
+            elevation: layerOptions.elevation ?? selectedLayerMetadata.data.defaultElevation,
+            color: layerOptions.arrowColor, // color of arrows when rendering vectors
+            density: layerOptions.density, // density of arrows when rendering vectors
+            styles: (
+                layerOptions.styles ?? `${selectedLayers.variables.size === 1 ? 'raster' : 'vector-arrow'}/default`
+            ).replace('default', layerOptions.colormap ?? 'default'),
+        };
 
-        let url = `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&styles=raster/${layerOptions.colormap ?? 'default'}`;
+        let url = `/datasets/${selectedLayers.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${joinedLayers}&crs=EPSG:3857`;
+        const urlOptsString = Object.entries(urlOptions)
+            .filter(([_, val]) => val != null && val !== '')
+            .map(([key, val]) => `&${key}=${encodeURIComponent(String(val))}`)
+            .join('');
+        url += urlOptsString;
+
         if (layerTiling) {
             url += `&width=${TILE_SIZE}&height=${TILE_SIZE}&bbox={bbox-epsg-3857}`;
-            urlOptions.forEach((o) => (url += o));
 
             map.current.addSource(sourceId, {
                 type: 'raster',
@@ -156,7 +180,6 @@ function App() {
             }
 
             url += `&width=${imgParams.width}&height=${imgParams.height}&bbox=${[...imgParams.mercator].join(',')}`;
-            urlOptions.forEach((o) => (url += o));
             map.current.addSource(sourceId, {
                 type: 'image',
                 url: url,
@@ -210,7 +233,7 @@ function App() {
                         : '';
 
                 const response = await fetch(
-                    `/datasets/${selectedLayer.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${selectedLayer.variable}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${selectedLayer.variable}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50${bbox}${time}${elevation}`,
+                    `/datasets/${selectedLayers.dataset}/wms/?service=WMS&REQUEST=GetFeatureInfo&LAYERS=${joinedLayers}&VERSION=1.3.0&EXCEPTIONS=application%2Fvnd.ogc.se_xml&SRS=EPSG%3A4326&QUERY_LAYERS=${joinedLayers}&INFO_FORMAT=text%2Fjson&WIDTH=101&HEIGHT=101&X=50&Y=50${bbox}${time}${elevation}`,
                 );
                 const data = await response.json();
 
@@ -246,8 +269,8 @@ function App() {
                 return;
             }
 
-            let url = `/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${selectedLayer.variable}&crs=EPSG:3857&styles=raster/${layerOptions.colormap ?? 'default'}&width=${imgParams.width}&height=${imgParams.height}&bbox=${[...imgParams.mercator].join(',')}`;
-            urlOptions.forEach((o) => (url += o));
+            let url = `/datasets/${selectedLayers.dataset}/wms/?service=WMS&version=1.3.0&request=GetMap&layers=${joinedLayers}&crs=EPSG:3857&styles=raster/${layerOptions.colormap ?? 'default'}&width=${imgParams.width}&height=${imgParams.height}&bbox=${[...imgParams.mercator].join(',')}`;
+            url += urlOptsString;
 
             currentSource.updateImage({
                 url: url,
@@ -278,13 +301,16 @@ function App() {
         layerOptions.colorscaleMin,
         layerOptions.colorscaleMax,
         layerOptions.colormap,
+        layerOptions.arrowColor,
+        layerOptions.density,
+        layerOptions.styles,
     ]);
 
     useEffect(() => {
         if (
             !map.current ||
             !currentPopupData ||
-            !selectedLayer ||
+            !selectedLayers ||
             !selectedLayerMetadata.data
         ) {
             return;
@@ -294,31 +320,8 @@ function App() {
         try {
             popup = new Popup({ closeOnClick: false })
                 .setLngLat(currentPopupData.lngLat)
-                .setHTML(
-                    `
-          <div class="flex flex-col p-1 rounded-md overflow-hidden">
-            <span class="font-bold">${selectedLayer.dataset} - ${selectedLayer.variable}</span>
-            ${
-                currentPopupData.loading
-                    ? `
-                <div class="flex flex-row flex-grow justify-center items-center">
-                  <div class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-                    <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
-                      Loading...
-                    </span>
-                  </div>
-                </div>
-              `
-                    : `
-                <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
-                <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
-                <span>Date: ${currentPopupData.data.domain.axes.t ? currentPopupData.data.domain.axes.t.values : 'N/A'}</span>
-                <span>Value: ${currentPopupData.data.ranges[selectedLayer.variable].values[0]} ${selectedLayerMetadata.data?.units}</span>
-              `
-            }
-          </div>
-        `,
-                )
+                // TODO: units for multiple layers? other way of getting them or fix the metadata query?
+                .setHTML(getPopupHTML(currentPopupData, selectedLayers.dataset, selectedLayers.variables, joinedLayers, selectedLayerMetadata.data?.units))
                 .addTo(map.current);
         } catch (e) {
             console.error(e);
@@ -328,7 +331,7 @@ function App() {
                 .setHTML(
                     `
           <div class="flex flex-col p-1 rounded-md overflow-hidden">
-            <span class="font-bold">${selectedLayer.dataset} - ${selectedLayer.variable}</span>
+            <span class="font-bold">${selectedLayers.dataset} - ${joinedLayers}</span>
               <span class="text-center">ERROR</span>
           </div>
         `,
@@ -477,32 +480,23 @@ function App() {
                                         ).map((v) => (
                                             <div
                                                 key={d + v}
-                                                className={`p-1 flex flex-row justify-between items-center ${selectedLayer?.dataset === d && selectedLayer.variable === v ? 'bg-blue-100' : ''}`}
+                                                className={`p-1 flex flex-row justify-between items-center ${selectedLayers?.dataset === d && selectedLayers.variables.has(v) ? 'bg-blue-100' : ''}`}
                                             >
                                                 <button
                                                     className={`hover:text-blue-600 text-start`}
-                                                    onClick={() => {
-                                                        if (selectedLayer) {
-                                                            if (
-                                                                selectedLayer.dataset ===
-                                                                    d &&
-                                                                selectedLayer.variable ===
-                                                                    v
-                                                            ) {
-                                                                setLayerOptions(
-                                                                    {},
-                                                                );
-                                                                setSelectedLayer(
-                                                                    undefined,
-                                                                );
-                                                                return;
+                                                    onClick={(event) => {
+                                                        setLayerOptions({})
+                                                        setSelectedLayers((old) => {
+                                                            if (old && old.dataset === d && old.variables.has(v)) {
+                                                                return undefined;
                                                             }
-                                                        }
-
-                                                        setLayerOptions({});
-                                                        setSelectedLayer({
-                                                            dataset: d,
-                                                            variable: v,
+                                                            return (event.ctrlKey || event.metaKey) && old?.variables.size == 1 ? {
+                                                                    dataset: d,
+                                                                    variables: new Set([...old.variables.values(), v])
+                                                                } : {
+                                                                dataset: d,
+                                                                variables: new Set([v]),
+                                                            };
                                                         });
                                                     }}
                                                 >
@@ -514,9 +508,8 @@ function App() {
                                                         }
                                                     </span>
                                                 </button>
-                                                {selectedLayer?.dataset === d &&
-                                                    selectedLayer.variable ===
-                                                        v &&
+                                                {(selectedLayers?.dataset === d || selectedLayers?.dataset.includes(d)) &&
+                                                    (joinedLayers === v || joinedLayers.includes(v)) &&
                                                     (layerLoading ||
                                                         selectedLayerMinMax.isFetching ||
                                                         selectedLayerMetadata.isFetching) && (
@@ -547,10 +540,11 @@ function App() {
                         }}
                     />
                 </div>
-                {selectedLayer && (
-                    <div className="absolute bottom-9 right-2 md:right-4 h-40 w-72 md:w-96 bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
+                {selectedLayers && (
+                    <div className="absolute top-12 right-2 md:right-4 w-72 md:w-96 overflow-visible z-10">
+                        <div className="bg-white rounded-md bg-opacity-70 flex flex-col items-center content-center">
                         <span className="text-center">
-                            {selectedLayer.dataset} - {selectedLayer.variable}
+                            {selectedLayers.dataset} - {joinedLayers}
                         </span>
                         {selectedLayerMinMax.isFetching ||
                         selectedLayerMetadata.isFetching ||
@@ -576,7 +570,9 @@ function App() {
                                         <SimpleSelect
                                             key={"date-dropdown"}
                                             className="rounded-md mx-1 w-[14rem]"
-                                            menuPlacement={"top"}
+                                            menuPlacement={"bottom"}
+                                            menuPosition={"fixed"}
+                                            menuPortalTarget={selectMenuPortalTarget}
                                             isSearchable={false}
                                             value={{
                                                 value: layerOptions?.date ?? selectedLayerMetadata.data.defaultTime,
@@ -603,7 +599,9 @@ function App() {
                                             </span>
                                             <SimpleSelect
                                                 className="rounded-md mx-1 w-[12rem]"
-                                                menuPlacement={"top"}
+                                                menuPlacement={"bottom"}
+                                                menuPosition={"fixed"}
+                                                menuPortalTarget={selectMenuPortalTarget}
                                                 isSearchable={false}
                                                 value={{
                                                     value: layerOptions?.elevation ?? selectedLayerMetadata.data.defaultElevation.toString(),
@@ -622,7 +620,7 @@ function App() {
                                         </div>
                                     )}
                                 </div>
-                                <div className="w-full flex-1 flex flex-row items-center content-center justify-around">
+                                <div className="w-full flex-1 flex flex-row items-center content-center justify-around relative">
                                     <input
                                         className="w-16 mx-1 text-center rounded-md px-1 border border-solid border-[#cccccc]
                                                    [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -650,7 +648,7 @@ function App() {
                                     />
                                     <img
                                         className="rounded-md overflow-hidden w-64 md:w-80 mx-1 cursor-pointer"
-                                        src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`}
+                                        src={`/datasets/${selectedLayers.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${joinedLayers}&styles=raster/${layerOptions.colormap ?? 'default'}&colorscalerange=${layerOptions.colorscaleMin?.toFixed(5) ?? 0},${layerOptions.colorscaleMax?.toFixed(5) ?? 10}`}
                                         onClick={() =>
                                             setColorMapPickerShowing(
                                                 !showColormapPicker,
@@ -658,13 +656,13 @@ function App() {
                                         }
                                     />
                                     {showColormapPicker && (
-                                        <div className="absolute bottom-14 md:bottom-12 right-0 h-64 w-72 md:w-96 pt-2 px-2 bg-white overflow-y-scroll">
+                                        <div className="absolute top-full mt-1 right-0 h-64 w-72 md:w-96 pt-2 px-2 bg-white overflow-y-scroll">
                                             <menu>
                                                 {colormaps.map((cm) => (
                                                     <li className="w-full h-2 mb-8">
                                                         <img
                                                             className="rounded-md overflow-hidden w-full cursor-pointer"
-                                                            src={`/datasets/${selectedLayer.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${selectedLayer.variable}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`}
+                                                            src={`/datasets/${selectedLayers.dataset}/wms/?service=WMS&version=1.3.0&request=GetLegendGraphic&format=image/png&width=200&height=20&layers=${joinedLayers}&styles=raster/${cm.id}&colorscalerange=${layerOptions.colorscaleMin ?? 0},${layerOptions.colorscaleMax ?? 10}`}
                                                             onClick={() => {
                                                                 setLayerOptions(
                                                                     {
@@ -709,13 +707,144 @@ function App() {
                                         }}
                                     />
                                 </div>
+                                <button
+                                    className="my-1 text-sm underline cursor-pointer"
+                                    onClick={() =>
+                                        setShowAdvancedLayerOptions(!showAdvancedLayerOptions)
+                                    }
+                                >
+                                    Advanced {showAdvancedLayerOptions ? '▴' : '▾'}
+                                </button>
+                                {showAdvancedLayerOptions && (
+                                    <>
+                                        <div
+                                            className={'flex flex-row items-center py-1'}
+                                        >
+                                            <span className={'pl-1'}>Tile style:</span>
+                                            <SimpleSelect
+                                                className="rounded-md mx-1 w-[14rem]"
+                                                menuPlacement={"bottom"}
+                                                menuPosition={"fixed"}
+                                                menuPortalTarget={selectMenuPortalTarget}
+                                                isSearchable={false}
+                                                value={{
+                                                    value: layerOptions?.styles ?? "",
+                                                    label: layerOptions?.styles ?? "",
+                                                }}
+                                                onChange={(e: any) =>
+                                                    setLayerOptions({
+                                                        ...layerOptions,
+                                                        styles: e.value,
+                                                    })
+                                                }
+                                                // show relevant styles (raster/vector) and display tile styles directly instead of description
+                                                options={TILE_STYLE_OPTIONS.filter((opt) => opt.value.includes(selectedLayers.variables.size === 1 ? 'raster' : 'vector'))
+                                                    .map((opt) => ({value: opt.value, label: opt.value}))}
+                                            />
+                                        </div>
+                                        {selectedLayers.variables.size > 1 &&
+                                            <>
+                                                <div
+                                                    className={'flex flex-row items-center py-1'}
+                                                >
+                                                    <span className={'pl-1'}>Arrow color:</span>
+                                                    <input
+                                                        className="w-[9rem] mx-1 rounded-md px-1 border border-solid border-[#cccccc]"
+                                                        type="text"
+                                                        placeholder="e.g. #000000"
+                                                        value={layerOptions.arrowColor ?? ''}
+                                                        onChange={(e) =>
+                                                            setLayerOptions({
+                                                                ...layerOptions,
+                                                                arrowColor:
+                                                                    e.currentTarget.value || undefined,
+                                                            })
+                                                        }
+                                                    />
+                                                </div>
+                                                <div
+                                                    className={'flex flex-row items-center py-1'}
+                                                >
+                                                    <span className={'pl-1'}>Arrow density:</span>
+                                                    <SimpleSelect
+                                                        className="rounded-md mx-1 w-[5rem]"
+                                                        menuPlacement={"bottom"}
+                                                        menuPosition={"fixed"}
+                                                        menuPortalTarget={selectMenuPortalTarget}
+                                                        isSearchable={false}
+                                                        value={{
+                                                            value: layerOptions?.density ?? "",
+                                                            label: layerOptions?.density?? "",
+                                                        }}
+                                                        onChange={(e: any) =>
+                                                            setLayerOptions({
+                                                                ...layerOptions,
+                                                                density: parseInt(e.value),
+                                                            })
+                                                        }
+                                                        options={ARROW_DENSITY_OPTIONS}
+                                                    />
+                                                </div>
+                                            </>
+                                        }
+                                    </>
+                                )}
                             </>
                         )}
+                        </div>
                     </div>
                 )}
             </main>
         </div>
     );
+}
+
+/**
+ * Generate a timeseries extraction popup.
+ */
+function getPopupHTML(currentPopupData: any, datasetName: string, layerNames: Set<string>, joinedLayers?: string, units?: string) {
+    const data = currentPopupData.data;
+    const values = layerNames.values().map((layer) => [layer, data?.ranges[layer].values[0]]).toArray();
+    if (layerNames.size == 2) {
+        // if there are two layers we assume they are vector layers and calculate magnitude
+        values.push([
+            "magnitude",
+            Math.sqrt(values[0][1] ** 2 + values[1][1] ** 2),
+        ])
+    }
+
+    return (
+        `
+          <div class="flex flex-col p-1 rounded-md overflow-hidden">
+            <span class="font-bold">${datasetName} - ${joinedLayers}</span>
+            ${currentPopupData.loading || joinedLayers == null
+            ? `
+                <div class="flex flex-row flex-grow justify-center items-center">
+                  <div class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                    <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
+                      Loading...
+                    </span>
+                  </div>
+                </div>
+              `
+            : `
+                <span>Latitude: ${currentPopupData.lngLat.lat.toFixed(5)}°</span>
+                <span>Longitude: ${currentPopupData.lngLat.lng.toFixed(5)}°</span>
+                <span>Date: ${data.domain.axes.t ? data.domain.axes.t.values : 'N/A'}</span>
+                ${layerNames.size > 1
+                ? `
+                    <span>Values:</span>
+                    ${values.map(([layer, value]) => `
+                        <span class="ml-2">${layer}: ${value.toFixed(5).replace(/0+$/, '')} ${units}</span>
+                    `).join("\n")}
+                  `
+                : `<span>Value: ${data.ranges[joinedLayers].values[0]} ${units}</span>`
+            }
+              `
+        }
+          </div>
+        `
+    )
 }
 
 export default App;
