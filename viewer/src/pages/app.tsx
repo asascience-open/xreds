@@ -53,7 +53,7 @@ function App() {
     const datasetIds = useDatasetIdsQuery();
     const datasets = useDatasetsQuery(datasetIds.data);
 
-    const [selectedLayers, setSelectedLayer] = useState<{ dataset: string; variables: Set<string> } | undefined>(undefined);
+    const [selectedLayers, setSelectedLayers] = useState<{ dataset: string; variables: Set<string> } | undefined>(undefined);
     const selectedLayersMetadata = useDatasetMetadataQuery(selectedLayers);
     const firstLayer = selectedLayers?.variables.keys().next().value;
     // TODO: refactor all the references to this so it uses `selectedLayersMetadata`.
@@ -143,7 +143,7 @@ function App() {
         const sourceId = `xreds-${selectedLayers.dataset}-${joinedLayers}`;
 
         console.log(`Adding layer: ${sourceId}`);
-        
+
         const colorscaleMin = layerOptions.colorscaleMin ?? selectedLayerMinMax.data.min;
         const colorscaleMax = layerOptions.colorscaleMax ?? selectedLayerMinMax.data.max;
         const urlOptions = {
@@ -486,7 +486,7 @@ function App() {
                                                     className={`hover:text-blue-600 text-start`}
                                                     onClick={(event) => {
                                                         setLayerOptions({})
-                                                        setSelectedLayer((old) => {
+                                                        setSelectedLayers((old) => {
                                                             if (old && old.dataset === d && old.variables.has(v)) {
                                                                 return undefined;
                                                             }
@@ -508,9 +508,8 @@ function App() {
                                                         }
                                                     </span>
                                                 </button>
-                                                {selectedLayers?.dataset === d &&
-                                                    joinedLayers ===
-                                                        v &&
+                                                {(selectedLayers?.dataset === d || selectedLayers?.dataset.includes(d)) &&
+                                                    (joinedLayers === v || joinedLayers.includes(v)) &&
                                                     (layerLoading ||
                                                         selectedLayerMinMax.isFetching ||
                                                         selectedLayerMetadata.isFetching) && (
@@ -738,7 +737,9 @@ function App() {
                                                         styles: e.value,
                                                     })
                                                 }
-                                                options={TILE_STYLE_OPTIONS.filter((opt) => opt.value.includes(selectedLayers.variables.size === 1 ? 'raster' : 'vector'))}
+                                                // show relevant styles (raster/vector) and display tile styles directly instead of description
+                                                options={TILE_STYLE_OPTIONS.filter((opt) => opt.value.includes(selectedLayers.variables.size === 1 ? 'raster' : 'vector'))
+                                                    .map((opt) => ({value: opt.value, label: opt.value}))}
                                             />
                                         </div>
                                         {selectedLayers.variables.size > 1 &&
