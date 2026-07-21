@@ -41,7 +41,7 @@ obstore~=0.11.0
 boto3~=1.41.5
 kerchunk~=0.2.9
 #xpublish-wms~=0.13.2
-xpublish-wms@git+https://github.com/axiom-data-science/xpublish-wms.git@e7697213795a86923119de132311948fbc26475e
+xpublish-wms@git+https://github.com/xpublish-community/xpublish-wms.git@e7697213795a86923119de132311948fbc26475e
 xpublish~=0.4.2
 xpublish-opendap~=0.2.0
 xpublish-edr~=0.9.0
