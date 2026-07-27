@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Optional, Union
 
@@ -233,6 +234,22 @@ def _load_zarr_obstore(
             dataset_path,
             skip_signature=True,
         )
+
+    # if dataset_path does not end with .zarr, attempt to resolve zarr path from reference file
+    if not dataset_path.endswith(".zarr"):
+        data = obs.get(store, "refs/main.json").bytes().to_bytes()
+        # just pulling the zarr_uri for now even though the reference file contains other metadata as well
+        zarr_uri = json.loads(data)["zarr_uri"]
+
+        # overwrite store using the resolved uri from the reference file
+        if os.path.exists(zarr_uri):
+            store = obs.store.LocalStore(zarr_uri, mkdir=False)
+        else:
+            store = obs.store.from_url(
+                zarr_uri,
+                skip_signature=True,
+            )
+
 
     return xr.open_dataset(
         zarr.storage.ObjectStore(store),
