@@ -55,10 +55,17 @@ const MenuList = ({ ...props }: any) => {
     );
 };
 
-const SimpleSelect = ({ ...props }: Props) => (
+const SimpleSelect = ({ styles, ...props }: Props) => (
     <Select 
         components={{ MenuList, Option }} 
-        styles={defaultStyle}
+        styles={{
+            ...defaultStyle,
+            menuPortal: (base: any) => ({
+                ...base,
+                zIndex: 50,
+            }),
+            ...styles,
+        }}
         filterOption={createFilter({ ignoreAccents: false })} 
         { ...props } 
     />

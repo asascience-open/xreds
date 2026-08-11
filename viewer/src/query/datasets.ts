@@ -25,18 +25,19 @@ export const useDatasetMetadataQuery = (
     dataset:
         | {
               dataset: string;
-              variable: string;
+              variables: Set<string>;
           }
         | undefined,
 ) =>
     useQuery({
         refetchOnWindowFocus: false,
-        queryKey: ['dataset', 'metadata', dataset],
+        queryKey: ['dataset', 'metadata', dataset?.dataset, dataset?.variables.values().toArray()],
         staleTime: 10 * 60 * 1000,
-        queryFn: () =>
-            dataset
-                ? fetchMetadata(dataset.dataset, dataset.variable)
-                : undefined,
+        queryFn: async () => dataset &&
+            Object.fromEntries(await Promise.all(dataset.variables.keys().map(async (variable) => [
+                variable,
+                await fetchMetadata(dataset.dataset, variable),
+            ]))),
         enabled: !!dataset,
     });
 
