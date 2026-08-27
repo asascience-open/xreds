@@ -5,7 +5,7 @@ metadata:
   labels:
     app: xreds
 spec:
-  replicas: 4
+  replicas: 6
   selector:
     matchLabels:
       app: xreds
@@ -33,11 +33,11 @@ spec:
             - name: EXPORT_THRESHOLD
               value: "500"
             - name: WORKERS
-              value: "1"
+              value: "2"
             - name: DATASETS_MAPPING_FILE
               value: "s3://nextgen-dmac/kerchunk/datasets.json"
             - name: MEMORY_CACHE_NUM_DATASETS
-              value: "6"
+              value: "16"
             - name: USE_MEMORY_CACHE
               value: "true"
             - name: USE_REDIS_CACHE
@@ -48,9 +48,9 @@ spec:
               value: "6379"
           resources:
             requests:
-              memory: 4Gi
+              memory: 2Gi
             limits:
-              memory: 16Gi
+              memory: 8Gi
 ---
 apiVersion: v1
 kind: Service
