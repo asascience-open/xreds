@@ -5,7 +5,7 @@ metadata:
   labels:
     app: xreds
 spec:
-  replicas: 8
+  replicas: 4
   selector:
     matchLabels:
       app: xreds
@@ -15,7 +15,7 @@ spec:
         app: xreds
     spec:
       topologySpreadConstraints:
-        - maxSkew: 1
+        - maxSkew: 2
           topologyKey: "kubernetes.io/hostname"
           whenUnsatisfiable: DoNotSchedule
           labelSelector:
@@ -37,11 +37,11 @@ spec:
             - name: DATASETS_MAPPING_FILE
               value: "s3://nextgen-dmac/kerchunk/datasets.json"
             - name: MEMORY_CACHE_NUM_DATASETS
-              value: "4"
+              value: "6"
             - name: USE_MEMORY_CACHE
               value: "true"
             - name: USE_REDIS_CACHE
-              value: "true"
+              value: "false"
             - name: REDIS_HOST
               value: "redis"
             - name: REDIS_PORT
@@ -50,7 +50,7 @@ spec:
             requests:
               memory: 4Gi
             limits:
-              memory: 8Gi
+              memory: 16Gi
 ---
 apiVersion: v1
 kind: Service
