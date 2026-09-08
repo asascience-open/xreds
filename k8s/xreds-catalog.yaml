@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xreds-catalog
+  labels:
+    app: xreds-catalog
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: xreds-catalog
+  template:
+    metadata:
+      labels:
+        app: xreds-catalog
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "kubernetes.io/hostname"
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: xreds-catalog
+      containers:
+        - name: xreds-catalog
+          image: public.ecr.aws/m2c5k9c1/nextgen-dmac/xreds-catalog:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: CATALOG
+              value: "ioos-dmac"
+            - name: SITE_URL
+              value: "https://cloud.data.ioos.us"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xreds-catalog-service
+  labels:
+    app: xreds-catalog
+spec:
+  selector:
+    app: xreds-catalog
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
