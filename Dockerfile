@@ -1,86 +1,47 @@
+# syntax=docker/dockerfile:1
 
+ARG PYTHON_IMAGE=python:3.12-slim
 
-# Build the react frontend
-FROM node:22-alpine
+FROM ${PYTHON_IMAGE} AS dependencies
 
-# Create a folder for the app to live in
-RUN mkdir -p /opt/viewer
-WORKDIR /opt/viewer
+# Git is only needed to install the VCS requirements.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY viewer/*.json viewer/*.config.cjs viewer/*.config.ts  ./
+RUN python3 -m pip install --no-cache-dir uv
 
-RUN npm install
-
-COPY viewer/index.html ./index.html
-COPY viewer/public ./public
-COPY viewer/src ./src
-
-ARG ROOT_PATH
-ENV VITE_XREDS_BASE_URL=${ROOT_PATH}
-RUN npm run build
-
-# Build the python service layer
-FROM public.ecr.aws/b1r9q1p5/rps-matplotlib:python3.12
-
-# Native dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    build-essential \
-    libhdf5-dev \
-    libopenblas-dev \
-    libgeos-dev \
-    libnetcdf-dev \
-    libproj-dev \
-    libudunits2-dev \
-    libeccodes-dev
-
-# Create a folder for the app to live in
-RUN mkdir -p /opt/xreds
 WORKDIR /opt/xreds
 
-# Holder directory where react app lives in production
-RUN mkdir build
-
-# Install rust build tools, using a build cache so /root/.rustup isn't included in the image (only needed at build time)
-RUN --mount=type=cache,target=/root/.rustup curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-# Install python package tools
-RUN pip3 install --upgrade pip uv
-
-# Shapely needs to be installed from source to work with the version of GEOS installed https://stackoverflow.com/a/53704107
-# RUN uv pip install --python=$(which python3) --no-binary :all: shapely
-
-# Copy over and install dependencies
 COPY requirements.txt ./requirements.txt
-ARG PIP_FORCE=0
-# Mount a build cache for /root/.cache/uv so python dependencies aren't duplicated in the image
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=cache,target=/root/.rustup \
-    UV_LINK_MODE=copy uv pip install --python=/usr/local/bin/python3 -r requirements.txt
+    uv venv /opt/venv --python /usr/local/bin/python3 \
+    && UV_LINK_MODE=copy uv pip install --python=/opt/venv/bin/python -r requirements.txt
 
-# Configure matplotlib to use Agg backend
-RUN mkdir -p /root/.config/matplotlib
-RUN echo "backend : Agg" > /root/.config/matplotlib/matplotlibrc
 
-# Copy over python app source code
-COPY static ./static
+FROM ${PYTHON_IMAGE}
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libexpat1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/xreds
+
+COPY --from=dependencies /opt/venv /opt/venv
 COPY xreds ./xreds
 COPY app.py ./app.py
 
-# Copy the frontend build
-COPY --from=0 /opt/viewer/dist ./viewer/dist
+ENV PATH="/opt/venv/bin:${PATH}" \
+    MPLBACKEND=Agg \
+    PORT=8090
 
-# Set the port to run the server on
-ENV PORT=8090
 ARG ROOT_PATH
 ENV ROOT_PATH=${ROOT_PATH}
 
 ARG WORKERS=1
 ENV WORKERS=${WORKERS}
 
-ARG LOG_LEVEL="debug"
+ARG LOG_LEVEL=debug
 ENV LOG_LEVEL=${LOG_LEVEL}
 
-# Run the webserver
 CMD ["sh", "-c", "gunicorn --workers=${WORKERS} --worker-class=uvicorn.workers.UvicornWorker --log-level=${LOG_LEVEL} --bind=0.0.0.0:${PORT} app:app"]
