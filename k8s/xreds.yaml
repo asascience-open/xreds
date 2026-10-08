@@ -58,6 +58,9 @@ metadata:
   name: xreds-service
   labels:
     app: xreds
+  annotations:
+      alb.ingress.kubernetes.io/healthcheck-path: /datasets
+      alb.ingress.kubernetes.io/success-codes: "200"
 spec:
   selector:
     app: xreds
