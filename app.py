@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import xpublish
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,7 +47,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/", SPAStaticFiles(directory="./viewer/dist", html=True), name="viewer")
+viewer_directory = Path("./viewer/dist")
+if viewer_directory.is_dir():
+    app.mount("/", SPAStaticFiles(directory=viewer_directory, html=True), name="viewer")
 app.root_path = settings.root_path
 
 if __name__ == "__main__":
