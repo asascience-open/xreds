@@ -6,7 +6,17 @@ FROM ${PYTHON_IMAGE} AS dependencies
 
 # Git is only needed to install the VCS requirements.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
+    && apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        build-essential \
+        libhdf5-dev \
+        libopenblas-dev \
+        libgeos-dev \
+        libnetcdf-dev \
+        libproj-dev \
+        libudunits2-dev \
+        libeccodes-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --no-cache-dir uv
