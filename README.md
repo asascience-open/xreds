@@ -54,16 +54,27 @@ Where `DATASETS_MAPPING_FILE` is the path to the dataset key value store as desc
 
 ### Building and Running manually
 
-The docker container for the app can be built with:
+The Python API container can be built with:
 
 ```bash
 docker build -t xreds:latest .
 ```
 
+The image does not build or include the React viewer. When running the Python
+application directly from a checkout, an existing `viewer/dist` directory is
+still served automatically.
+
+The original combined API and React viewer image remains available as a
+separate build:
+
+```bash
+docker build -f Dockerfile.viewer -t xreds:viewer .
+```
+
 There are also build arguments available when building the docker image:
 
 - `ROOT_PATH`: The root path the app will be served from. Defaults to `/xreds/`.
-- `WORKERS`: The number of gunicorn workers to run. Defaults to `1`.
+- `WORKERS`: The number of Uvicorn worker processes to run. Defaults to `1`. For Kubernetes, prefer one worker per pod and scale replicas.
 
 Once built, it requires a few things to be run: The `8090` port to be exposed, and a volume for the datasets to live in, and the environment variable pointing to the dateset json file.
 
@@ -201,7 +212,7 @@ The following environment variables can be set to configure the app:
 
 - `DATASETS_MAPPING_FILE`: The fsspec compatible path to the dataset key value store as described [here](./README.md#specifying-datasets)
 - `PORT`: The port the app should run on. Defaults to `8090`.
-- `WORKERS`: The number of worker threads handling requests. Defaults to `1`
+- `WORKERS`: The number of Uvicorn worker processes handling requests. Defaults to `1`.
 - `ROOT_PATH`: The root path the app will be served from. Defaults to be served from the root.
 - `DATASET_CACHE_TIMEOUT`: The time in seconds to cache the dataset metadata. Defaults to `600` (10 minutes).
 - `USE_MEMORY_CACHE`: Whether to save loaded datasets into worker memory. Defaults to `True`
