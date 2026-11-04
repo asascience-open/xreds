@@ -54,4 +54,4 @@ ENV WORKERS=${WORKERS}
 ARG LOG_LEVEL=debug
 ENV LOG_LEVEL=${LOG_LEVEL}
 
-CMD ["sh", "-c", "gunicorn --workers=${WORKERS} --worker-class=uvicorn.workers.UvicornWorker --log-level=${LOG_LEVEL} --bind=0.0.0.0:${PORT} app:app"]
+CMD ["sh", "-c", "exec uvicorn app:app --host 0.0.0.0 --port ${PORT} --workers ${WORKERS} --log-level ${LOG_LEVEL}"]
