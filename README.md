@@ -54,10 +54,21 @@ Where `DATASETS_MAPPING_FILE` is the path to the dataset key value store as desc
 
 ### Building and Running manually
 
-The docker container for the app can be built with:
+The Python API container can be built with:
 
 ```bash
 docker build -t xreds:latest .
+```
+
+The image does not build or include the React viewer. When running the Python
+application directly from a checkout, an existing `viewer/dist` directory is
+still served automatically.
+
+The original combined API and React viewer image remains available as a
+separate build:
+
+```bash
+docker build -f Dockerfile.viewer -t xreds:viewer .
 ```
 
 There are also build arguments available when building the docker image:

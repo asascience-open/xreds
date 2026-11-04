@@ -1,0 +1,14 @@
+.git
+.venv
+__pycache__
+*.py[cod]
+
+datasets
+k8s
+nginx
+redis
+scripts
+
+docker-compose*.yml
+README.md
+API.md
